@@ -5,8 +5,10 @@ import { signOut } from "next-auth/react";
 
 export default function ProfileDropdown({
   user,
+  isAdmin = false,
 }: {
   user: { name?: string | null; email?: string | null; rollNo?: string | null; hostel?: string | null; mess?: string | null };
+  isAdmin?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,14 +24,30 @@ export default function ProfileDropdown({
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div 
+      className="relative" 
+      ref={dropdownRef}
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="btn-secondary flex items-center gap-2"
-        style={{ fontSize: "14px", padding: "8px 16px" }}
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #f97316, #ef4444)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "18px",
+          border: "none",
+          cursor: "pointer",
+          boxShadow: "0 2px 8px rgba(249,115,22,0.3)",
+          color: "white"
+        }}
       >
-        <span>👤 {user.name?.split(" ")[0] || "Profile"}</span>
-        <span style={{ fontSize: "10px" }}>▼</span>
+        {user.name ? user.name.charAt(0).toUpperCase() : "👤"}
       </button>
 
       {isOpen && (
@@ -38,24 +56,26 @@ export default function ProfileDropdown({
           style={{ padding: "16px" }}
         >
           <div className="mb-4 pb-4 border-b border-orange-100">
-            <p className="font-bold text-orange-900">{user.name}</p>
+            <p className="font-bold text-orange-900">{user.name || "User"}</p>
             <p className="text-xs text-orange-700">{user.email}</p>
           </div>
           
-          <div className="flex flex-col gap-3 mb-4">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-orange-700 font-semibold">Roll No:</span>
-              <span className="text-orange-900 font-bold">{user.rollNo}</span>
+          {!isAdmin && (
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-orange-700 font-semibold">Roll No:</span>
+                <span className="text-orange-900 font-bold">{user.rollNo}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-orange-700 font-semibold">Hostel:</span>
+                <span className="text-orange-900 font-bold">{user.hostel}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-orange-700 font-semibold">Mess:</span>
+                <span className="text-orange-900 font-bold">{user.mess}</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-orange-700 font-semibold">Hostel:</span>
-              <span className="text-orange-900 font-bold">{user.hostel}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-orange-700 font-semibold">Mess:</span>
-              <span className="text-orange-900 font-bold">{user.mess}</span>
-            </div>
-          </div>
+          )}
 
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}

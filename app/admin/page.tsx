@@ -144,7 +144,7 @@ export default async function AdminDashboard({
             </span>
           </div>
 
-          <ProfileDropdown user={session.user} />
+          <ProfileDropdown user={session.user} isAdmin={true} />
         </div>
       </header>
 
@@ -153,7 +153,7 @@ export default async function AdminDashboard({
       <main className="page-main-wide">
         {/* Stats Card (Same as Student) */}
         <div className="glass card-pad">
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
             System Stats
           </div>
           <div className="stats-grid">
@@ -171,15 +171,15 @@ export default async function AdminDashboard({
               <div
                 key={label}
                 style={{
-                  padding: "14px",
+                  padding: "10px",
                   background: `${color}10`,
-                  borderRadius: 10,
+                  borderRadius: 12,
                   border: `1px solid ${color}30`,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "24px", fontWeight: 800, color }}>{value}</div>
-                <div style={{ fontSize: "11px", color: "#78350f", fontWeight: 600 }}>{label}</div>
+                <div style={{ fontSize: "18px", fontWeight: 800, color }}>{value}</div>
+                <div style={{ fontSize: "10px", color: "#78350f", fontWeight: 700 }}>{label}</div>
               </div>
             ))}
           </div>
@@ -237,30 +237,15 @@ export default async function AdminDashboard({
               return (
                 <div
                   key={complaint.id}
-                  className="glass complaint-card-inner"
-                  style={{ overflow: "hidden", padding: 0 }}
+                  className="glass"
+                  style={{ padding: "20px 22px" }}
                 >
-                  {/* Left Sidebar (Student Info) */}
-                  <div
-                    className="complaint-sidebar"
-                    style={{ background: "rgba(249,115,22,0.04)", display: "flex", flexDirection: "column", gap: "12px" }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#9a3412", textTransform: "uppercase" }}>Student</div>
-                      <div style={{ fontWeight: 700, color: "#431407" }}>{complaint.user.name}</div>
-                      <div style={{ fontSize: "12px", color: "#78350f", fontFamily: "monospace" }}>{complaint.user.rollNo}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#9a3412", textTransform: "uppercase" }}>Location</div>
-                      <div style={{ fontSize: "13px", fontWeight: 600, color: "#431407" }}>{complaint.user.mess}</div>
-                      <div style={{ fontSize: "12px", color: "#78350f" }}>{complaint.user.hostel}</div>
-                    </div>
-                  </div>
-
-                  {/* Right Content (Complaint Details) */}
-                  <div className="complaint-content">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-                      {/* Badges */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+                    {/* Student Name & Badges */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ fontWeight: 500, color: "#78350f", fontSize: "14px", display: "flex", alignItems: "center", gap: 8 }}>
+                        👤 {complaint.user.name}
+                      </div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <span
                           style={{
@@ -304,69 +289,75 @@ export default async function AdminDashboard({
                           </span>
                         )}
                       </div>
-
-                      {/* Status & Date */}
-                      <div className="flex flex-col items-end gap-2">
-                        <span
-                          style={{
-                            padding: "4px 12px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            background: complaint.resolved
-                              ? "rgba(34,197,94,0.12)"
-                              : "rgba(239,68,68,0.10)",
-                            color: complaint.resolved ? "#15803d" : "#b91c1c",
-                            border: `1px solid ${complaint.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.25)"}`,
-                          }}
-                        >
-                          {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
-                        </span>
-                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
-                          🕒 {formatDate(complaint.createdAt)}
-                        </div>
-                      </div>
                     </div>
 
-                    {/* Description */}
-                    <p
-                      style={{
-                        color: "#431407",
-                        fontSize: "14px",
-                        lineHeight: 1.6,
-                        flex: 1,
-                        marginBottom: 16,
-                      }}
-                    >
-                      {complaint.description}
-                    </p>
-
-                    {/* Action Button */}
-                    {!complaint.resolved && (
-                      <div className="mt-auto border-t border-orange-100 pt-4 flex justify-end">
-                        <form
-                          action={async () => {
-                            "use server";
-                            await resolveComplaint(complaint.id);
-                          }}
-                        >
-                          <button
-                            type="submit"
-                            className="btn-primary"
-                            style={{ padding: "8px 16px", fontSize: "13px" }}
-                          >
-                            ✅ Mark as Resolved
-                          </button>
-                        </form>
+                    {/* Status & Date */}
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: 20,
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          background: complaint.resolved
+                            ? "rgba(34,197,94,0.12)"
+                            : "rgba(239,68,68,0.10)",
+                          color: complaint.resolved ? "#15803d" : "#b91c1c",
+                          border: `1px solid ${complaint.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.25)"}`,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
+                      </span>
+                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
+                        🕒 {formatDate(complaint.createdAt)}
                       </div>
-                    )}
+                    </div>
                   </div>
+
+                  {/* Description */}
+                  <p
+                    style={{
+                      color: "#431407",
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      lineHeight: 1.6,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {complaint.description}
+                  </p>
+
+                  {/* Action Button */}
+                  {!complaint.resolved && (
+                    <div className="border-t border-orange-100 pt-4 flex justify-end">
+                      <form
+                        action={async () => {
+                          "use server";
+                          await resolveComplaint(complaint.id);
+                        }}
+                      >
+                        <button
+                          type="submit"
+                          className="btn-primary"
+                          style={{ padding: "8px 16px", fontSize: "13px" }}
+                        >
+                          ✅ Mark as Resolved
+                        </button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </main>
+
+      {/* ── Footer ── */}
+      <footer style={{ textAlign: "center", padding: "24px", color: "#9a3412", fontSize: "14px", fontWeight: 600, opacity: 0.8 }}>
+        Powered By <span style={{ fontWeight: 800, color: "#f97316" }}>Nexalaya</span>
+      </footer>
     </div>
   );
 }

@@ -3,15 +3,20 @@
 
 @theme {
   --font-sans: "Inter", sans-serif;
-  --color-brand: #f97316; /* Orange */
+  --color-brand: #f97316;
+  /* Orange */
   --color-brand-dark: #ea580c;
   --color-surface: #ffffff;
-  --color-surface-2: #fff7ed; /* Light orange tint */
+  --color-surface-2: #fff7ed;
+  /* Light orange tint */
   --color-border: #fed7aa;
-  --color-text: #431407; /* Deep brown */
-  --color-muted: #78350f; /* Lighter brown */
+  --color-text: #431407;
+  /* Deep brown */
+  --color-muted: #78350f;
+  /* Lighter brown */
   --color-success: #22c55e;
-  --color-danger: #ef4444; /* Red */
+  --color-danger: #ef4444;
+  /* Red */
 }
 
 *,
@@ -25,8 +30,10 @@
 html,
 body {
   height: 100%;
-  background-color: #fffaf5; /* Warm foody white/cream */
-  color: #431407; /* Deep brown text */
+  background-color: #fffaf5;
+  /* Warm foody white/cream */
+  color: #431407;
+  /* Deep brown text */
   font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -35,9 +42,11 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #fffaf5;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #fed7aa;
   border-radius: 4px;
@@ -78,13 +87,16 @@ body {
   text-decoration: none;
   box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
 }
+
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
+
 .btn-primary:active {
   transform: translateY(0);
 }
+
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -107,6 +119,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .btn-secondary:hover {
   background: #ffedd5;
 }
@@ -123,12 +136,14 @@ body {
   font-family: "Inter", sans-serif;
   transition: all 0.2s;
   outline: none;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
+
 .input:focus {
   border-color: #f97316;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
+
 .input::placeholder {
   color: #9a3412;
   opacity: 0.6;
@@ -152,7 +167,8 @@ select.input option {
 
 /* ── Glow orb background ── */
 .glow-orb {
-  position: absolute; /* Changed to absolute for relative containers */
+  position: absolute;
+  /* Changed to absolute for relative containers */
   border-radius: 50%;
   filter: blur(60px);
   pointer-events: none;
@@ -279,7 +295,7 @@ select.input option {
     flex-direction: row;
   }
 
-  .form-row > * {
+  .form-row>* {
     flex: 1;
   }
 
@@ -301,4 +317,3 @@ select.input option {
     flex-shrink: 0;
   }
 }
-

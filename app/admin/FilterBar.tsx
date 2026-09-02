@@ -58,19 +58,21 @@ export default function FilterBar() {
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.7)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid #fed7aa",
-        borderRadius: 16,
-        padding: "16px 20px",
+        background: "rgba(255,255,255,0.75)",
+        backdropFilter: "blur(24px)",
+        border: "1px solid rgba(255, 237, 213, 0.9)",
+        borderRadius: 24,
+        padding: "16px",
         display: "flex",
+        flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: "16px",
         flexWrap: "wrap",
+        boxShadow: "0 10px 40px rgba(120, 53, 15, 0.06)",
       }}
     >
       {/* 🍽️ Mess Dropdown */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 auto", minWidth: "200px" }}>
         <span style={{ fontSize: "13px", fontWeight: 700, color: "#9a3412", whiteSpace: "nowrap" }}>
           🍽️ Mess:
         </span>
@@ -79,7 +81,7 @@ export default function FilterBar() {
           value={currentMess}
           onChange={(e) => update("mess", e.target.value)}
           className="input"
-          style={{ width: "auto", minWidth: 160, padding: "7px 12px", fontSize: "13px" }}
+          style={{ width: "100%", padding: "8px 12px", fontSize: "13px", borderRadius: "12px" }}
         >
           <option value="">All Messes</option>
           {MESS_OPTIONS.map((m) => (
@@ -88,28 +90,26 @@ export default function FilterBar() {
         </select>
       </div>
 
-      {/* Divider */}
-      <div style={{ width: 1, height: 32, background: "#fed7aa", flexShrink: 0 }} />
-
       {/* ⏱ Period Buttons */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 auto" }}>
         {PERIOD_OPTIONS.map(({ label, value }) => (
           <button
             key={value}
             id={`period-filter-${value || "all"}`}
             onClick={() => update("period", value)}
-            style={activeBtn(!currentDate && currentPeriod === value)}
+            style={{
+              ...activeBtn(!currentDate && currentPeriod === value),
+              flex: "1 1 auto",
+              textAlign: "center"
+            }}
           >
             {label}
           </button>
         ))}
       </div>
 
-      {/* Divider */}
-      <div style={{ width: 1, height: 32, background: "#fed7aa", flexShrink: 0 }} />
-
       {/* 📅 Date Picker */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 auto", minWidth: "180px" }}>
         <span style={{ fontSize: "13px", fontWeight: 700, color: "#9a3412" }}>📅</span>
         <input
           id="date-filter"
@@ -117,7 +117,7 @@ export default function FilterBar() {
           value={currentDate}
           onChange={(e) => update("date", e.target.value)}
           className="input"
-          style={{ width: "auto", padding: "7px 12px", fontSize: "13px" }}
+          style={{ width: "100%", padding: "8px 12px", fontSize: "13px", borderRadius: "12px" }}
         />
         {currentDate && (
           <button

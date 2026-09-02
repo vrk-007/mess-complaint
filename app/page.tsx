@@ -318,6 +318,11 @@ export default async function Home() {
           )}
         </div>
       </main>
+
+      {/* ── Footer ── */}
+      <footer style={{ textAlign: "center", padding: "24px", color: "#9a3412", fontSize: "14px", fontWeight: 600, opacity: 0.8 }}>
+        Powered By <span style={{ fontWeight: 800, color: "#f97316" }}>Nexalaya</span>
+      </footer>
     </div>
   );
 }
