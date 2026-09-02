@@ -147,9 +147,6 @@ export default function LoginPage() {
           )}
         </button>
 
-        <p style={{ marginTop: "24px", color: "#9a3412", fontSize: "13px", opacity: 0.8 }}>
-          Only college email addresses are allowed.
-        </p>
       </div>
 
       <style>{`
