@@ -3,6 +3,7 @@
 import { useTransition, useRef, useState } from "react";
 import { submitComplaint } from "@/app/actions/complaint";
 
+const DESC_MAX = 500;
 const MEALS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 const MEAL_ICONS: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Snacks: "🍪", Dinner: "🌙" };
 
@@ -20,6 +21,7 @@ const CAT_ICONS: Record<string, string> = {
 export default function ComplaintForm({ mess }: { mess: string }) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [descLen, setDescLen] = useState(0);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   
@@ -165,11 +167,23 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           name="description"
           required
           minLength={10}
+          maxLength={DESC_MAX}
           rows={4}
           placeholder="Describe your complaint in detail…"
           className="input"
           style={{ resize: "vertical", lineHeight: 1.6 }}
+          onChange={(e) => setDescLen(e.target.value.length)}
         />
+        <div style={{
+          textAlign: "right",
+          fontSize: "12px",
+          marginTop: "4px",
+          fontWeight: 600,
+          color: descLen > DESC_MAX * 0.9 ? (descLen >= DESC_MAX ? "#dc2626" : "#d97706") : "#a8a29e",
+          transition: "color 0.2s ease",
+        }}>
+          {descLen} / {DESC_MAX}
+        </div>
       </div>
 
       {/* Status messages */}

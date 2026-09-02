@@ -1,6 +1,7 @@
 import { completeProfile } from "@/app/actions/user";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import SubmitButton from "./SubmitButton";
 
 export default async function OnboardingPage() {
   const session = await auth();
@@ -110,11 +111,13 @@ export default async function OnboardingPage() {
             <label htmlFor="name" className="label">
               Full Name
             </label>
-            <input
+          <input
               id="name"
               name="name"
               type="text"
               required
+              minLength={2}
+              maxLength={80}
               placeholder="e.g. Rahul Sharma"
               defaultValue={session.user.name ?? ""}
               className="input"
@@ -126,11 +129,15 @@ export default async function OnboardingPage() {
             <label htmlFor="rollNo" className="label">
               Roll Number
             </label>
-            <input
+          <input
               id="rollNo"
               name="rollNo"
               type="text"
               required
+              minLength={3}
+              maxLength={20}
+              pattern="[A-Za-z0-9]+"
+              title="3–20 alphanumeric characters only (no spaces or symbols)"
               placeholder="e.g. 21BCE1234"
               className="input"
             />
@@ -169,14 +176,7 @@ export default async function OnboardingPage() {
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
-            className="btn-primary"
-            style={{ width: "100%", padding: "16px 24px", fontSize: "16px", marginTop: "8px" }}
-            id="complete-profile-btn"
-          >
-            ✅ Complete Profile
-          </button>
+          <SubmitButton />
         </form>
 
         <p style={{ marginTop: "24px", color: "#9a3412", fontSize: "13px", opacity: 0.8, textAlign: "center" }}>
