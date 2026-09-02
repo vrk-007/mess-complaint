@@ -71,17 +71,7 @@ export default async function Home() {
           zIndex: 50,
         }}
       >
-        <div
-          style={{
-            maxWidth: 800,
-            margin: "0 auto",
-            padding: "0 24px",
-            height: 64,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="nav-inner">
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
@@ -115,8 +105,8 @@ export default async function Home() {
                 }}
               >
                 THE MESS
-              </span>{" "}
-              PORTAL
+              </span>
+              <span className="nav-logo-sub">{" "}PORTAL</span>
             </span>
           </div>
 
@@ -126,22 +116,13 @@ export default async function Home() {
       </header>
 
       {/* ── Main Content (Single Column) ── */}
-      <main
-        style={{
-          maxWidth: 800,
-          margin: "0 auto",
-          padding: "32px 24px 64px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 28,
-        }}
-      >
+      <main className="page-main">
         {/* Stats Card */}
-        <div className="glass" style={{ padding: "20px 24px" }}>
+        <div className="glass card-pad">
           <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>
             Your Stats
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="stats-grid">
             {[
               { label: "Total",    value: complaints.length,                                  color: "#f97316" },
               { label: "Pending",  value: complaints.filter(c => !c.resolved).length,         color: "#ef4444" },

@@ -55,14 +55,7 @@ export default async function OnboardingPage() {
 
       {/* Card */}
       <div
-        className="glass"
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          maxWidth: 460,
-          padding: "48px 40px",
-        }}
+        className="glass auth-card"
       >
         {/* Icon */}
         <div

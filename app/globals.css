@@ -158,3 +158,147 @@ select.input option {
   pointer-events: none;
   z-index: 0;
 }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   ═══════════════════════════════════════════ */
+
+/* ── Nav inner container ── */
+.nav-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Page content wrapper ── */
+.page-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-main-wide {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Glass card padding (responsive) ── */
+.card-pad {
+  padding: 20px 18px;
+}
+
+/* ── Auth card (login / onboarding) ── */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  padding: 36px 24px;
+}
+
+/* ── Stats grid: 2-col on mobile, 4-col on desktop ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* ── Admin complaint card: stacked on mobile, side-by-side on desktop ── */
+.complaint-card-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.complaint-sidebar {
+  padding: 18px 20px;
+  border-bottom: 1px solid #fed7aa;
+  border-right: none;
+  width: 100%;
+}
+
+.complaint-content {
+  padding: 18px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Complaint form grid: 2-col on desktop for Meal + Category ── */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Logo text: hide "PORTAL" on very small screens ── */
+.nav-logo-sub {
+  display: none;
+}
+
+/* ── Tablet and up (≥ 640px) ── */
+@media (min-width: 640px) {
+  .nav-inner {
+    padding: 0 24px;
+  }
+
+  .page-main {
+    padding: 32px 24px 64px;
+    gap: 28px;
+  }
+
+  .page-main-wide {
+    padding: 32px 24px 64px;
+    gap: 28px;
+  }
+
+  .card-pad {
+    padding: 20px 24px;
+  }
+
+  .auth-card {
+    padding: 48px 40px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .form-row {
+    flex-direction: row;
+  }
+
+  .form-row > * {
+    flex: 1;
+  }
+
+  .nav-logo-sub {
+    display: inline;
+  }
+}
+
+/* ── Desktop (≥ 768px) ── */
+@media (min-width: 768px) {
+  .complaint-card-inner {
+    flex-direction: row;
+  }
+
+  .complaint-sidebar {
+    border-bottom: none;
+    border-right: 1px solid #fed7aa;
+    width: 260px;
+    flex-shrink: 0;
+  }
+}
+

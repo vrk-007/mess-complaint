@@ -58,15 +58,8 @@ export default function LoginPage() {
 
       {/* Card */}
       <div
-        className="glass"
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          maxWidth: 420,
-          padding: "48px 40px",
-          textAlign: "center",
-        }}
+        className="glass auth-card"
+        style={{ textAlign: "center" }}
       >
         {/* Icon */}
         <div

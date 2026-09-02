@@ -105,17 +105,7 @@ export default async function AdminDashboard({
           zIndex: 50,
         }}
       >
-        <div
-          style={{
-            maxWidth: 1000,
-            margin: "0 auto",
-            padding: "0 24px",
-            height: 64,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="nav-inner">
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
@@ -149,8 +139,8 @@ export default async function AdminDashboard({
                 }}
               >
                 ADMIN
-              </span>{" "}
-              PORTAL
+              </span>
+              <span className="nav-logo-sub">{" "}PORTAL</span>
             </span>
           </div>
 
@@ -158,23 +148,15 @@ export default async function AdminDashboard({
         </div>
       </header>
 
+
       {/* ── Main Content ── */}
-      <main
-        style={{
-          maxWidth: 1000,
-          margin: "0 auto",
-          padding: "32px 24px 64px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 28,
-        }}
-      >
+      <main className="page-main-wide">
         {/* Stats Card (Same as Student) */}
-        <div className="glass" style={{ padding: "20px 24px" }}>
+        <div className="glass card-pad">
           <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>
             System Stats
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="stats-grid">
             {[
               { label: "Total",    value: complaints.length,                                  color: "#f97316" },
               { label: "Pending",  value: complaints.filter(c => !c.resolved).length,         color: "#ef4444" },
@@ -255,21 +237,13 @@ export default async function AdminDashboard({
               return (
                 <div
                   key={complaint.id}
-                  className="glass flex flex-col md:flex-row"
+                  className="glass complaint-card-inner"
                   style={{ overflow: "hidden", padding: 0 }}
                 >
                   {/* Left Sidebar (Student Info) */}
                   <div
-                    style={{
-                      background: "rgba(249,115,22,0.04)",
-                      borderRight: "1px solid #fed7aa",
-                      padding: "20px 22px",
-                      width: "100%",
-                      maxWidth: "260px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                    }}
+                    className="complaint-sidebar"
+                    style={{ background: "rgba(249,115,22,0.04)", display: "flex", flexDirection: "column", gap: "12px" }}
                   >
                     <div>
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#9a3412", textTransform: "uppercase" }}>Student</div>
@@ -284,7 +258,7 @@ export default async function AdminDashboard({
                   </div>
 
                   {/* Right Content (Complaint Details) */}
-                  <div style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <div className="complaint-content">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
                       {/* Badges */}
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
