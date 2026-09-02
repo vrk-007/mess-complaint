@@ -86,24 +86,17 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               key={m}
               type="button"
               onClick={() => setSelectedMeal(m)}
+              className={`complaint-pill meal-pill ${selectedMeal === m ? "active" : ""}`}
               style={{
                 flex: "1 1 calc(50% - 10px)",
                 padding: "12px 16px",
                 borderRadius: "14px",
-                border: "2px solid",
-                borderColor: selectedMeal === m ? "#f97316" : "#fed7aa",
-                background: selectedMeal === m ? "linear-gradient(135deg, #f97316, #ef4444)" : "#ffffff",
-                color: selectedMeal === m ? "#ffffff" : "#78350f",
                 fontWeight: 600,
                 fontSize: "14px",
-                cursor: "pointer",
-                transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
-                boxShadow: selectedMeal === m ? "0 6px 16px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.04)",
-                transform: selectedMeal === m ? "scale(1.03)" : "scale(1)",
               }}
             >
               <span style={{ fontSize: "16px" }}>{MEAL_ICONS[m]}</span> {m}
@@ -122,23 +115,16 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               key={c}
               type="button"
               onClick={() => setSelectedCategory(c)}
+              className={`complaint-pill category-pill ${selectedCategory === c ? "active" : ""}`}
               style={{
                 flex: "1 1 auto",
                 padding: "10px 16px",
                 borderRadius: "20px",
-                border: "2px solid",
-                borderColor: selectedCategory === c ? "#f97316" : "#fed7aa",
-                background: selectedCategory === c ? "rgba(249,115,22,0.12)" : "#ffffff",
-                color: selectedCategory === c ? "#c2410c" : "#78350f",
                 fontWeight: 700,
                 fontSize: "13px",
-                cursor: "pointer",
-                transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                boxShadow: selectedCategory === c ? "0 4px 12px rgba(249,115,22,0.2)" : "0 1px 4px rgba(0,0,0,0.04)",
-                transform: selectedCategory === c ? "scale(1.04)" : "scale(1)",
               }}
             >
               <span>{CAT_ICONS[c]}</span> {c}
@@ -270,6 +256,54 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           right: 0;
           top: 0;
           width: auto;
+        }
+
+        /* Pill Animations */
+        .complaint-pill {
+          border: 2px solid #fed7aa;
+          background: #ffffff;
+          color: #78350f;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+          transform: scale(1);
+        }
+        .complaint-pill:hover {
+          background: #fff7ed;
+          border-color: #fb923c;
+          color: #c2410c;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 12px rgba(249,115,22,0.15);
+        }
+        .complaint-pill:active {
+          transform: translateY(0) scale(0.98);
+          transition-duration: 0.08s;
+        }
+        
+        /* Meal specific active state */
+        .meal-pill.active {
+          border-color: #f97316;
+          background: linear-gradient(135deg, #f97316, #ef4444);
+          color: #ffffff;
+          box-shadow: 0 6px 16px rgba(249,115,22,0.35);
+          transform: scale(1.03);
+        }
+        .meal-pill.active:hover {
+          box-shadow: 0 8px 20px rgba(249,115,22,0.45);
+          transform: translateY(-1px) scale(1.04);
+        }
+
+        /* Category specific active state */
+        .category-pill.active {
+          border-color: #f97316;
+          background: rgba(249,115,22,0.12);
+          color: #c2410c;
+          box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+          transform: scale(1.04);
+        }
+        .category-pill.active:hover {
+          box-shadow: 0 6px 16px rgba(249,115,22,0.3);
+          transform: translateY(-1px) scale(1.05);
         }
       `}</style>
     </form>
