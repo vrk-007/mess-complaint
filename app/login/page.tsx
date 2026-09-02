@@ -140,6 +140,9 @@ export default function LoginPage() {
           )}
         </button>
 
+        <div style={{ marginTop: "20px", color: "#9a3412", fontSize: "13px", fontWeight: 600, opacity: 0.8 }}>
+          Powered By <span style={{ fontWeight: 800, color: "#f97316" }}>Nexalaya</span>
+        </div>
       </div>
 
       <style>{`
