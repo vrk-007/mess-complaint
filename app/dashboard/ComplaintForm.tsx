@@ -97,12 +97,13 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 fontWeight: 600,
                 fontSize: "14px",
                 cursor: "pointer",
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
-                boxShadow: selectedMeal === m ? "0 4px 12px rgba(249,115,22,0.3)" : "none",
+                boxShadow: selectedMeal === m ? "0 6px 16px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.04)",
+                transform: selectedMeal === m ? "scale(1.03)" : "scale(1)",
               }}
             >
               <span style={{ fontSize: "16px" }}>{MEAL_ICONS[m]}</span> {m}
@@ -127,15 +128,17 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 borderRadius: "20px",
                 border: "2px solid",
                 borderColor: selectedCategory === c ? "#f97316" : "#fed7aa",
-                background: selectedCategory === c ? "rgba(249,115,22,0.1)" : "#ffffff",
+                background: selectedCategory === c ? "rgba(249,115,22,0.12)" : "#ffffff",
                 color: selectedCategory === c ? "#c2410c" : "#78350f",
                 fontWeight: 700,
                 fontSize: "13px",
                 cursor: "pointer",
-                transition: "all 0.2s ease",
+                transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
+                boxShadow: selectedCategory === c ? "0 4px 12px rgba(249,115,22,0.2)" : "0 1px 4px rgba(0,0,0,0.04)",
+                transform: selectedCategory === c ? "scale(1.04)" : "scale(1)",
               }}
             >
               <span>{CAT_ICONS[c]}</span> {c}
@@ -186,29 +189,37 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       {/* Status messages */}
       {status === "success" && (
         <div
+          className="banner-anim"
           style={{
-            padding: "12px 16px",
+            padding: "14px 18px",
             background: "rgba(34, 197, 94, 0.1)",
-            border: "1px solid rgba(34, 197, 94, 0.3)",
+            border: "1px solid rgba(34, 197, 94, 0.35)",
             borderRadius: "14px",
             color: "#15803d",
             fontWeight: 600,
             fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}
         >
           ✅ Complaint submitted successfully!
         </div>
       )}
-      {status === "error" || errorMsg ? (
+      {(status === "error" || errorMsg) ? (
         <div
+          className="banner-anim"
           style={{
-            padding: "12px 16px",
+            padding: "14px 18px",
             background: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
             borderRadius: "14px",
             color: "#b91c1c",
             fontWeight: 600,
             fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}
         >
           ❌ {errorMsg}

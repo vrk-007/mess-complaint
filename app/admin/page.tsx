@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
+import ResolveButton from "./ResolveButton";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -331,20 +332,10 @@ export default async function AdminDashboard({
                   {/* Action Button */}
                   {!complaint.resolved && (
                     <div className="border-t border-orange-100 pt-4 flex justify-end">
-                      <form
-                        action={async () => {
-                          "use server";
-                          await resolveComplaint(complaint.id);
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="btn-primary"
-                          style={{ padding: "8px 16px", fontSize: "13px" }}
-                        >
-                          ✅ Mark as Resolved
-                        </button>
-                      </form>
+                      <ResolveButton
+                        complaintId={complaint.id}
+                        resolveAction={resolveComplaint}
+                      />
                     </div>
                   )}
                 </div>
