@@ -1,26 +1,160 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --color-brand: #f97316; /* Orange */
+  --color-brand-dark: #ea580c;
+  --color-surface: #ffffff;
+  --color-surface-2: #fff7ed; /* Light orange tint */
+  --color-border: #fed7aa;
+  --color-text: #431407; /* Deep brown */
+  --color-muted: #78350f; /* Lighter brown */
+  --color-success: #22c55e;
+  --color-danger: #ef4444; /* Red */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background-color: #fffaf5; /* Warm foody white/cream */
+  color: #431407; /* Deep brown text */
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fffaf5;
+}
+::-webkit-scrollbar-thumb {
+  background: #fed7aa;
+  border-radius: 4px;
+}
+
+/* ── Glass card ── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 237, 213, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(120, 53, 15, 0.08);
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #f97316, #ef4444, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Primary button ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Secondary button ── */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+  background: #ffedd5;
+}
+
+/* ── Form inputs ── */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  color: #431407;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+  transition: all 0.2s;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+.input::placeholder {
+  color: #9a3412;
+  opacity: 0.6;
+}
+
+select.input option {
+  background: #ffffff;
+  color: #431407;
+}
+
+/* ── Label ── */
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9a3412;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Glow orb background ── */
+.glow-orb {
+  position: absolute; /* Changed to absolute for relative containers */
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
 }
