@@ -23,13 +23,15 @@ export function middleware(request: NextRequest) {
 
   const isLoggedIn = !!sessionCookie;
 
+  const isPublicPage = pathname === "/privacy" || pathname === "/terms";
+
   // Redirect logged-in users away from the login page to home
   if (isLoginPage && isLoggedIn) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Redirect unauthenticated users to login (except login and onboarding)
-  if (!isLoggedIn && !isLoginPage && !isOnboardingPage) {
+  // Redirect unauthenticated users to login (except login, onboarding, and public pages)
+  if (!isLoggedIn && !isLoginPage && !isOnboardingPage && !isPublicPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
