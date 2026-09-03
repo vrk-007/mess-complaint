@@ -101,7 +101,7 @@ export default function LoginPage() {
             lineHeight: 1.6,
           }}
         >
-          Sign in with your college Google account to submit and track mess
+          Sign in with your Google account to submit and track mess
           complaints.
         </p>
 
