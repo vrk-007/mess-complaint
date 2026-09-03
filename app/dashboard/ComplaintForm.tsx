@@ -1,62 +1,57 @@
 "use client";
 
-import { useTransition, useRef, useState } from "react";
+import { useState } from "react";
 import { submitComplaint } from "@/app/actions/complaint";
 
 const DESC_MAX = 500;
 const MEALS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 const MEAL_ICONS: Record<string, string> = { Breakfast: "🌅", Lunch: "☀️", Snacks: "🍪", Dinner: "🌙" };
 
-const CATEGORIES = [
-  "Food Quality",
-  "Hygiene",
-  "Quantity",
-  "Service",
-  "Other",
-];
+const CATEGORIES = ["Food Quality", "Hygiene", "Quantity", "Service", "Other"];
 const CAT_ICONS: Record<string, string> = {
   "Food Quality": "🍲", "Hygiene": "🧼", "Quantity": "⚖️", "Service": "🛎️", "Other": "📌"
 };
 
 export default function ComplaintForm({ mess }: { mess: string }) {
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [descLen, setDescLen] = useState(0);
-  const [isPending, startTransition] = useTransition();
-  const formRef = useRef<HTMLFormElement>(null);
-  
-  // Custom states for aesthetic selections
-  const [selectedMeal, setSelectedMeal] = useState("");
+  const [status, setStatus]               = useState<"idle" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg]           = useState("");
+  const [isPending, setIsPending]         = useState(false);
+  const [descLen, setDescLen]             = useState(0);
+  const [selectedMeal, setSelectedMeal]   = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    // Manual validation since hidden inputs don't trigger native browser popups well
-    if (!selectedMeal) return setErrorMsg("Please select a meal.");
+
+    // Client-side validation before hitting server
+    if (!selectedMeal)     return setErrorMsg("Please select a meal.");
     if (!selectedCategory) return setErrorMsg("Please select a category.");
-    
+
+    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+
+    setIsPending(true);
     setStatus("idle");
     setErrorMsg("");
 
-    startTransition(async () => {
-      try {
-        await submitComplaint(formData);
-        setStatus("success");
-        formRef.current?.reset();
-        setSelectedMeal("");
-        setSelectedCategory("");
-        setTimeout(() => setStatus("idle"), 4000);
-      } catch (err: any) {
-        setStatus("error");
-        setErrorMsg(err.message || "Something went wrong. Please try again.");
-      }
-    });
+    try {
+      await submitComplaint(formData);
+      setStatus("success");
+      form.reset();
+      setSelectedMeal("");
+      setSelectedCategory("");
+      setDescLen(0);
+      setTimeout(() => setStatus("idle"), 4000);
+    } catch (err: any) {
+      setStatus("error");
+      setErrorMsg(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
       {/* Mess (read-only, auto-filled) */}
       <div>
         <label className="label">Your Mess</label>
@@ -105,7 +100,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             </button>
           ))}
         </div>
-        <input type="hidden" name="meal" value={selectedMeal} required />
+        <input type="hidden" name="meal" value={selectedMeal} />
       </div>
 
       {/* Category Selection (Pills) */}
@@ -133,7 +128,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             </button>
           ))}
         </div>
-        <input type="hidden" name="category" value={selectedCategory} required />
+        <input type="hidden" name="category" value={selectedCategory} />
       </div>
 
       {/* Incident Date */}
@@ -231,7 +226,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         type="submit"
         disabled={isPending}
         className="btn-primary"
-        style={{ padding: "16px 24px", fontSize: "16px", marginTop: "8px", width: "100%" }}
+        style={{
+          padding: "16px 24px",
+          fontSize: "16px",
+          marginTop: "8px",
+          width: "100%",
+          opacity: isPending ? 0.8 : 1,
+          transition: "opacity 0.2s ease",
+        }}
         id="submit-complaint-btn"
       >
         {isPending ? (
@@ -258,7 +260,6 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        /* Custom calendar icon styling for webkit */
         input[type="date"]::-webkit-calendar-picker-indicator {
           background: transparent;
           bottom: 0;
@@ -271,8 +272,6 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           top: 0;
           width: auto;
         }
-
-        /* Pill Animations */
         .complaint-pill {
           border: 2px solid #fed7aa;
           background: #ffffff;
@@ -293,8 +292,6 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           transform: translateY(0) scale(0.98);
           transition-duration: 0.08s;
         }
-        
-        /* Meal specific active state */
         .meal-pill.active {
           border-color: #f97316;
           background: linear-gradient(135deg, #f97316, #ef4444);
@@ -306,8 +303,6 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           box-shadow: 0 8px 20px rgba(249,115,22,0.45);
           transform: translateY(-1px) scale(1.04);
         }
-
-        /* Category specific active state */
         .category-pill.active {
           border-color: #f97316;
           background: rgba(249,115,22,0.12);
