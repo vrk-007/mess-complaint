@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
+import { validateDailyCode } from "@/app/actions/dailyCode";
 import { revalidatePath } from "next/cache";
 
 // ─── Limits ──────────────────────────────────────────────────────────────────
@@ -23,14 +24,20 @@ export async function submitComplaint(formData: FormData) {
   if (!allowed)
     throw new Error("You're submitting too fast. Please wait a few minutes before submitting another complaint.");
 
-  const meal         = (formData.get("meal")         as string)?.trim();
-  const category     = (formData.get("category")     as string)?.trim();
-  const incidentDate = (formData.get("incidentDate") as string)?.trim();
-  const description  = (formData.get("description")  as string)?.trim();
+  const meal             = (formData.get("meal")             as string)?.trim();
+  const category         = (formData.get("category")         as string)?.trim();
+  const incidentDate     = (formData.get("incidentDate")     as string)?.trim();
+  const description      = (formData.get("description")      as string)?.trim();
+  const verificationCode = (formData.get("verificationCode") as string)?.trim();
 
   // ── Required check ────────────────────────────────────────────────────────
   if (!meal || !category || !description)
     throw new Error("All fields are required.");
+
+  // ── Authority code check (must happen before any other processing) ────────
+  if (!verificationCode || verificationCode.length < 4)
+    throw new Error("Authority code is required. Ask the Mess or Canteen Coordinator.");
+  await validateDailyCode(verificationCode);
 
   // ── Enum validation (prevents injecting garbage values) ──────────────────
   if (!VALID_MEALS.includes(meal))
@@ -60,11 +67,12 @@ export async function submitComplaint(formData: FormData) {
 
   await prisma.complaint.create({
     data: {
-      userId:       session.user.id,
+      userId:          session.user.id,
       meal,
       category,
-      incidentDate: incidentDate || null,
+      incidentDate:    incidentDate || null,
       description,
+      verificationCode,  // stored for audit trail
     },
   });
 

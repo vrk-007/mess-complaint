@@ -5,6 +5,8 @@ import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
 import ResolveButton from "./ResolveButton";
+import RegenerateButton from "./RegenerateButton";
+import { getTodayCode } from "@/app/actions/dailyCode";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -92,6 +94,9 @@ export default async function AdminDashboard({
       },
     },
   });
+
+  // Fetch (or auto-create) today's authority code
+  const todayCode = await getTodayCode();
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
@@ -183,6 +188,72 @@ export default async function AdminDashboard({
                 <div style={{ fontSize: "10px", color: "#78350f", fontWeight: 700 }}>{label}</div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ── Today's Authority Code Card ── */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #fff7ed, #ffedd5)",
+            border: "1.5px solid #fed7aa",
+            borderRadius: 20,
+            padding: "24px 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 20,
+            boxShadow: "0 4px 20px rgba(249,115,22,0.08)",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "#9a3412",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              🔐 Today&apos;s Authority Code
+            </div>
+            <div
+              style={{
+                fontSize: "52px",
+                fontWeight: 900,
+                letterSpacing: "10px",
+                color: "#431407",
+                fontFamily: "monospace",
+                lineHeight: 1.1,
+              }}
+            >
+              {todayCode.code}
+            </div>
+            <div style={{ fontSize: "12px", color: "#78350f", marginTop: 6, fontWeight: 600 }}>
+              Valid today only · Auto-resets at midnight IST
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+            <div
+              style={{
+                background: "rgba(249,115,22,0.1)",
+                border: "1px solid rgba(249,115,22,0.25)",
+                borderRadius: 10,
+                padding: "8px 14px",
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#c2410c",
+                textAlign: "center",
+              }}
+            >
+              Share this code with the<br />Mess &amp; Canteen Coordinator
+            </div>
+            <RegenerateButton />
           </div>
         </div>
 

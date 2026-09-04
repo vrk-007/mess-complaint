@@ -62,16 +62,25 @@ model VerificationToken {
 }
 
 model Complaint {
-  id           String   @id @default(cuid())
-  userId       String
-  meal         String
-  category     String
-  incidentDate String?
-  description  String
-  resolved     Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id               String   @id @default(cuid())
+  userId           String
+  meal             String
+  category         String
+  incidentDate     String?
+  description      String
+  verificationCode String?  // audit: which daily code was used
+  resolved         Boolean  @default(false)
+  createdAt        DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DailyCode {
+  id        String   @id @default(cuid())
+  code      String                  // 4-digit numeric string e.g. "7423"
+  date      String   @unique        // YYYY-MM-DD in IST, e.g. "2026-09-05"
+  createdBy String                  // userId of admin who generated it
+  createdAt DateTime @default(now())
 }
 
 enum Role {

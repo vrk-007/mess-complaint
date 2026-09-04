@@ -19,6 +19,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [descLen, setDescLen]             = useState(0);
   const [selectedMeal, setSelectedMeal]   = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [authCode, setAuthCode]           = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +42,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       setSelectedMeal("");
       setSelectedCategory("");
       setDescLen(0);
+      setAuthCode("");
       setTimeout(() => setStatus("idle"), 4000);
     } catch (err: any) {
       setStatus("error");
@@ -181,6 +183,43 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         </div>
       </div>
 
+      {/* Authority Verification Code */}
+      <div>
+        <label htmlFor="verificationCode" className="label">
+          🔐 Authority Verification Code
+        </label>
+        <div style={{ position: "relative" }}>
+          <input
+            id="verificationCode"
+            name="verificationCode"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
+            required
+            autoComplete="off"
+            placeholder="Ask the Mess / Canteen Coordinator"
+            value={authCode}
+            onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            className="input"
+            style={{
+              paddingLeft: "42px",
+              letterSpacing: "8px",
+              fontWeight: 800,
+              fontSize: "20px",
+              fontFamily: "monospace",
+              color: "#431407",
+            }}
+          />
+          <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: "18px" }}>
+            🔐
+          </span>
+        </div>
+        <div style={{ fontSize: "12px", color: "#78350f", marginTop: 5, fontWeight: 600 }}>
+          The on-duty Mess or Canteen Coordinator will enter this 4-digit code to verify your complaint.
+        </div>
+      </div>
+
       {/* Status messages */}
       {status === "success" && (
         <div
@@ -224,15 +263,16 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || authCode.length < 4}
         className="btn-primary"
         style={{
           padding: "16px 24px",
           fontSize: "16px",
           marginTop: "8px",
           width: "100%",
-          opacity: isPending ? 0.8 : 1,
+          opacity: (isPending || authCode.length < 4) ? 0.6 : 1,
           transition: "opacity 0.2s ease",
+          cursor: authCode.length < 4 ? "not-allowed" : "pointer",
         }}
         id="submit-complaint-btn"
       >
