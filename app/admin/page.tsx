@@ -5,7 +5,7 @@ import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
 import ResolveButton from "./ResolveButton";
-import RegenerateButton from "./RegenerateButton";
+import DailyCodeBadge from "./DailyCodeBadge";
 import { getTodayCode } from "@/app/actions/dailyCode";
 import { Suspense } from "react";
 
@@ -152,28 +152,8 @@ export default async function AdminDashboard({
 
           {/* Right side of nav: code pill + profile */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Daily Code Pill */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: "linear-gradient(135deg, #fff7ed, #ffedd5)",
-                border: "1.5px solid #fed7aa",
-                borderRadius: 10,
-                padding: "5px 12px 5px 10px",
-                boxShadow: "0 2px 8px rgba(249,115,22,0.1)",
-              }}
-            >
-              <span style={{ fontSize: "14px" }}>🔐</span>
-              <div>
-                <div style={{ fontSize: "10px", fontWeight: 700, color: "#9a3412", letterSpacing: "0.05em", lineHeight: 1.2 }}>TODAY&apos;S CODE</div>
-                <div style={{ fontSize: "18px", fontWeight: 900, fontFamily: "monospace", color: "#431407", letterSpacing: "4px", lineHeight: 1.2 }}>
-                  {todayCode.code}
-                </div>
-              </div>
-              <RegenerateButton />
-            </div>
+            {/* Daily Code Pill — client component, updates in-place without page reload */}
+            <DailyCodeBadge initialCode={todayCode.code} />
 
             <ProfileDropdown user={session.user} isAdmin={true} />
           </div>

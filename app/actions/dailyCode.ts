@@ -55,7 +55,7 @@ export async function getTodayCode() {
  * Regenerates a fresh 4-digit code for today, invalidating the old one.
  * Useful if the previous code was accidentally shared/leaked.
  */
-export async function regenerateCode() {
+export async function regenerateCode(): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   if (session.user.role !== "ADMIN") throw new Error("Forbidden");
@@ -70,8 +70,11 @@ export async function regenerateCode() {
     create: { code: newCode, date: today, createdBy: session.user.id },
   });
 
-  revalidatePath("/admin");
+  // Return the new code so the client can update its state instantly
+  // without triggering a full page revalidation
+  return newCode;
 }
+
 
 /**
  * Validates a code string against today's active DailyCode.
