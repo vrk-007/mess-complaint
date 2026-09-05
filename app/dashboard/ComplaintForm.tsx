@@ -198,14 +198,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             maxLength={4}
             required
             autoComplete="off"
-            placeholder="Ask the Mess / Canteen Coordinator"
+            placeholder="Type the code given by mess co-ordinator"
             value={authCode}
             onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
             className="input"
             style={{
               paddingLeft: "42px",
               letterSpacing: "8px",
-              fontWeight: 800,
+              fontWeight: 400,
               fontSize: "20px",
               fontFamily: "monospace",
               color: "#431407",
