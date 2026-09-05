@@ -13,19 +13,19 @@ const CAT_ICONS: Record<string, string> = {
 };
 
 export default function ComplaintForm({ mess }: { mess: string }) {
-  const [status, setStatus]               = useState<"idle" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg]           = useState("");
-  const [isPending, setIsPending]         = useState(false);
-  const [descLen, setDescLen]             = useState(0);
-  const [selectedMeal, setSelectedMeal]   = useState("");
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [descLen, setDescLen] = useState(0);
+  const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [authCode, setAuthCode]           = useState("");
+  const [authCode, setAuthCode] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Client-side validation before hitting server
-    if (!selectedMeal)     return setErrorMsg("Please select a meal.");
+    if (!selectedMeal) return setErrorMsg("Please select a meal.");
     if (!selectedCategory) return setErrorMsg("Please select a category.");
 
     const formData = new FormData(e.currentTarget);
@@ -206,7 +206,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               paddingLeft: "42px",
               letterSpacing: "8px",
               fontWeight: 800,
-              fontSize: "10px",
+              fontSize: "20px",
               fontFamily: "monospace",
               color: "#431407",
             }}
@@ -300,6 +300,13 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+           #verificationCode::placeholder {
+           font-size: 12px;
+           letter-spacing: 0;
+           font-weight: 500;
+           font-family: inherit;
+           opacity: 0.65;
+  }
         input[type="date"]::-webkit-calendar-picker-indicator {
           background: transparent;
           bottom: 0;
