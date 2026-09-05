@@ -192,15 +192,18 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           <input
             id="verificationCode"
             name="verificationCode"
-            type="text"
+            type="password"
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={4}
             required
-            autoComplete="off"
+            autoComplete="one-time-code"
             placeholder="Type the code given by mess co-ordinator"
             value={authCode}
             onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            onContextMenu={(e) => e.preventDefault()}
             className="input"
             style={{
               paddingLeft: "42px",
@@ -209,6 +212,8 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               fontSize: "20px",
               fontFamily: "monospace",
               color: "#431407",
+              userSelect: "none",
+              WebkitUserSelect: "none",
             }}
           />
           <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: "18px" }}>
