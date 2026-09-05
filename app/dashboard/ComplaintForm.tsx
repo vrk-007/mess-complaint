@@ -205,7 +205,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             style={{
               paddingLeft: "42px",
               letterSpacing: "8px",
-              fontWeight: 400,
+              fontWeight: 100,
               fontSize: "20px",
               fontFamily: "monospace",
               color: "#431407",
