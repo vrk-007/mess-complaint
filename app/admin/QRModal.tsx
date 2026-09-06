@@ -73,9 +73,11 @@ export default function QRModal() {
             backdropFilter: "blur(6px)",
             zIndex: 1000,
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: 24,
+            padding: "24px 16px",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
             animation: "fadeIn 0.2s ease",
           }}
         >
@@ -93,6 +95,7 @@ export default function QRModal() {
               gap: 20,
               maxWidth: 340,
               width: "100%",
+              margin: "auto",
               animation: "slideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
