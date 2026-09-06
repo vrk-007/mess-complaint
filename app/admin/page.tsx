@@ -5,8 +5,7 @@ import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
 import ResolveButton from "./ResolveButton";
-import DailyCodeBadge from "./DailyCodeBadge";
-import { getTodayCode } from "@/app/actions/dailyCode";
+import QRModal from "./QRModal";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -95,9 +94,6 @@ export default async function AdminDashboard({
     },
   });
 
-  // Fetch (or auto-create) today's authority code
-  const todayCode = await getTodayCode();
-
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
       {/* ── Top Nav ── */}
@@ -150,10 +146,9 @@ export default async function AdminDashboard({
             </span>
           </div>
 
-          {/* Right side of nav: code pill + profile */}
+          {/* Right side of nav: QR button + profile */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Daily Code Pill — client component, updates in-place without page reload */}
-            <DailyCodeBadge initialCode={todayCode.code} />
+            <QRModal />
 
             <ProfileDropdown user={session.user} isAdmin={true} />
           </div>

@@ -12,8 +12,10 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^5.22.0",
+    "html5-qrcode": "^2.3.8",
     "next": "16.3.4",
     "next-auth": "^5.0.0-beta.32",
+    "qrcode.react": "^4.2.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

@@ -62,25 +62,33 @@ model VerificationToken {
 }
 
 model Complaint {
-  id               String   @id @default(cuid())
-  userId           String
-  meal             String
-  category         String
-  incidentDate     String?
-  description      String
-  verificationCode String?  // audit: which daily code was used
-  resolved         Boolean  @default(false)
-  createdAt        DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  meal        String
+  category    String
+  incidentDate String?
+  description String
+  tokenId     String?  // which QR token was used (audit trail)
+  resolved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token ComplaintToken? @relation(fields: [tokenId], references: [id])
 }
 
-model DailyCode {
-  id        String   @id @default(cuid())
-  code      String                  // 4-digit numeric string e.g. "7423"
-  date      String   @unique        // YYYY-MM-DD in IST, e.g. "2026-09-05"
-  createdBy String                  // userId of admin who generated it
-  createdAt DateTime @default(now())
+model ComplaintToken {
+  id         String    @id @default(cuid())
+  token      String    @unique  // secure random string embedded in QR
+  status     TokenStatus @default(ACTIVE)
+  createdBy  String               // userId of admin who generated it
+  createdAt  DateTime  @default(now())
+  usedAt     DateTime?
+  complaint  Complaint[]
+}
+
+enum TokenStatus {
+  ACTIVE
+  USED
 }
 
 enum Role {
