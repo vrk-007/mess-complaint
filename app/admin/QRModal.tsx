@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { createQRToken } from "@/app/actions/qrToken";
 
@@ -62,8 +63,8 @@ export default function QRModal() {
         QR Code
       </button>
 
-      {/* Modal Overlay */}
-      {open && (
+      {/* Modal Overlay — rendered via Portal so it escapes the header's stacking context */}
+      {open && createPortal(
         <div
           onClick={handleClose}
           style={{
@@ -223,7 +224,7 @@ export default function QRModal() {
             </button>
           </div>
         </div>
-      )}
+      , document.body)}
 
       <style>{`
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
