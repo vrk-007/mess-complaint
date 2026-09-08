@@ -75,6 +75,9 @@ model Complaint {
 
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   token ComplaintToken? @relation(fields: [tokenId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([resolved, createdAt(sort: Desc)])
 }
 
 model ComplaintToken {

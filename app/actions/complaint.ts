@@ -62,12 +62,12 @@ export async function submitComplaint(formData: FormData) {
   if (imageUrl) {
     try {
       const parsed = new URL(imageUrl);
-      if (SUPABASE_HOST && !imageUrl.startsWith(SUPABASE_HOST)) {
-        throw new Error("Invalid image URL.");
+      if (!SUPABASE_HOST || !imageUrl.startsWith(SUPABASE_HOST)) {
+        throw new Error("Invalid image URL. Must be an official upload.");
       }
       void parsed;
     } catch {
-      throw new Error("Invalid image URL.");
+      throw new Error("Invalid image URL. Must be an official upload.");
     }
   }
 
