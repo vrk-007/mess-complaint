@@ -68,6 +68,7 @@ model Complaint {
   category    String
   incidentDate String?
   description String
+  imageUrl    String?  // Supabase Storage public URL for optional photo evidence
   tokenId     String?  // which QR token was used (audit trail)
   resolved    Boolean  @default(false)
   createdAt   DateTime @default(now())

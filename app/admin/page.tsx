@@ -6,6 +6,7 @@ import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
 import ResolveButton from "./ResolveButton";
 import QRModal from "./QRModal";
+import ComplaintPhotoViewer from "./ComplaintPhotoViewer";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -295,6 +296,21 @@ export default async function AdminDashboard({
                             📅 {incDateFormatted}
                           </span>
                         )}
+                        {complaint.imageUrl && (
+                          <span
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 20,
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              background: "rgba(249,115,22,0.12)",
+                              color: "#c2410c",
+                              border: "1px solid rgba(249,115,22,0.3)",
+                            }}
+                          >
+                            📸 Photo Evidence
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -329,11 +345,16 @@ export default async function AdminDashboard({
                       fontSize: "15px",
                       fontWeight: 700,
                       lineHeight: 1.6,
-                      marginBottom: 16,
+                      marginBottom: complaint.imageUrl ? 12 : 16,
                     }}
                   >
                     {complaint.description}
                   </p>
+
+                  {/* Photo Evidence — direct display, click to zoom */}
+                  {complaint.imageUrl && (
+                    <ComplaintPhotoViewer src={complaint.imageUrl} />
+                  )}
 
                   {/* Action Button */}
                   {!complaint.resolved && (

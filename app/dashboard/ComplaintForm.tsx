@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useRef } from "react";
 import { submitComplaint } from "@/app/actions/complaint";
+import { compressImage } from "@/lib/imageCompression";
+import { supabase } from "@/lib/supabaseClient";
 
 const QRScanner = lazy(() => import("./QRScanner"));
 
@@ -23,14 +25,51 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [selectedCategory, setSelectedCategory] = useState("");
 
   // QR verification state
-  const [qrToken, setQrToken] = useState("");          // the scanned token string
-  const [qrVerified, setQrVerified] = useState(false); // true after successful scan
+  const [qrToken, setQrToken] = useState("");
+  const [qrVerified, setQrVerified] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+
+  // Image capture state
+  const [capturedPreview, setCapturedPreview] = useState<string | null>(null);
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleScan = (token: string) => {
     setQrToken(token);
     setQrVerified(true);
     setShowScanner(false);
+  };
+
+  // Handle native camera capture
+  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressing(true);
+    try {
+      const compressed = await compressImage(file);
+      setCapturedFile(compressed);
+
+      // Generate preview URL
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setCapturedPreview(ev.target?.result as string);
+      };
+      reader.readAsDataURL(compressed);
+    } catch {
+      setErrorMsg("Failed to process image. Please try again.");
+    } finally {
+      setIsCompressing(false);
+      // Reset input so the same file can be re-selected after retake
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setCapturedPreview(null);
+    setCapturedFile(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +80,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
     if (!qrVerified || !qrToken) return setErrorMsg("Please scan the Mess Authority QR code first.");
 
     const formData = new FormData(e.currentTarget);
-    formData.set("qrToken", qrToken); // inject scanned token
+    formData.set("qrToken", qrToken);
     const form = e.currentTarget;
 
     setIsPending(true);
@@ -49,6 +88,22 @@ export default function ComplaintForm({ mess }: { mess: string }) {
     setErrorMsg("");
 
     try {
+      // Upload photo to Supabase Storage if one was captured
+      if (capturedFile) {
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
+        const { error: uploadError } = await supabase.storage
+          .from("complaint-images")
+          .upload(fileName, capturedFile, { contentType: capturedFile.type, upsert: false });
+
+        if (uploadError) throw new Error("Photo upload failed. Please try again.");
+
+        const { data: publicUrlData } = supabase.storage
+          .from("complaint-images")
+          .getPublicUrl(fileName);
+
+        formData.set("imageUrl", publicUrlData.publicUrl);
+      }
+
       await submitComplaint(formData);
       setStatus("success");
       form.reset();
@@ -57,6 +112,8 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       setDescLen(0);
       setQrToken("");
       setQrVerified(false);
+      setCapturedPreview(null);
+      setCapturedFile(null);
       setTimeout(() => setStatus("idle"), 4000);
     } catch (err: any) {
       setStatus("error");
@@ -196,6 +253,153 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           }}>
             {descLen} / {DESC_MAX}
           </div>
+        </div>
+
+        {/* ── Photo Evidence (Optional) ─────────────────────────────────────── */}
+        <div>
+          <label className="label">📸 Photo Evidence <span style={{ fontWeight: 400, color: "#a8a29e", fontSize: "13px" }}>(Optional)</span></label>
+
+          {/* Hidden native camera input — capture="environment" forces rear camera */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: "none" }}
+            onChange={handleCameraCapture}
+            id="camera-capture-input"
+          />
+
+          {capturedPreview ? (
+            /* Photo Preview Card */
+            <div
+              style={{
+                position: "relative",
+                borderRadius: "16px",
+                overflow: "hidden",
+                border: "2px solid #fb923c",
+                boxShadow: "0 4px 20px rgba(249,115,22,0.2)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={capturedPreview}
+                alt="Captured photo evidence"
+                style={{
+                  width: "100%",
+                  maxHeight: "280px",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+              {/* Overlay actions */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: "linear-gradient(to top, rgba(0,0,0,0.65), transparent)",
+                  padding: "20px 16px 14px",
+                  display: "flex",
+                  gap: 10,
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "20px",
+                    background: "rgba(255,255,255,0.2)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.4)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🔄 Retake
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "20px",
+                    background: "rgba(239,68,68,0.6)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(239,68,68,0.4)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🗑️ Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Camera Trigger Button */
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={isCompressing}
+              style={{
+                width: "100%",
+                padding: "20px 16px",
+                borderRadius: 14,
+                border: "2px dashed #fed7aa",
+                background: "#fff7ed",
+                color: "#9a3412",
+                fontWeight: 700,
+                fontSize: "15px",
+                cursor: isCompressing ? "wait" : "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#ffedd5";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#fb923c";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#fff7ed";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#fed7aa";
+              }}
+            >
+              {isCompressing ? (
+                <>
+                  <span
+                    style={{
+                      width: 22,
+                      height: 22,
+                      border: "2.5px solid #fed7aa",
+                      borderTopColor: "#f97316",
+                      borderRadius: "50%",
+                      display: "inline-block",
+                      animation: "spin 0.7s linear infinite",
+                    }}
+                  />
+                  <span style={{ fontSize: "13px" }}>Processing photo…</span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: "32px" }}>📷</span>
+                  <span>Take Photo</span>
+                  <span style={{ fontSize: "12px", fontWeight: 500, color: "#c2410c", opacity: 0.7 }}>
+                    Captures directly with your rear camera
+                  </span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* ── QR Authority Verification ─────────────────────────────────── */}

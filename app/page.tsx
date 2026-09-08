@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ComplaintForm from "@/app/dashboard/ComplaintForm";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
+import ComplaintPhotoViewer from "@/app/admin/ComplaintPhotoViewer";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Food Quality": "#f97316",
@@ -274,6 +275,21 @@ export default async function Home() {
                             📅 {incDateFormatted}
                           </span>
                         )}
+                        {complaint.imageUrl && (
+                          <span
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 20,
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              background: "rgba(249,115,22,0.12)",
+                              color: "#c2410c",
+                              border: "1px solid rgba(249,115,22,0.3)",
+                            }}
+                          >
+                            📸 Photo Attached
+                          </span>
+                        )}
                       </div>
 
                       {/* Status */}
@@ -301,14 +317,19 @@ export default async function Home() {
                         color: "#431407",
                         fontSize: "14px",
                         lineHeight: 1.6,
-                        marginBottom: 10,
+                        marginBottom: complaint.imageUrl ? 10 : 10,
                       }}
                     >
                       {complaint.description}
                     </p>
 
+                    {/* Photo Evidence — student sees their own submitted photo */}
+                    {complaint.imageUrl && (
+                      <ComplaintPhotoViewer src={complaint.imageUrl} />
+                    )}
+
                     {/* Date Created */}
-                    <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7 }}>
+                    <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7, marginTop: complaint.imageUrl ? 14 : 0 }}>
                       🕒 Submitted {formatDate(complaint.createdAt)}
                     </div>
                   </div>

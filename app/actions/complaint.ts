@@ -29,6 +29,7 @@ export async function submitComplaint(formData: FormData) {
   const incidentDate = (formData.get("incidentDate") as string)?.trim();
   const description  = (formData.get("description")  as string)?.trim();
   const qrToken      = (formData.get("qrToken")      as string)?.trim();
+  const imageUrl     = (formData.get("imageUrl")     as string)?.trim() || null;
 
   // ── Required check ────────────────────────────────────────────────────────
   if (!meal || !category || !description)
@@ -54,6 +55,22 @@ export async function submitComplaint(formData: FormData) {
     throw new Error(`Description must be at most ${DESC_MAX} characters.`);
 
   // ── Date sanity check ────────────────────────────────────────────────────
+  // ── Image URL validation (if provided, must be a Supabase storage URL) ──────
+  const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ?.replace(/\/rest\/v1\/?$/, "")
+    .replace(/\/$/, "");
+  if (imageUrl) {
+    try {
+      const parsed = new URL(imageUrl);
+      if (SUPABASE_HOST && !imageUrl.startsWith(SUPABASE_HOST)) {
+        throw new Error("Invalid image URL.");
+      }
+      void parsed;
+    } catch {
+      throw new Error("Invalid image URL.");
+    }
+  }
+
   if (incidentDate) {
     const d = new Date(incidentDate);
     const now = new Date();
@@ -66,11 +83,12 @@ export async function submitComplaint(formData: FormData) {
 
   await prisma.complaint.create({
     data: {
-      userId:      session.user.id,
+      userId:       session.user.id,
       meal,
       category,
       incidentDate: incidentDate || null,
       description,
+      imageUrl,    // optional Supabase Storage URL for photo evidence
       tokenId,     // audit: links to the QR token that authorized this complaint
     },
   });
