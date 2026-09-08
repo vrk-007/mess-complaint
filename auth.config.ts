@@ -12,6 +12,7 @@ export const authConfig: NextAuthConfig = {
   ],
   pages: {
     signIn: "/login",
+    error: "/login",  // Redirect all auth errors to our custom login page
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
