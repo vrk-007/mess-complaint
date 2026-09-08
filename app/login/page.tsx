@@ -1,10 +1,13 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
   const handleLogin = async () => {
     setLoading(true);
@@ -97,13 +100,34 @@ export default function LoginPage() {
           style={{
             color: "#78350f",
             fontSize: "15px",
-            marginBottom: "40px",
+            marginBottom: error ? "20px" : "40px",
             lineHeight: 1.6,
           }}
         >
           Sign in with your Google account to submit and track mess
           complaints.
         </p>
+
+        {/* Access Denied error banner */}
+        {error === "AccessDenied" && (
+          <div
+            style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.4)",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              marginBottom: "24px",
+              color: "#b91c1c",
+              fontSize: "13px",
+              lineHeight: 1.6,
+              textAlign: "left",
+            }}
+          >
+            <strong>⚠️ Access Denied</strong><br />
+            Only <strong>@students.vnit.ac.in</strong> email addresses are
+            allowed. Please sign in with your official college Google account.
+          </div>
+        )}
 
         <button
           className="btn-primary"
@@ -151,5 +175,13 @@ export default function LoginPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -75,7 +75,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!selectedMeal)    return setErrorMsg("Please select a meal.");
+    if (!selectedMeal) return setErrorMsg("Please select a meal.");
     if (!selectedCategory) return setErrorMsg("Please select a category.");
     if (!qrVerified || !qrToken) return setErrorMsg("Please scan the Mess Authority QR code first.");
 
@@ -90,6 +90,9 @@ export default function ComplaintForm({ mess }: { mess: string }) {
     try {
       // Upload photo to Supabase Storage if one was captured
       if (capturedFile) {
+        if (!supabase) {
+          throw new Error("Storage service is not configured. Please contact the administrator.");
+        }
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("complaint-images")
