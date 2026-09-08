@@ -34,6 +34,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const todayStr = new Date().toISOString().split("T")[0];
 
   const handleScan = (token: string) => {
     setQrToken(token);
@@ -83,6 +84,12 @@ export default function ComplaintForm({ mess }: { mess: string }) {
     formData.set("qrToken", qrToken);
     const form = e.currentTarget;
 
+    const incidentDate = (formData.get("incidentDate") as string)?.trim();
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (incidentDate && incidentDate > todayStr) {
+      return setErrorMsg("Incident date cannot be in the future.");
+    }
+
     setIsPending(true);
     setStatus("idle");
     setErrorMsg("");
@@ -107,7 +114,11 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         formData.set("imageUrl", publicUrlData.publicUrl);
       }
 
-      await submitComplaint(formData);
+      const res = await submitComplaint(formData);
+      if (!res.success) {
+        throw new Error(res.error || "Failed to submit complaint.");
+      }
+
       setStatus("success");
       form.reset();
       setSelectedMeal("");
@@ -217,6 +228,8 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               name="incidentDate"
               type="date"
               required
+              max={todayStr}
+              defaultValue={todayStr}
               className="input"
               style={{
                 paddingLeft: "42px",
