@@ -240,7 +240,6 @@ export default async function AdminDashboard({
             {complaints.map((complaint) => {
               const catColor = CATEGORY_COLORS[complaint.category] ?? "#6b7280";
               const mealIcon = MEAL_ICONS[complaint.meal] ?? "🍴";
-              const incDateFormatted = formatIncidentDate(complaint.incidentDate);
 
               return (
                 <div
@@ -299,36 +298,7 @@ export default async function AdminDashboard({
                         >
                           {mealIcon} {complaint.meal}
                         </span>
-                        {incDateFormatted && (
-                          <span
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 20,
-                              fontSize: "12px",
-                              fontWeight: 600,
-                              background: "rgba(139,92,246,0.1)",
-                              color: "#5b21b6",
-                              border: "1px solid rgba(139,92,246,0.2)",
-                            }}
-                          >
-                            📅 {incDateFormatted}
-                          </span>
-                        )}
-                        {complaint.imageUrl && (
-                          <span
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 20,
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              background: "rgba(249,115,22,0.12)",
-                              color: "#c2410c",
-                              border: "1px solid rgba(249,115,22,0.3)",
-                            }}
-                          >
-                            📸 Photo Evidence
-                          </span>
-                        )}
+
                       </div>
                     </div>
 
