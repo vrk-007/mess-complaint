@@ -61,9 +61,9 @@ export default async function AdminDashboard({
   if (params.status === "pending")  whereClause.resolved = false;
   if (params.status === "resolved") whereClause.resolved = true;
 
-  // Mess filter
+  // Mess filter — now on complaint.mess directly
   if (params.mess) {
-    whereClause.user = { ...whereClause.user, mess: params.mess };
+    whereClause.mess = params.mess;
   }
 
   // Date / Period filter
@@ -255,6 +255,24 @@ export default async function AdminDashboard({
                         👤 {complaint.user.name}
                       </div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {/* Venue badge */}
+                        <span
+                          style={{
+                            padding: "3px 10px",
+                            borderRadius: 20,
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            background: complaint.mess === "Main Canteen"
+                              ? "rgba(139,92,246,0.1)"
+                              : "rgba(249,115,22,0.08)",
+                            color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
+                            border: complaint.mess === "Main Canteen"
+                              ? "1px solid rgba(139,92,246,0.25)"
+                              : "1px solid rgba(249,115,22,0.2)",
+                          }}
+                        >
+                          {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
+                        </span>
                         <span
                           style={{
                             padding: "3px 10px",

@@ -62,16 +62,17 @@ model VerificationToken {
 }
 
 model Complaint {
-  id          String   @id @default(cuid())
-  userId      String
-  meal        String
-  category    String
+  id           String   @id @default(cuid())
+  userId       String
+  mess         String?  // venue: user's mess name or "Main Canteen" (nullable for legacy rows)
+  meal         String
+  category     String
   incidentDate String?
-  description String
-  imageUrl    String?  // Supabase Storage public URL for optional photo evidence
-  tokenId     String?  // which QR token was used (audit trail)
-  resolved    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  description  String
+  imageUrl     String?  // Supabase Storage public URL for optional photo evidence
+  tokenId      String?  // which QR token was used (audit trail)
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   token ComplaintToken? @relation(fields: [tokenId], references: [id])

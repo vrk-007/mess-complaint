@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 // ─── Limits ──────────────────────────────────────────────────────────────────
 const VALID_MEALS      = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 const VALID_CATEGORIES = ["Food Quality", "Hygiene", "Quantity", "Service", "Other"];
+const MAIN_CANTEEN     = "Main Canteen";
 const DESC_MIN = 10;
 const DESC_MAX = 500;
 
@@ -19,6 +20,8 @@ export async function submitComplaint(
     const session = await auth();
     if (!session?.user?.id)
       return { success: false, error: "Unauthorized: You must be logged in to submit a complaint." };
+
+    const userMess = session.user.mess;
 
     // ── Rate limit: max 5 complaints per 10 minutes per user ─────────────────
     const allowed = rateLimit("submitComplaint", session.user.id, {
@@ -31,6 +34,7 @@ export async function submitComplaint(
         error: "You're submitting too fast. Please wait a few minutes before submitting another complaint.",
       };
 
+    const mess         = (formData.get("mess")         as string)?.trim();
     const meal         = (formData.get("meal")         as string)?.trim();
     const category     = (formData.get("category")     as string)?.trim();
     const incidentDate = (formData.get("incidentDate") as string)?.trim();
@@ -39,8 +43,13 @@ export async function submitComplaint(
     const imageUrl     = (formData.get("imageUrl")     as string)?.trim() || null;
 
     // ── Required check ────────────────────────────────────────────────────────
-    if (!meal || !category || !description)
+    if (!mess || !meal || !category || !description)
       return { success: false, error: "All fields are required." };
+
+    // ── Venue validation ─────────────────────────────────────────────────────
+    const validMesses = [userMess, MAIN_CANTEEN].filter(Boolean);
+    if (!validMesses.includes(mess))
+      return { success: false, error: "Invalid venue selection." };
 
     // ── QR token check (validate and atomically burn — must come first) ───────
     if (!qrToken)
@@ -97,6 +106,7 @@ export async function submitComplaint(
     await prisma.complaint.create({
       data: {
         userId:       session.user.id,
+        mess,
         meal,
         category,
         incidentDate: incidentDate || null,

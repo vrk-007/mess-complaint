@@ -234,6 +234,26 @@ export default async function Home() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
                       {/* Badges */}
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {/* Venue badge */}
+                        {complaint.mess && (
+                          <span
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 20,
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              background: complaint.mess === "Main Canteen"
+                                ? "rgba(139,92,246,0.1)"
+                                : "rgba(249,115,22,0.08)",
+                              color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
+                              border: complaint.mess === "Main Canteen"
+                                ? "1px solid rgba(139,92,246,0.25)"
+                                : "1px solid rgba(249,115,22,0.2)",
+                            }}
+                          >
+                            {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess}
+                          </span>
+                        )}
                         <span
                           style={{
                             padding: "3px 10px",

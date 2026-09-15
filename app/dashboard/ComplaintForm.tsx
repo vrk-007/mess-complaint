@@ -23,6 +23,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [descLen, setDescLen] = useState(0);
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedVenue, setSelectedVenue] = useState(mess); // "My Mess" or "Main Canteen"
 
   // QR verification state
   const [qrToken, setQrToken] = useState("");
@@ -123,6 +124,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       form.reset();
       setSelectedMeal("");
       setSelectedCategory("");
+      setSelectedVenue(mess);
       setDescLen(0);
       setQrToken("");
       setQrVerified(false);
@@ -140,26 +142,52 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   return (
     <>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-        {/* Mess (read-only, auto-filled) */}
+        {/* Venue Selector */}
         <div>
-          <label className="label">Your Mess</label>
-          <div
-            style={{
-              padding: "14px 18px",
-              background: "linear-gradient(135deg, #fff7ed, #ffedd5)",
-              border: "1px solid #fed7aa",
-              borderRadius: "14px",
-              color: "#9a3412",
-              fontWeight: 700,
-              fontSize: "15px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              boxShadow: "inset 0 2px 4px rgba(255,255,255,0.5)"
-            }}
-          >
-            🍽️ {mess}
+          <label className="label">Complaining About</label>
+          <div style={{ display: "flex", gap: 10 }}>
+            {[
+              { label: mess, icon: "🍽️", value: mess },
+              { label: "Main Canteen", icon: "☕", value: "Main Canteen" },
+            ].map(({ label, icon, value }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSelectedVenue(value)}
+                style={{
+                  flex: 1,
+                  padding: "13px 16px",
+                  borderRadius: "14px",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  border: selectedVenue === value
+                    ? "2px solid #f97316"
+                    : "1.5px solid #fed7aa",
+                  background: selectedVenue === value
+                    ? "linear-gradient(135deg, #fff7ed, #ffedd5)"
+                    : "rgba(255,255,255,0.7)",
+                  color: selectedVenue === value ? "#9a3412" : "#78350f",
+                  boxShadow: selectedVenue === value
+                    ? "0 4px 14px rgba(249,115,22,0.18), inset 0 2px 4px rgba(255,255,255,0.5)"
+                    : "0 1px 4px rgba(0,0,0,0.04)",
+                  transform: selectedVenue === value ? "translateY(-1px)" : "none",
+                  transition: "all 0.2s cubic-bezier(0.22,1,0.36,1)",
+                }}
+              >
+                <span style={{ fontSize: "18px" }}>{icon}</span>
+                {label}
+                {selectedVenue === value && (
+                  <span style={{ marginLeft: 4, fontSize: "12px", color: "#f97316" }}>✓</span>
+                )}
+              </button>
+            ))}
           </div>
+          <input type="hidden" name="mess" value={selectedVenue} />
         </div>
 
         {/* Meal Selection (Pills) */}
