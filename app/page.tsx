@@ -223,99 +223,113 @@ export default async function Home() {
               {complaints.map((complaint) => {
                 const catColor = CATEGORY_COLORS[complaint.category] ?? "#6b7280";
                 const mealIcon = MEAL_ICONS[complaint.meal] ?? "🍴";
-                const incDateFormatted = formatIncidentDate(complaint.incidentDate);
 
                 return (
                   <div
                     key={complaint.id}
                     className="glass"
-                    style={{ padding: "20px 22px" }}
+                    style={{ padding: "16px 18px" }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-                      {/* Badges */}
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {/* Venue badge */}
-                        {complaint.mess && (
-                          <span
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 20,
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              background: complaint.mess === "Main Canteen"
-                                ? "rgba(139,92,246,0.1)"
-                                : "rgba(249,115,22,0.08)",
-                              color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
-                              border: complaint.mess === "Main Canteen"
-                                ? "1px solid rgba(139,92,246,0.25)"
-                                : "1px solid rgba(249,115,22,0.2)",
-                            }}
-                          >
-                            {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess}
-                          </span>
-                        )}
+                    {/* Badge row — no status here, no clutter on mobile */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                      {complaint.mess && (
                         <span
                           style={{
                             padding: "3px 10px",
                             borderRadius: 20,
                             fontSize: "12px",
                             fontWeight: 700,
-                            background: `${catColor}18`,
-                            color: catColor,
-                            border: `1px solid ${catColor}40`,
+                            background: complaint.mess === "Main Canteen"
+                              ? "rgba(139,92,246,0.1)"
+                              : "rgba(249,115,22,0.08)",
+                            color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
+                            border: complaint.mess === "Main Canteen"
+                              ? "1px solid rgba(139,92,246,0.25)"
+                              : "1px solid rgba(249,115,22,0.2)",
                           }}
                         >
-                          {complaint.category}
+                          {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess}
                         </span>
+                      )}
+                      <span
+                        style={{
+                          padding: "3px 10px",
+                          borderRadius: 20,
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          background: `${catColor}18`,
+                          color: catColor,
+                          border: `1px solid ${catColor}40`,
+                        }}
+                      >
+                        {complaint.category}
+                      </span>
+                      <span
+                        style={{
+                          padding: "3px 10px",
+                          borderRadius: 20,
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          background: "rgba(249,115,22,0.1)",
+                          color: "#c2410c",
+                          border: "1px solid rgba(249,115,22,0.2)",
+                        }}
+                      >
+                        {mealIcon} {complaint.meal}
+                      </span>
+                      {complaint.imageUrl && (
                         <span
                           style={{
                             padding: "3px 10px",
                             borderRadius: 20,
                             fontSize: "12px",
-                            fontWeight: 600,
-                            background: "rgba(249,115,22,0.1)",
+                            fontWeight: 700,
+                            background: "rgba(249,115,22,0.12)",
                             color: "#c2410c",
-                            border: "1px solid rgba(249,115,22,0.2)",
+                            border: "1px solid rgba(249,115,22,0.3)",
                           }}
                         >
-                          {mealIcon} {complaint.meal}
+                          📸 Photo
                         </span>
-                        {incDateFormatted && (
-                          <span
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 20,
-                              fontSize: "12px",
-                              fontWeight: 600,
-                              background: "rgba(139,92,246,0.1)",
-                              color: "#5b21b6",
-                              border: "1px solid rgba(139,92,246,0.2)",
-                            }}
-                          >
-                            📅 {incDateFormatted}
-                          </span>
-                        )}
-                        {complaint.imageUrl && (
-                          <span
-                            style={{
-                              padding: "3px 10px",
-                              borderRadius: 20,
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              background: "rgba(249,115,22,0.12)",
-                              color: "#c2410c",
-                              border: "1px solid rgba(249,115,22,0.3)",
-                            }}
-                          >
-                            📸 Photo Attached
-                          </span>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      {/* Status */}
+                    {/* Description */}
+                    <p
+                      style={{
+                        color: "#431407",
+                        fontSize: "14px",
+                        lineHeight: 1.6,
+                        marginBottom: complaint.imageUrl ? 10 : 12,
+                      }}
+                    >
+                      {complaint.description}
+                    </p>
+
+                    {/* Photo Evidence */}
+                    {complaint.imageUrl && (
+                      <ComplaintPhotoViewer src={complaint.imageUrl} />
+                    )}
+
+                    {/* Footer row: submitted date (left) + status (right) */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        marginTop: complaint.imageUrl ? 14 : 4,
+                        paddingTop: 10,
+                        borderTop: "1px solid rgba(254,215,170,0.5)",
+                      }}
+                    >
+                      <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7 }}>
+                        🕒 {formatDate(complaint.createdAt)}
+                      </div>
                       <span
                         style={{
-                          padding: "4px 12px",
+                          padding: "3px 12px",
                           borderRadius: 20,
                           fontSize: "12px",
                           fontWeight: 700,
@@ -329,28 +343,6 @@ export default async function Home() {
                       >
                         {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
                       </span>
-                    </div>
-
-                    {/* Description */}
-                    <p
-                      style={{
-                        color: "#431407",
-                        fontSize: "14px",
-                        lineHeight: 1.6,
-                        marginBottom: complaint.imageUrl ? 10 : 10,
-                      }}
-                    >
-                      {complaint.description}
-                    </p>
-
-                    {/* Photo Evidence — student sees their own submitted photo */}
-                    {complaint.imageUrl && (
-                      <ComplaintPhotoViewer src={complaint.imageUrl} />
-                    )}
-
-                    {/* Date Created */}
-                    <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7, marginTop: complaint.imageUrl ? 14 : 0 }}>
-                      🕒 Submitted {formatDate(complaint.createdAt)}
                     </div>
                   </div>
                 );
