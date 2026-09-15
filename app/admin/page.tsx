@@ -404,7 +404,7 @@ export default async function AdminDashboard({
               pointerEvents: "none",
             }}
           />
-          Powered By{" "}
+          Powered By{""}
           <span style={{ fontWeight: 800, color: "#f97316", marginLeft: 4 }}>Nexalaya</span>
         </div>
       </footer>

@@ -2,16 +2,22 @@
 
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function LoginContent() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const error = searchParams.get("error");
 
   const handleLogin = async () => {
     setLoading(true);
     await signIn("google", { callbackUrl: "/" });
+  };
+
+  const handleTryAgain = () => {
+    // Clear the ?error=AccessDenied query param and go back to the normal login screen
+    router.replace("/login");
   };
 
   return (
@@ -110,12 +116,12 @@ function LoginContent() {
               Google account to sign in.
             </p>
 
-            {/* Try Again button — same theme */}
+            {/* Try Again button — goes back to normal login screen */}
             <button
               className="btn-primary"
-              onClick={handleLogin}
+              onClick={handleTryAgain}
               style={{ width: "100%", padding: "16px 24px", fontSize: "16px" }}
-              id="google-signin-btn"
+              id="try-again-btn"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
@@ -237,7 +243,7 @@ function LoginContent() {
                 pointerEvents: "none",
               }}
             />
-            Powered By{" "}
+            Powered By{""}
             <span style={{ fontWeight: 800, color: "#f97316", marginLeft: 4 }}>Nexalaya</span>
           </div>
         </div>
