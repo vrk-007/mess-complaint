@@ -207,8 +207,26 @@ function LoginContent() {
           </>
         )}
 
-        <div style={{ marginTop: "20px", color: "#9a3412", fontSize: "13px", fontWeight: 600, opacity: 0.8 }}>
-          Powered By <span style={{ fontWeight: 800, color: "#f97316" }}>Nexalaya</span>
+        <div style={{ marginTop: "24px", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: "11px", fontWeight: 600, color: "#9a3412", opacity: 0.5, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Powered by
+          </span>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              background: "linear-gradient(135deg, #f97316, #ef4444)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              fontWeight: 900,
+              fontSize: "15px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+             Nexalaya
+          </span>
         </div>
       </div>
 
