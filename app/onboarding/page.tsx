@@ -2,6 +2,7 @@ import { completeProfile } from "@/app/actions/user";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import SubmitButton from "./SubmitButton";
+import OnboardingSelectors from "./OnboardingSelectors";
 
 export default async function OnboardingPage() {
   const session = await auth();
@@ -143,37 +144,8 @@ export default async function OnboardingPage() {
             />
           </div>
 
-          {/* Hostel */}
-          <div>
-            <label htmlFor="hostel" className="label">
-              Hostel
-            </label>
-            <select id="hostel" name="hostel" required className="input" defaultValue="">
-              <option value="" disabled>Select your hostel</option>
-              <option value="Aryabhatta">Aryabhatta</option>
-              <option value="S.Ramanujan">S.Ramanujan</option>
-              <option value="M.S.Swaminathan">M.S.Swaminathan</option>
-              <option value="V.G.Bhide">V.G.Bhide</option>
-              <option value="A.P.J. Abdul Kalam">A.P.J. Abdul Kalam</option>
-              <option value="C.V.Raman">C.V.Raman</option>
-              <option value="Homi.J.Bhabha">Homi.J.Bhabha</option>
-              <option value="J.C.Bose">J.C.Bose</option>
-              <option value="Meghnad Saha">Meghnad Saha</option>
-              <option value="Vikram Sarabhai">Vikram Sarabhai</option>
-            </select>
-          </div>
-
-          {/* Mess */}
-          <div>
-            <label htmlFor="mess" className="label">
-              Mess
-            </label>
-            <select id="mess" name="mess" required className="input" defaultValue="">
-              <option value="" disabled>Select your mess</option>
-              <option value="Swadanand Mess">Swadanand Mess</option>
-              <option value="Aaswad Mess">Aaswad Mess</option>
-            </select>
-          </div>
+          {/* Hostel + Mess — custom themed dropdowns */}
+          <OnboardingSelectors />
 
           {/* Submit */}
           <SubmitButton />
