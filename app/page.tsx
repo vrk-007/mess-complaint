@@ -360,26 +360,44 @@ export default async function Home() {
           borderTop: "1px solid rgba(254,215,170,0.4)",
         }}
       >
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, color: "#9a3412", opacity: 0.5, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Powered by
-          </span>
-          <span
+        <style>{`
+          @keyframes nexalaya-shine {
+            0%   { transform: translateX(-150%); }
+            100% { transform: translateX(300%); }
+          }
+        `}</style>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            position: "relative",
+            overflow: "hidden",
+            padding: "8px 20px",
+            borderRadius: "50px",
+            border: "1px solid rgba(249,115,22,0.25)",
+            background: "rgba(249,115,22,0.05)",
+            boxShadow: "0 0 18px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#9a3412",
+            gap: 4,
+          }}
+        >
+          {/* Shimmer sweep */}
+          <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              background: "linear-gradient(135deg, #f97316, #ef4444)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontWeight: 900,
-              fontSize: "15px",
-              letterSpacing: "-0.3px",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "40%",
+              height: "100%",
+              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
+              animation: "nexalaya-shine 2.6s ease-in-out infinite",
+              pointerEvents: "none",
             }}
-          >
-            Nexalaya
-          </span>
+          />
+          Powered By{" "}
+          <span style={{ fontWeight: 800, color: "#f97316", marginLeft: 4 }}>Nexalaya</span>
         </div>
       </footer>
     </div>
