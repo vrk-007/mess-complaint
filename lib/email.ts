@@ -1,10 +1,27 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// ── Nodemailer Transporter via Gmail SMTP ──────────────────────────────────
+function getUser(): string {
+  return (process.env.GMAIL_USER ?? "info.nexalaya@gmail.com").trim();
+}
 
-// Sender address — uses Resend's shared domain for now.
-// Once you verify your own domain in Resend dashboard, change this to e.g. "no-reply@yourdomain.com"
-const FROM = "Mess Portal <onboarding@resend.dev>";
+function getPass(): string {
+  return (process.env.GMAIL_APP_PASSWORD ?? "").replace(/\s+/g, "");
+}
+
+function getTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: getUser(),
+      pass: getPass(),
+    },
+  });
+}
+
+function getFromAddress(): string {
+  return `"Mess Portal" <${getUser()}>`;
+}
 
 // ── Helper: get comma-separated env emails as array ──────────────────────────
 function getEmails(envVar: string): string[] {
@@ -32,9 +49,10 @@ export async function sendApprovalRequestEmail({
   if (!to.length) return;
 
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
+  const transporter = getTransporter();
 
-  await resend.emails.send({
-    from: FROM,
+  await transporter.sendMail({
+    from: getFromAddress(),
     to,
     subject: "⏳ Approval Required — Complaint Resolution Request",
     html: `
@@ -82,9 +100,10 @@ export async function sendEscalationEmail({
   if (!to.length) return;
 
   const superAdminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/superadmin`;
+  const transporter = getTransporter();
 
-  await resend.emails.send({
-    from: FROM,
+  await transporter.sendMail({
+    from: getFromAddress(),
     to,
     subject: "🚨 New Complaint Escalated to SuperAdmin",
     html: `
@@ -143,8 +162,10 @@ export async function sendReminderEmail({
     )
     .join("");
 
-  await resend.emails.send({
-    from: FROM,
+  const transporter = getTransporter();
+
+  await transporter.sendMail({
+    from: getFromAddress(),
     to,
     subject: `📋 Reminder: ${pendingCount} Pending Complaint${pendingCount !== 1 ? "s" : ""} Need Attention`,
     html: `
@@ -177,7 +198,7 @@ export async function sendReminderEmail({
               </thead>
               <tbody>${rows}</tbody>
             </table>
-            ${complaints.length > 10 ? `<p style="font-size:12px;color:#9a3412;text-align:center;margin-top:10px;">+ ${complaints.length - 10} more complaint(s) on the portal</p>` : ""}`
+            ${complaints.length > 10 ? `<p style="font-size:12px;color:#9a3412;text-align:center;margin-top:10px;">+ ${complaints.length - 10} more complaint(s) on the portal</p>` : ""} `
               : `<p style="text-align:center;color:#78350f;font-size:14px;">🎉 No active complaints right now!</p>`
           }
           <div style="margin-top:24px;text-align:center;">
