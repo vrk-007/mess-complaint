@@ -220,35 +220,8 @@ export default async function SuperAdminDashboard({
                   className="glass"
                   style={{
                     padding: "20px 22px",
-                    position: "relative",
-                    borderLeft: complaint.isForwarded ? "3px solid #ef4444" : undefined,
                   }}
                 >
-                  {/* Escalated badge */}
-                  {complaint.isForwarded && (
-                    <div style={{
-                      position: "absolute",
-                      top: 14,
-                      right: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      padding: "3px 10px",
-                      borderRadius: 20,
-                      background: "rgba(239,68,68,0.08)",
-                      border: "1px solid rgba(239,68,68,0.25)",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#b91c1c",
-                    }}>
-                      🚨 Escalated
-                      {complaint.forwardedBy && (
-                        <span style={{ fontWeight: 400, opacity: 0.8 }}>
-                          &nbsp;by {complaint.forwardedBy.split("@")[0]}
-                        </span>
-                      )}
-                    </div>
-                  )}
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
                     {/* Student Name & Badges */}

@@ -7,9 +7,9 @@ const MESS_OPTIONS = ["Swadanand Mess", "Aaswad Mess", "Main Canteen"];
 
 const PERIOD_OPTIONS = [
   { label: "All",    value: "" },
-  { label: "1 Week", value: "1w" },
+  { label: "1 Wk", value: "1w" },
   { label: "2 Wks",  value: "2w" },
-  { label: "1 Mon",  value: "1m" },
+  { label: "1 Month",  value: "1m" },
 ];
 
 export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
