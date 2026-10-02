@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { revalidatePath } from "next/cache";
+import { sendEscalationEmail } from "@/lib/email";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getEscalateEmails(): string[] {
@@ -57,6 +58,25 @@ export async function escalateComplaint(
         forwardNote: note,
       },
     });
+
+    // Fire escalation notification email to SuperAdmins (non-blocking)
+    try {
+      const complaint = await prisma.complaint.findUnique({
+        where: { id: complaintId },
+        include: { user: { select: { name: true } } },
+      });
+      if (complaint) {
+        await sendEscalationEmail({
+          studentName: complaint.user.name ?? "Unknown",
+          description: complaint.description,
+          forwardNote: note,
+          escalatedBy: userEmail,
+          mess: complaint.mess,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[escalateComplaint] Email send failed:", emailErr);
+    }
 
     revalidatePath("/admin");
     revalidatePath("/superadmin");

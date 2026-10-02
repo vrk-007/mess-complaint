@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { revalidatePath } from "next/cache";
+import { sendApprovalRequestEmail } from "@/lib/email";
 
 // Helper: get escalator emails from env
 function getEscalateEmails(): string[] {
@@ -52,6 +53,25 @@ export async function requestResolve(
         approvedAt: null,
       },
     });
+
+    // Fire approval-request email (non-blocking — don't let email failure break the action)
+    try {
+      const complaint = await prisma.complaint.findUnique({
+        where: { id: complaintId },
+        include: { user: { select: { name: true } } },
+      });
+      if (complaint) {
+        await sendApprovalRequestEmail({
+          complaintId,
+          studentName: complaint.user.name ?? "Unknown",
+          description: complaint.description,
+          remark: trimmed,
+          submittedBy: userEmail,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[requestResolve] Email send failed:", emailErr);
+    }
 
     revalidatePath("/admin");
     return { success: true };
