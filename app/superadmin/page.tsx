@@ -2,9 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
-import { superAdminResolveComplaint } from "@/app/actions/superadmin";
 import SuperAdminFilterBar from "./SuperAdminFilterBar";
-import ResolveButton from "@/app/admin/ResolveButton";
 import RemarkBox from "@/app/admin/RemarkBox";
 import ComplaintPhotoViewer from "@/app/admin/ComplaintPhotoViewer";
 import { Suspense } from "react";
@@ -164,10 +162,10 @@ export default async function SuperAdminDashboard({
           </div>
           <div className="stats-grid">
             {[
-              { label: "Total Escalated", value: totalEscalated,                                color: "#f97316" },
-              { label: "Showing Now",     value: complaints.length,                             color: "#8b5cf6" },
-              { label: "Pending",         value: complaints.filter(c => !c.resolved).length,    color: "#ef4444" },
-              { label: "Resolved",        value: complaints.filter(c => c.resolved).length,     color: "#22c55e" },
+              { label: "Total Escalated",   value: totalEscalated,                                              color: "#f97316" },
+              { label: "Showing Now",        value: complaints.length,                                           color: "#8b5cf6" },
+              { label: "Pending Approval",   value: complaints.filter(c => c.pendingApproval).length,            color: "#f59e0b" },
+              { label: "Resolved",           value: complaints.filter(c => c.resolved).length,                   color: "#22c55e" },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ padding: "10px", background: `${color}10`, borderRadius: 12, border: `1px solid ${color}30`, textAlign: "center" }}>
                 <div style={{ fontSize: "18px", fontWeight: 800, color }}>{value}</div>
@@ -260,12 +258,30 @@ export default async function SuperAdminDashboard({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
                       <span style={{
                         padding: "4px 12px", borderRadius: 20, fontSize: "12px", fontWeight: 700,
-                        background: complaint.resolved ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.10)",
-                        color: complaint.resolved ? "#15803d" : "#b91c1c",
-                        border: `1px solid ${complaint.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.25)"}`,
+                        background: complaint.resolved
+                          ? "rgba(34,197,94,0.12)"
+                          : complaint.pendingApproval
+                          ? "rgba(245,158,11,0.12)"
+                          : "rgba(239,68,68,0.10)",
+                        color: complaint.resolved
+                          ? "#15803d"
+                          : complaint.pendingApproval
+                          ? "#92400e"
+                          : "#b91c1c",
+                        border: `1px solid ${
+                          complaint.resolved
+                            ? "rgba(34,197,94,0.3)"
+                            : complaint.pendingApproval
+                            ? "rgba(245,158,11,0.35)"
+                            : "rgba(239,68,68,0.25)"
+                        }`,
                         whiteSpace: "nowrap",
                       }}>
-                        {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
+                        {complaint.resolved
+                          ? "✅ Resolved"
+                          : complaint.pendingApproval
+                          ? "⏳ Pending Approval"
+                          : "🔴 Active"}
                       </span>
                       <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
                         🕒 {formatDate(complaint.createdAt)}
@@ -303,13 +319,26 @@ export default async function SuperAdminDashboard({
                     remarkAt={complaint.remarkAt}
                   />
 
-                  {/* Actions */}
-                  {!complaint.resolved && (
-                    <div className="border-t border-orange-100 pt-4 flex justify-end" style={{ marginTop: 12 }}>
-                      <ResolveButton
-                        complaintId={complaint.id}
-                        resolveAction={superAdminResolveComplaint}
-                      />
+                  {/* Resolution note visible on SuperAdmin (read-only) */}
+                  {complaint.pendingApproval && complaint.resolutionRemark && (
+                    <div
+                      style={{
+                        marginTop: 4,
+                        padding: "10px 14px",
+                        background: "rgba(245,158,11,0.07)",
+                        border: "1px solid rgba(245,158,11,0.3)",
+                        borderRadius: 12,
+                        fontSize: 13,
+                        color: "#92400e",
+                      }}
+                    >
+                      <span style={{ fontWeight: 700 }}>⏳ Resolution pending approval:</span>{" "}
+                      {complaint.resolutionRemark}
+                      {complaint.resolvedBy && (
+                        <span style={{ display: "block", fontSize: 11, opacity: 0.7, marginTop: 4 }}>
+                          — Submitted by {complaint.resolvedBy.split("@")[0]}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
