@@ -6,10 +6,10 @@ import { useCallback, useTransition, useState, useEffect } from "react";
 const MESS_OPTIONS = ["Swadanand Mess", "Aaswad Mess", "Main Canteen"];
 
 const PERIOD_OPTIONS = [
-  { label: "All",     value: "" },
-  { label: "1 Week",  value: "1w" },
-  { label: "2 Weeks", value: "2w" },
-  { label: "1 Month", value: "1m" },
+  { label: "All",    value: "" },
+  { label: "1 Week", value: "1w" },
+  { label: "2 Wks",  value: "2w" },
+  { label: "1 Mon",  value: "1m" },
 ];
 
 export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
@@ -47,8 +47,9 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
   return (
     <>
       <style>{`
+        /* ── Base pill/input styles ─────────────────────────────── */
         .sa-pill {
-          padding: 9px 18px;
+          padding: 8px 14px;
           border-radius: 12px;
           font-size: 13px;
           font-weight: 600;
@@ -56,36 +57,34 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
           cursor: pointer;
           background: rgba(255,255,255,0.8);
           color: #78350f;
-          transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
           white-space: nowrap;
-          flex: 1 1 auto;
           text-align: center;
           box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+          flex-shrink: 0;
         }
-        .sa-pill:hover:not(:disabled) {
+        .sa-pill:hover {
           background: #fff7ed;
           border-color: #fb923c;
           color: #c2410c;
           transform: translateY(-1px);
           box-shadow: 0 4px 14px rgba(249,115,22,0.15);
         }
-        .sa-pill:active:not(:disabled) {
-          transform: translateY(0px) scale(0.97);
+        .sa-pill:active {
+          transform: translateY(0) scale(0.97);
           transition-duration: 0.08s;
         }
         .sa-pill.active {
-          background: linear-gradient(135deg, #f97316, #ef4444);
+          background: linear-gradient(135deg,#f97316,#ef4444);
           color: #fff;
           border-color: #f97316;
           box-shadow: 0 5px 16px rgba(249,115,22,0.38);
           transform: translateY(-1px);
         }
-        .sa-pill.active:hover {
-          box-shadow: 0 7px 20px rgba(249,115,22,0.48);
-        }
         .sa-select {
-          width: 100%;
-          padding: 9px 12px;
+          flex: 1;
+          min-width: 0;
+          padding: 8px 10px;
           font-size: 13px;
           border-radius: 12px;
           border: 1.5px solid #fed7aa;
@@ -95,21 +94,15 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
           font-family: inherit;
           cursor: pointer;
           outline: none;
-          transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
           box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
-        .sa-select:hover {
-          border-color: #fb923c;
-          background: #fff7ed;
-          box-shadow: 0 4px 14px rgba(249,115,22,0.12);
-        }
-        .sa-select:focus {
-          border-color: #f97316;
-          box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
-        }
+        .sa-select:hover { border-color: #fb923c; background: #fff7ed; }
+        .sa-select:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.15); }
         .sa-date {
-          width: 100%;
-          padding: 9px 12px;
+          flex: 1;
+          min-width: 0;
+          padding: 8px 10px;
           font-size: 13px;
           border-radius: 12px;
           border: 1.5px solid #fed7aa;
@@ -119,66 +112,139 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
           font-family: inherit;
           cursor: pointer;
           outline: none;
-          transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
           box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
-        .sa-date:hover {
-          border-color: #fb923c;
-          background: #fff7ed;
-          box-shadow: 0 4px 14px rgba(249,115,22,0.12);
+        .sa-date:hover { border-color: #fb923c; background: #fff7ed; }
+        .sa-date:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.15); }
+
+        /* ── Filterbar container ────────────────────────────────── */
+        .sa-filterbar {
+          background: rgba(255,255,255,0.8);
+          backdrop-filter: blur(24px);
+          border: 1px solid rgba(255,237,213,0.95);
+          border-radius: 24px;
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: nowrap;
+          box-shadow: 0 10px 40px rgba(120,53,15,0.07);
+          transition: box-shadow 0.3s ease;
+          overflow-x: auto;
         }
-        .sa-date:focus {
-          border-color: #f97316;
-          box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+        .sa-filterbar.loading { animation: sa-pulse 1.2s ease-in-out infinite; }
+
+        /* Each labelled group */
+        .sa-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-shrink: 0;
         }
+        .sa-group-label {
+          font-size: 12px;
+          font-weight: 700;
+          color: #9a3412;
+          white-space: nowrap;
+        }
+
+        /* Period pills row — shares flex space equally */
+        .sa-pills {
+          display: flex;
+          gap: 6px;
+          flex-shrink: 0;
+        }
+
+        /* Divider between sections */
+        .sa-divider {
+          width: 1px;
+          height: 28px;
+          background: rgba(254,215,170,0.7);
+          flex-shrink: 0;
+        }
+
+        /* Date group stretches to fill remaining space */
+        .sa-date-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex: 1 1 120px;
+          min-width: 120px;
+        }
+
         @keyframes sa-spin  { to { transform: rotate(360deg); } }
-        @keyframes sa-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        @keyframes sa-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        /* ── Mobile: stack into two rows ───────────────────────── */
+        @media (max-width: 680px) {
+          .sa-filterbar {
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+          .sa-group {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 130px;
+          }
+          .sa-group .sa-select { width: 100%; }
+          .sa-divider { display: none; }
+          .sa-pills {
+            flex-wrap: wrap;
+            flex: 1 1 100%;
+            justify-content: space-between;
+          }
+          .sa-pill { flex: 1 1 auto; }
+          .sa-date-group {
+            flex: 1 1 100%;
+          }
+        }
       `}</style>
 
-      <div
-        style={{
-          background: "rgba(255,255,255,0.8)",
-          backdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,237,213,0.95)",
-          borderRadius: 24,
-          padding: "14px 18px",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 14,
-          flexWrap: "wrap",
-          boxShadow: "0 10px 40px rgba(120,53,15,0.07)",
-          animation: isPending ? "sa-pulse 1.2s ease-in-out infinite" : "none",
-          transition: "box-shadow 0.3s ease",
-        }}
-      >
-        {/* 🍽️ Mess Dropdown */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 auto", minWidth: 180 }}>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "#9a3412", whiteSpace: "nowrap" }}>🍽️ Mess:</span>
-          <select value={optMess} onChange={(e) => update("mess", e.target.value)} className="sa-select">
+      <div className={`sa-filterbar${isPending ? " loading" : ""}`}>
+
+        {/* 🍽️ Mess */}
+        <div className="sa-group">
+          <span className="sa-group-label">🍽️ Mess</span>
+          <select
+            id="sa-mess-filter"
+            value={optMess}
+            onChange={(e) => update("mess", e.target.value)}
+            className="sa-select"
+            style={{ width: 138 }}
+          >
             <option value="">All Messes</option>
             {MESS_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
 
-        {/* 📌 Status Dropdown */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 auto", minWidth: 180 }}>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "#9a3412", whiteSpace: "nowrap" }}>📌 Status:</span>
-          <select value={optStatus} onChange={(e) => update("status", e.target.value)} className="sa-select">
+        <div className="sa-divider" />
+
+        {/* 📌 Status */}
+        <div className="sa-group">
+          <span className="sa-group-label">📌 Status</span>
+          <select
+            id="sa-status-filter"
+            value={optStatus}
+            onChange={(e) => update("status", e.target.value)}
+            className="sa-select"
+            style={{ width: 118 }}
+          >
             <option value="">All</option>
             <option value="pending">⏳ Pending</option>
             <option value="resolved">✅ Resolved</option>
           </select>
         </div>
 
+        <div className="sa-divider" />
+
         {/* ⏱ Period Pills */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 auto" }}>
+        <div className="sa-pills">
           {PERIOD_OPTIONS.map(({ label, value }) => {
             const isActive = !optDate && optPeriod === value;
             return (
               <button
                 key={value}
-                id={`sa-period-filter-${value || "all"}`}
+                id={`sa-period-${value || "all"}`}
                 onClick={() => update("period", value)}
                 className={`sa-pill${isActive ? " active" : ""}`}
               >
@@ -188,9 +254,11 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
           })}
         </div>
 
+        <div className="sa-divider" />
+
         {/* 📅 Date Picker */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flex: "1 1 auto", minWidth: 170 }}>
-          <span style={{ fontSize: "14px" }}>📅</span>
+        <div className="sa-date-group">
+          <span style={{ fontSize: 15, flexShrink: 0 }}>📅</span>
           <input
             id="sa-date-filter"
             type="date"
@@ -202,14 +270,15 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
           {optDate && (
             <button
               onClick={() => update("date", "")}
+              title="Clear date"
               style={{
                 background: "none", border: "none", cursor: "pointer",
-                fontSize: 16, color: "#9a3412", padding: "2px 4px", lineHeight: 1,
-                borderRadius: 6, transition: "all 0.15s ease",
+                fontSize: 15, color: "#9a3412", padding: "2px 4px",
+                lineHeight: 1, borderRadius: 6, flexShrink: 0,
+                transition: "color 0.15s",
               }}
               onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#ef4444"; }}
               onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#9a3412"; }}
-              title="Clear date"
             >
               ✕
             </button>
@@ -218,7 +287,7 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
 
         {/* Loading indicator */}
         {isPending && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#9a3412", fontSize: "12px", fontWeight: 600, opacity: 0.8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#9a3412", fontSize: "12px", fontWeight: 600, opacity: 0.8, flexShrink: 0 }}>
             <span style={{
               width: 12, height: 12,
               border: "2px solid rgba(249,115,22,0.25)",
