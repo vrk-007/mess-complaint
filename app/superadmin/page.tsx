@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import SuperAdminFilterBar from "./SuperAdminFilterBar";
-import RemarkBox from "@/app/admin/RemarkBox";
 import ComplaintPhotoViewer from "@/app/admin/ComplaintPhotoViewer";
 import { Suspense } from "react";
 
@@ -75,7 +74,8 @@ export default async function SuperAdminDashboard({
 
   const complaints = await prisma.complaint.findMany({
     where: whereClause,
-    orderBy: { createdAt: "desc" },
+    // Escalated view: most recently escalated first; All view: most recently created first
+    orderBy: viewAll ? { createdAt: "desc" } : { forwardedAt: "desc" },
     include: {
       user: { select: { name: true, rollNo: true, hostel: true, mess: true } },
     },
@@ -311,13 +311,6 @@ export default async function SuperAdminDashboard({
                   {/* Photo */}
                   {complaint.imageUrl && <ComplaintPhotoViewer src={complaint.imageUrl} />}
 
-                  {/* Remarks */}
-                  <RemarkBox
-                    complaintId={complaint.id}
-                    existingRemark={complaint.adminRemark}
-                    remarkBy={complaint.remarkBy}
-                    remarkAt={complaint.remarkAt}
-                  />
 
                   {/* Resolution note visible on SuperAdmin (read-only) */}
                   {complaint.pendingApproval && complaint.resolutionRemark && (

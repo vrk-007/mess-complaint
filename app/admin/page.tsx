@@ -404,19 +404,43 @@ export default async function AdminDashboard({
                   )}
 
                   {/* Action Buttons */}
-                  <div className="border-t border-orange-100 pt-4 flex justify-end gap-3 flex-wrap">
-                    {canEscalate && (
-                      <EscalateButton
-                        complaintId={complaint.id}
-                        isAlreadyForwarded={complaint.isForwarded}
-                        forwardedBy={complaint.forwardedBy}
-                        forwardNote={complaint.forwardNote}
-                      />
-                    )}
-                    {/* Only show Resolve button if NOT already resolved and NOT already pending approval */}
-                    {!complaint.resolved && !complaint.pendingApproval && (
-                      <ResolveModal complaintId={complaint.id} />
-                    )}
+                  <div className="border-t border-orange-100 pt-4 flex justify-between items-center gap-3 flex-wrap">
+                    {/* Left side: escalation badge — escalators see EscalateButton (which shows badge when done), non-escalators see read-only badge */}
+                    <div>
+                      {canEscalate ? (
+                        <EscalateButton
+                          complaintId={complaint.id}
+                          isAlreadyForwarded={complaint.isForwarded}
+                          forwardedBy={complaint.forwardedBy}
+                          forwardNote={complaint.forwardNote}
+                        />
+                      ) : complaint.isForwarded ? (
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "6px 14px",
+                            borderRadius: 20,
+                            background: "rgba(239,68,68,0.08)",
+                            border: "1px solid rgba(239,68,68,0.25)",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "#b91c1c",
+                          }}
+                          title={complaint.forwardNote ? `Note: ${complaint.forwardNote}` : undefined}
+                        >
+                          🚨 Escalated to SuperAdmin
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Right side: resolve button */}
+                    <div>
+                      {!complaint.resolved && !complaint.pendingApproval && (
+                        <ResolveModal complaintId={complaint.id} />
+                      )}
+                    </div>
                   </div>
                 </div>
               );
