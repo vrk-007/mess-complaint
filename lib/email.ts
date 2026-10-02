@@ -1,26 +1,54 @@
-import nodemailer from "nodemailer";
+// ── Brevo (Sendinblue) HTTPS API — works on Vercel (no SMTP port issues) ──────
 
-// ── Nodemailer Transporter via Gmail SMTP ──────────────────────────────────
-function getUser(): string {
-  return (process.env.GMAIL_USER ?? "info.nexalaya@gmail.com").trim();
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+function getApiKey(): string {
+  return (process.env.BREVO_API_KEY ?? "").trim();
 }
 
-function getPass(): string {
-  return (process.env.GMAIL_APP_PASSWORD ?? "").replace(/\s+/g, "");
+function getSenderEmail(): string {
+  return (process.env.BREVO_SENDER_EMAIL ?? "").trim();
 }
 
-function getTransporter() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: getUser(),
-      pass: getPass(),
+// ── Core send helper ──────────────────────────────────────────────────────────
+async function sendBrevoEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string[];
+  subject: string;
+  html: string;
+}) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    console.error("[email] BREVO_API_KEY is not set");
+    return;
+  }
+  if (!to.length) return;
+
+  const body = {
+    sender: { name: "Mess Portal", email: getSenderEmail() },
+    to: to.map((email) => ({ email })),
+    subject,
+    htmlContent: html,
+  };
+
+  const res = await fetch(BREVO_API_URL, {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
+    body: JSON.stringify(body),
   });
-}
 
-function getFromAddress(): string {
-  return `"Mess Portal" <${getUser()}>`;
+  if (!res.ok) {
+    const error = await res.text();
+    console.error("[email] Brevo send failed:", res.status, error);
+    throw new Error(`Brevo API error ${res.status}: ${error}`);
+  }
 }
 
 // ── Helper: get comma-separated env emails as array ──────────────────────────
@@ -46,13 +74,9 @@ export async function sendApprovalRequestEmail({
   submittedBy: string;
 }) {
   const to = getEmails("ESCALATE_EMAILS");
-  if (!to.length) return;
-
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
-  const transporter = getTransporter();
 
-  await transporter.sendMail({
-    from: getFromAddress(),
+  await sendBrevoEmail({
     to,
     subject: "⏳ Approval Required — Complaint Resolution Request",
     html: `
@@ -97,13 +121,9 @@ export async function sendEscalationEmail({
   mess?: string | null;
 }) {
   const to = getEmails("SUPER_ADMIN_EMAILS");
-  if (!to.length) return;
-
   const superAdminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/superadmin`;
-  const transporter = getTransporter();
 
-  await transporter.sendMail({
-    from: getFromAddress(),
+  await sendBrevoEmail({
     to,
     subject: "🚨 New Complaint Escalated to SuperAdmin",
     html: `
@@ -145,8 +165,6 @@ export async function sendReminderEmail({
   complaints: Array<{ studentName: string; description: string; createdAt: Date; mess?: string | null }>;
 }) {
   const to = getEmails("ESCALATE_EMAILS");
-  if (!to.length) return;
-
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
 
   const rows = complaints
@@ -162,10 +180,7 @@ export async function sendReminderEmail({
     )
     .join("");
 
-  const transporter = getTransporter();
-
-  await transporter.sendMail({
-    from: getFromAddress(),
+  await sendBrevoEmail({
     to,
     subject: `📋 Reminder: ${pendingCount} Pending Complaint${pendingCount !== 1 ? "s" : ""} Need Attention`,
     html: `
