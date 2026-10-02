@@ -86,13 +86,13 @@ export default async function SuperAdminDashboard({
   const totalEscalated = await prisma.complaint.count({ where: { isForwarded: true } });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fdf2f8" }}>
+    <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
       {/* ── Top Nav ── */}
       <header
         style={{
-          background: "rgba(255,255,255,0.85)",
+          background: "rgba(255,255,255,0.8)",
           backdropFilter: "blur(16px)",
-          borderBottom: "1px solid #f5d0fe",
+          borderBottom: "1px solid #fed7aa",
           position: "sticky",
           top: 0,
           zIndex: 50,
@@ -104,18 +104,18 @@ export default async function SuperAdminDashboard({
             <div
               style={{
                 width: 38, height: 38, borderRadius: "10px",
-                background: "linear-gradient(135deg, #a855f7, #ec4899)",
+                background: "linear-gradient(135deg, #f97316, #ef4444)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: "18px",
-                boxShadow: "0 4px 12px rgba(168,85,247,0.35)",
+                boxShadow: "0 4px 12px rgba(249,115,22,0.3)",
               }}
             >
-              🛡️
+              👑
             </div>
-            <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#3b0764" }}>
+            <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#431407" }}>
               <span
                 style={{
-                  background: "linear-gradient(135deg, #a855f7, #ec4899)",
+                  background: "linear-gradient(135deg, #f97316, #ef4444)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -136,16 +136,16 @@ export default async function SuperAdminDashboard({
                 fontSize: 13,
                 fontWeight: 700,
                 border: "1.5px solid",
-                borderColor: viewAll ? "#a855f7" : "#f5d0fe",
-                background: viewAll ? "linear-gradient(135deg,#a855f7,#ec4899)" : "rgba(168,85,247,0.07)",
-                color: viewAll ? "white" : "#7e22ce",
+                borderColor: viewAll ? "#f97316" : "#fed7aa",
+                background: viewAll ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(249,115,22,0.07)",
+                color: viewAll ? "white" : "#9a3412",
                 cursor: "pointer",
                 textDecoration: "none",
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
                 transition: "all 0.2s",
-                boxShadow: viewAll ? "0 4px 14px rgba(168,85,247,0.3)" : "none",
+                boxShadow: viewAll ? "0 4px 14px rgba(249,115,22,0.3)" : "none",
               }}
             >
               {viewAll ? "📋 All Complaints" : "🚨 Escalated Only"}
@@ -158,20 +158,20 @@ export default async function SuperAdminDashboard({
       {/* ── Main Content ── */}
       <main className="page-main-wide">
         {/* Stats */}
-        <div className="glass" style={{ background: "rgba(250,245,255,0.9)", border: "1px solid #f5d0fe", borderRadius: 16, padding: "16px 20px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#7e22ce", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+        <div className="glass card-pad">
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
             SuperAdmin Stats
           </div>
           <div className="stats-grid">
             {[
-              { label: "Total Escalated", value: totalEscalated,                                            color: "#a855f7" },
-              { label: "Showing Now",     value: complaints.length,                                         color: "#ec4899" },
-              { label: "Pending",         value: complaints.filter(c => !c.resolved).length,                color: "#ef4444" },
-              { label: "Resolved",        value: complaints.filter(c => c.resolved).length,                 color: "#22c55e" },
+              { label: "Total Escalated", value: totalEscalated,                                color: "#f97316" },
+              { label: "Showing Now",     value: complaints.length,                             color: "#8b5cf6" },
+              { label: "Pending",         value: complaints.filter(c => !c.resolved).length,    color: "#ef4444" },
+              { label: "Resolved",        value: complaints.filter(c => c.resolved).length,     color: "#22c55e" },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ padding: "10px", background: `${color}12`, borderRadius: 12, border: `1px solid ${color}30`, textAlign: "center" }}>
+              <div key={label} style={{ padding: "10px", background: `${color}10`, borderRadius: 12, border: `1px solid ${color}30`, textAlign: "center" }}>
                 <div style={{ fontSize: "18px", fontWeight: 800, color }}>{value}</div>
-                <div style={{ fontSize: "10px", color: "#581c87", fontWeight: 700 }}>{label}</div>
+                <div style={{ fontSize: "10px", color: "#78350f", fontWeight: 700 }}>{label}</div>
               </div>
             ))}
           </div>
@@ -184,17 +184,20 @@ export default async function SuperAdminDashboard({
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#3b0764", display: "flex", alignItems: "center", gap: 8 }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#431407", display: "flex", alignItems: "center", gap: 8 }}>
             {viewAll ? "📋 All Complaints" : "🚨 Escalated Complaints"}
           </h2>
-          <span style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)", color: "white", fontSize: "12px", fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
+          <span style={{ background: "linear-gradient(135deg,#f97316,#ef4444)", color: "white", fontSize: "12px", fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
             {complaints.length}
           </span>
         </div>
 
         {/* Complaint Cards */}
         {complaints.length === 0 ? (
-          <div style={{ padding: "48px 32px", textAlign: "center", color: "#7e22ce", background: "rgba(250,245,255,0.9)", border: "1px solid #f5d0fe", borderRadius: 16 }}>
+          <div
+            className="glass"
+            style={{ padding: "48px 32px", textAlign: "center", color: "#78350f" }}
+          >
             <div style={{ fontSize: "48px", marginBottom: 16 }}>
               {viewAll ? "✅" : "🚨"}
             </div>
@@ -202,7 +205,7 @@ export default async function SuperAdminDashboard({
               {viewAll ? "No complaints found!" : "No escalated complaints!"}
             </div>
             <div style={{ fontSize: "14px", opacity: 0.7 }}>
-              {viewAll ? "Everything is clear." : "No serious complaints have been forwarded yet."}
+              {viewAll ? "Everything is running smoothly." : "No serious complaints have been forwarded yet."}
             </div>
           </div>
         ) : (
@@ -214,35 +217,29 @@ export default async function SuperAdminDashboard({
               return (
                 <div
                   key={complaint.id}
+                  className="glass"
                   style={{
-                    background: "rgba(250,245,255,0.9)",
-                    border: complaint.isForwarded
-                      ? "1.5px solid rgba(168,85,247,0.3)"
-                      : "1px solid rgba(245,208,254,0.6)",
-                    borderRadius: 16,
                     padding: "20px 22px",
-                    boxShadow: complaint.isForwarded
-                      ? "0 4px 20px rgba(168,85,247,0.1)"
-                      : "0 2px 10px rgba(168,85,247,0.05)",
                     position: "relative",
+                    borderLeft: complaint.isForwarded ? "3px solid #ef4444" : undefined,
                   }}
                 >
-                  {/* Escalated badge ribbon */}
+                  {/* Escalated badge */}
                   {complaint.isForwarded && (
                     <div style={{
                       position: "absolute",
-                      top: 12,
-                      right: 14,
+                      top: 14,
+                      right: 16,
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
                       padding: "3px 10px",
                       borderRadius: 20,
-                      background: "rgba(168,85,247,0.1)",
-                      border: "1px solid rgba(168,85,247,0.3)",
+                      background: "rgba(239,68,68,0.08)",
+                      border: "1px solid rgba(239,68,68,0.25)",
                       fontSize: 11,
                       fontWeight: 700,
-                      color: "#7e22ce",
+                      color: "#b91c1c",
                     }}>
                       🚨 Escalated
                       {complaint.forwardedBy && (
@@ -254,36 +251,39 @@ export default async function SuperAdminDashboard({
                   )}
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+                    {/* Student Name & Badges */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      <div style={{ fontWeight: 500, color: "#581c87", fontSize: "14px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontWeight: 500, color: "#78350f", fontSize: "14px", display: "flex", alignItems: "center", gap: 8 }}>
                         👤 {complaint.user.name}
                         {complaint.user.rollNo && (
-                          <span style={{ fontSize: 12, color: "#7e22ce", opacity: 0.7 }}>({complaint.user.rollNo})</span>
+                          <span style={{ fontSize: 12, color: "#9a3412", opacity: 0.7 }}>({complaint.user.rollNo})</span>
                         )}
                       </div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {/* Venue badge */}
                         <span style={{
                           padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 700,
-                          background: complaint.mess === "Main Canteen" ? "rgba(139,92,246,0.1)" : "rgba(168,85,247,0.08)",
-                          color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#7e22ce",
-                          border: "1px solid rgba(168,85,247,0.25)",
+                          background: complaint.mess === "Main Canteen" ? "rgba(139,92,246,0.1)" : "rgba(249,115,22,0.08)",
+                          color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
+                          border: complaint.mess === "Main Canteen" ? "1px solid rgba(139,92,246,0.25)" : "1px solid rgba(249,115,22,0.2)",
                         }}>
                           {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
                         </span>
                         <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 700, background: `${catColor}18`, color: catColor, border: `1px solid ${catColor}40` }}>
                           {complaint.category}
                         </span>
-                        <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 600, background: "rgba(168,85,247,0.08)", color: "#7e22ce", border: "1px solid rgba(168,85,247,0.2)" }}>
+                        <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 600, background: "rgba(249,115,22,0.1)", color: "#c2410c", border: "1px solid rgba(249,115,22,0.2)" }}>
                           {mealIcon} {complaint.meal}
                         </span>
                         {complaint.user.hostel && (
-                          <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 600, background: "rgba(236,72,153,0.07)", color: "#be185d", border: "1px solid rgba(236,72,153,0.2)" }}>
+                          <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 600, background: "rgba(249,115,22,0.07)", color: "#9a3412", border: "1px solid rgba(249,115,22,0.15)" }}>
                             🏠 {complaint.user.hostel}
                           </span>
                         )}
                       </div>
                     </div>
 
+                    {/* Status & Date */}
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
                       <span style={{
                         padding: "4px 12px", borderRadius: 20, fontSize: "12px", fontWeight: 700,
@@ -294,14 +294,14 @@ export default async function SuperAdminDashboard({
                       }}>
                         {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
                       </span>
-                      <div style={{ fontSize: "11px", color: "#7e22ce", opacity: 0.7 }}>
+                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
                         🕒 {formatDate(complaint.createdAt)}
                       </div>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p style={{ color: "#3b0764", fontSize: "15px", fontWeight: 700, lineHeight: 1.6, marginBottom: complaint.imageUrl ? 12 : 4 }}>
+                  <p style={{ color: "#431407", fontSize: "15px", fontWeight: 700, lineHeight: 1.6, marginBottom: complaint.imageUrl ? 12 : 4 }}>
                     {complaint.description}
                   </p>
 
@@ -310,12 +310,12 @@ export default async function SuperAdminDashboard({
                     <div style={{
                       marginBottom: 12,
                       padding: "8px 14px",
-                      background: "rgba(239,68,68,0.06)",
-                      border: "1px solid rgba(239,68,68,0.2)",
+                      background: "rgba(249,115,22,0.06)",
+                      border: "1px solid rgba(249,115,22,0.2)",
                       borderRadius: 10,
                     }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#b91c1c" }}>🚨 Escalation note: </span>
-                      <span style={{ fontSize: 13, color: "#7f1d1d" }}>{complaint.forwardNote}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#9a3412" }}>🚨 Escalation note: </span>
+                      <span style={{ fontSize: 13, color: "#431407" }}>{complaint.forwardNote}</span>
                     </div>
                   )}
 
@@ -332,7 +332,7 @@ export default async function SuperAdminDashboard({
 
                   {/* Actions */}
                   {!complaint.resolved && (
-                    <div style={{ borderTop: "1px solid rgba(168,85,247,0.12)", paddingTop: 14, marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+                    <div className="border-t border-orange-100 pt-4 flex justify-end" style={{ marginTop: 12 }}>
                       <ResolveButton
                         complaintId={complaint.id}
                         resolveAction={superAdminResolveComplaint}
@@ -347,9 +347,9 @@ export default async function SuperAdminDashboard({
       </main>
 
       {/* Footer */}
-      <footer style={{ textAlign: "center", padding: "32px 24px", borderTop: "1px solid rgba(245,208,254,0.4)" }}>
+      <footer style={{ textAlign: "center", padding: "32px 24px", borderTop: "1px solid rgba(254,215,170,0.4)" }}>
         <style>{`
-          @keyframes superadmin-shine {
+          @keyframes nexalaya-shine-sa {
             0%   { transform: translateX(-150%); }
             100% { transform: translateX(300%); }
           }
@@ -358,22 +358,22 @@ export default async function SuperAdminDashboard({
           style={{
             display: "inline-flex", alignItems: "center", position: "relative", overflow: "hidden",
             padding: "8px 20px", borderRadius: "50px",
-            border: "1px solid rgba(168,85,247,0.25)",
-            background: "rgba(168,85,247,0.05)",
-            boxShadow: "0 0 18px rgba(168,85,247,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
-            fontSize: "14px", fontWeight: 600, color: "#7e22ce", gap: 4,
+            border: "1px solid rgba(249,115,22,0.25)",
+            background: "rgba(249,115,22,0.05)",
+            boxShadow: "0 0 18px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+            fontSize: "14px", fontWeight: 600, color: "#9a3412", gap: 4,
           }}
         >
           <div
             style={{
               position: "absolute", top: 0, left: 0, width: "40%", height: "100%",
               background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
-              animation: "superadmin-shine 2.6s ease-in-out infinite",
+              animation: "nexalaya-shine-sa 2.6s ease-in-out infinite",
               pointerEvents: "none",
             }}
           />
           Powered By{" "}
-          <span style={{ fontWeight: 800, color: "#a855f7", marginLeft: 4 }}>Nexalaya</span>
+          <span style={{ fontWeight: 800, color: "#f97316", marginLeft: 4 }}>Nexalaya</span>
         </div>
       </footer>
     </div>
