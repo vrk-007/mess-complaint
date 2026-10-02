@@ -2,9 +2,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
-import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
-import ResolveButton from "./ResolveButton";
+import ResolveModal from "./ResolveModal";
+import ApprovalActions from "./ApprovalActions";
 import EscalateButton from "./EscalateButton";
 import RemarkBox from "./RemarkBox";
 import QRModal from "./QRModal";
@@ -177,15 +177,10 @@ export default async function AdminDashboard({
           </div>
           <div className="stats-grid">
             {[
-              { label: "Total",    value: complaints.length,                                  color: "#f97316" },
-              { label: "Pending",  value: complaints.filter(c => !c.resolved).length,         color: "#ef4444" },
-              { label: "Resolved", value: complaints.filter(c => c.resolved).length,          color: "#22c55e" },
-              { label: "This Week", value: complaints.filter(c => {
-                  const d = new Date(c.createdAt);
-                  const now = new Date();
-                  const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
-                  return diff <= 7;
-                }).length, color: "#8b5cf6" },
+              { label: "Total",           value: complaints.length,                                            color: "#f97316" },
+              { label: "Active",           value: complaints.filter(c => !c.resolved && !c.pendingApproval).length, color: "#ef4444" },
+              { label: "Pending Approval", value: complaints.filter(c => c.pendingApproval).length,              color: "#f59e0b" },
+              { label: "Resolved",         value: complaints.filter(c => c.resolved).length,                     color: "#22c55e" },
             ].map(({ label, value, color }) => (
               <div
                 key={label}
@@ -323,13 +318,29 @@ export default async function AdminDashboard({
                           fontWeight: 700,
                           background: complaint.resolved
                             ? "rgba(34,197,94,0.12)"
+                            : complaint.pendingApproval
+                            ? "rgba(245,158,11,0.12)"
                             : "rgba(239,68,68,0.10)",
-                          color: complaint.resolved ? "#15803d" : "#b91c1c",
-                          border: `1px solid ${complaint.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.25)"}`,
+                          color: complaint.resolved
+                            ? "#15803d"
+                            : complaint.pendingApproval
+                            ? "#92400e"
+                            : "#b91c1c",
+                          border: `1px solid ${
+                            complaint.resolved
+                              ? "rgba(34,197,94,0.3)"
+                              : complaint.pendingApproval
+                              ? "rgba(245,158,11,0.35)"
+                              : "rgba(239,68,68,0.25)"
+                          }`,
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
+                        {complaint.resolved
+                          ? "✅ Resolved"
+                          : complaint.pendingApproval
+                          ? "⏳ Pending Approval"
+                          : "🔴 Active"}
                       </span>
                       <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
                         🕒 {formatDate(complaint.createdAt)}
@@ -363,6 +374,35 @@ export default async function AdminDashboard({
                     remarkAt={complaint.remarkAt}
                   />
 
+                  {/* ── Approval Actions (Escalators only, when complaint is pending approval) ── */}
+                  {canEscalate && complaint.pendingApproval && !complaint.resolved && (
+                    <div style={{ marginTop: 4 }}>
+                      <ApprovalActions
+                        complaintId={complaint.id}
+                        resolvedBy={complaint.resolvedBy}
+                        resolutionRemark={complaint.resolutionRemark}
+                      />
+                    </div>
+                  )}
+
+                  {/* ── Pending Approval notice for non-escalators ── */}
+                  {!canEscalate && complaint.pendingApproval && !complaint.resolved && (
+                    <div
+                      style={{
+                        marginTop: 4,
+                        padding: "10px 14px",
+                        background: "rgba(245,158,11,0.07)",
+                        border: "1px solid rgba(245,158,11,0.3)",
+                        borderRadius: 12,
+                        fontSize: 13,
+                        color: "#92400e",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ⏳ Resolution submitted — waiting for senior admin approval.
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="border-t border-orange-100 pt-4 flex justify-end gap-3 flex-wrap">
                     {canEscalate && (
@@ -373,11 +413,9 @@ export default async function AdminDashboard({
                         forwardNote={complaint.forwardNote}
                       />
                     )}
-                    {!complaint.resolved && (
-                      <ResolveButton
-                        complaintId={complaint.id}
-                        resolveAction={resolveComplaint}
-                      />
+                    {/* Only show Resolve button if NOT already resolved and NOT already pending approval */}
+                    {!complaint.resolved && !complaint.pendingApproval && (
+                      <ResolveModal complaintId={complaint.id} />
                     )}
                   </div>
                 </div>

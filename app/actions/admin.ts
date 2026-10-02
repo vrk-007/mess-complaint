@@ -5,27 +5,139 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { revalidatePath } from "next/cache";
 
-export async function resolveComplaint(complaintId: string) {
-  const session = await auth();
+// Helper: get escalator emails from env
+function getEscalateEmails(): string[] {
+  return (process.env.ESCALATE_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
 
-  // ── Auth check: only admins ───────────────────────────────────────────────
-  if (!session || session.user.role !== "ADMIN") throw new Error("Unauthorized");
+// ── Step 1 (Maker): Admin submits a resolution request with a remark ──────────
+// Sets pendingApproval=true, saves resolutionRemark & resolvedBy.
+// Does NOT set resolved=true yet.
+export async function requestResolve(
+  complaintId: string,
+  remark: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, error: "Unauthorized." };
 
-  // ── Rate limit: max 60 resolves per minute per admin (prevent script abuse)
-  const allowed = rateLimit("resolveComplaint", session.user.id, {
-    max: 60,
-    windowMs: 60 * 1000,
-  });
-  if (!allowed) throw new Error("Too many actions. Please slow down.");
+    if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN")
+      return { success: false, error: "Only admins can request resolution." };
 
-  // ── Input validation ──────────────────────────────────────────────────────
-  if (!complaintId || typeof complaintId !== "string" || complaintId.length > 64)
-    throw new Error("Invalid complaint ID.");
+    const allowed = rateLimit("requestResolve", session.user.id, {
+      max: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!allowed) return { success: false, error: "Too many actions. Please slow down." };
 
-  await prisma.complaint.update({
-    where: { id: complaintId },
-    data:  { resolved: true },
-  });
+    if (!complaintId || typeof complaintId !== "string" || complaintId.length > 64)
+      return { success: false, error: "Invalid complaint ID." };
 
-  revalidatePath("/admin");
+    const trimmed = remark.trim().slice(0, 500);
+    if (trimmed.length < 2) return { success: false, error: "Remark is too short (min 2 chars)." };
+
+    const userEmail = session.user.email.trim().toLowerCase();
+
+    await prisma.complaint.update({
+      where: { id: complaintId },
+      data: {
+        pendingApproval: true,
+        resolutionRemark: trimmed,
+        resolvedBy: userEmail,
+        // clear any previous rejection state
+        approvedBy: null,
+        approvedAt: null,
+      },
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to submit resolution request." };
+  }
+}
+
+// ── Step 2a (Checker): Escalator APPROVES → complaint is finally resolved ─────
+export async function approveResolution(
+  complaintId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, error: "Unauthorized." };
+
+    const userEmail = session.user.email.trim().toLowerCase();
+    const escalateEmails = getEscalateEmails();
+    if (!escalateEmails.includes(userEmail))
+      return { success: false, error: "Only authorized escalators can approve resolutions." };
+
+    const allowed = rateLimit("approveResolution", session.user.id, {
+      max: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!allowed) return { success: false, error: "Too many actions. Please slow down." };
+
+    if (!complaintId || typeof complaintId !== "string" || complaintId.length > 64)
+      return { success: false, error: "Invalid complaint ID." };
+
+    await prisma.complaint.update({
+      where: { id: complaintId },
+      data: {
+        resolved: true,
+        pendingApproval: false,
+        approvedBy: userEmail,
+        approvedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/superadmin");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to approve resolution." };
+  }
+}
+
+// ── Step 2b (Checker): Escalator REJECTS → complaint goes back to Active ──────
+export async function rejectResolution(
+  complaintId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, error: "Unauthorized." };
+
+    const userEmail = session.user.email.trim().toLowerCase();
+    const escalateEmails = getEscalateEmails();
+    if (!escalateEmails.includes(userEmail))
+      return { success: false, error: "Only authorized escalators can reject resolutions." };
+
+    const allowed = rateLimit("rejectResolution", session.user.id, {
+      max: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!allowed) return { success: false, error: "Too many actions. Please slow down." };
+
+    if (!complaintId || typeof complaintId !== "string" || complaintId.length > 64)
+      return { success: false, error: "Invalid complaint ID." };
+
+    // Reset back to fully Active state
+    await prisma.complaint.update({
+      where: { id: complaintId },
+      data: {
+        pendingApproval: false,
+        resolutionRemark: null,
+        resolvedBy: null,
+        approvedBy: null,
+        approvedAt: null,
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/superadmin");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to reject resolution." };
+  }
 }

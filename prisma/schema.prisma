@@ -85,6 +85,13 @@ model Complaint {
   remarkBy     String?   // email of who wrote the remark
   remarkAt     DateTime?
 
+  // ── Resolution Approval Workflow ──────────────────────────────
+  pendingApproval   Boolean   @default(false)  // Admin submitted resolve, waiting for Escalator
+  resolutionRemark  String?   // remark Admin typed when requesting resolve
+  resolvedBy        String?   // email of Admin who submitted the resolution request
+  approvedBy        String?   // email of Escalator who approved it
+  approvedAt        DateTime?
+
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   token ComplaintToken? @relation(fields: [tokenId], references: [id])
 
