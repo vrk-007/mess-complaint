@@ -34,15 +34,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.hostel = (user as any).hostel;
         session.user.mess = (user as any).mess;
 
-        // Auto-assign ADMIN role based on comma-separated ADMIN_EMAILS env variable
+        const userEmail = session.user.email?.trim().toLowerCase() ?? "";
+
+        // Auto-assign SUPER_ADMIN role from SUPER_ADMIN_EMAILS env variable
+        const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? "")
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean);
+
+        if (userEmail && superAdminEmails.includes(userEmail) && session.user.role !== "SUPER_ADMIN") {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { role: "SUPER_ADMIN" },
+          });
+          session.user.role = "SUPER_ADMIN";
+        }
+
+        // Auto-assign ADMIN role from ADMIN_EMAILS env variable (if not already SUPER_ADMIN)
         const adminEmails = (process.env.ADMIN_EMAILS ?? "")
           .split(",")
           .map((e) => e.trim().toLowerCase())
           .filter(Boolean);
 
-        const userEmail = session.user.email?.trim().toLowerCase() ?? "";
-        if (userEmail && adminEmails.includes(userEmail) && session.user.role !== "ADMIN") {
-          // Upgrade them in the database
+        if (
+          userEmail &&
+          adminEmails.includes(userEmail) &&
+          session.user.role !== "ADMIN" &&
+          session.user.role !== "SUPER_ADMIN"
+        ) {
           await prisma.user.update({
             where: { id: user.id },
             data: { role: "ADMIN" },

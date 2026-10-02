@@ -47,10 +47,14 @@ export default async function Home() {
 
   if (!session) redirect("/login");
   
-  // If the user is an admin, instantly redirect them to the admin dashboard
+  // SuperAdmins go to the dedicated superadmin portal
+  if (session.user.role === "SUPER_ADMIN") redirect("/superadmin");
+  
+  // Admins go to the admin portal
   if (session.user.role === "ADMIN") redirect("/admin");
   
   if (!session.user.rollNo) redirect("/onboarding");
+
 
   // Fetch this student's complaints, newest first
   const complaints = await prisma.complaint.findMany({

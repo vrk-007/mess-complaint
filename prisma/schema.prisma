@@ -74,11 +74,23 @@ model Complaint {
   resolved     Boolean  @default(false)
   createdAt    DateTime @default(now())
 
+  // ── Escalation to SuperAdmin ──────────────────────────────────
+  isForwarded  Boolean   @default(false)
+  forwardedAt  DateTime?
+  forwardedBy  String?   // email of the Admin who escalated
+  forwardNote  String?   // reason for escalation (max 300 chars)
+
+  // ── Admin / SuperAdmin Remarks ────────────────────────────────
+  adminRemark  String?   // latest remark text
+  remarkBy     String?   // email of who wrote the remark
+  remarkAt     DateTime?
+
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   token ComplaintToken? @relation(fields: [tokenId], references: [id])
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([resolved, createdAt(sort: Desc)])
+  @@index([isForwarded, createdAt(sort: Desc)])
 }
 
 model ComplaintToken {
@@ -99,4 +111,5 @@ enum TokenStatus {
 enum Role {
   STUDENT
   ADMIN
+  SUPER_ADMIN
 }

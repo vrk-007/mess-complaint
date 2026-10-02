@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: ["/", "/login"],
-      disallow: ["/admin", "/dashboard", "/onboarding", "/api/"],
+      disallow: ["/admin", "/superadmin", "/dashboard", "/onboarding", "/api/"],
     },
     sitemap: "https://messportal.vercel.app/sitemap.xml",
   };

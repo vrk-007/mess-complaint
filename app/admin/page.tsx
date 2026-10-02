@@ -5,6 +5,8 @@ import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import { resolveComplaint } from "@/app/actions/admin";
 import FilterBar from "./FilterBar";
 import ResolveButton from "./ResolveButton";
+import EscalateButton from "./EscalateButton";
+import RemarkBox from "./RemarkBox";
 import QRModal from "./QRModal";
 import ComplaintPhotoViewer from "./ComplaintPhotoViewer";
 import { Suspense } from "react";
@@ -52,9 +54,18 @@ export default async function AdminDashboard({
   const session = await auth();
   const params = await searchParams;
 
-  // Role-based access control: Only ADMIN can access
+  // Role-based access control: Only ADMIN (or SUPER_ADMIN) can access
   if (!session) redirect("/login");
-  if (session.user.role !== "ADMIN") redirect("/");
+  if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") redirect("/");
+
+  // Determine if this admin can escalate complaints
+  const escalateEmails = (process.env.ESCALATE_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const canEscalate = escalateEmails.includes(
+    (session.user.email ?? "").trim().toLowerCase()
+  );
 
   // Build Prisma where clause from all filters
   const whereClause: any = {};
@@ -344,15 +355,31 @@ export default async function AdminDashboard({
                     <ComplaintPhotoViewer src={complaint.imageUrl} />
                   )}
 
-                  {/* Action Button */}
-                  {!complaint.resolved && (
-                    <div className="border-t border-orange-100 pt-4 flex justify-end">
+                  {/* Remarks Box */}
+                  <RemarkBox
+                    complaintId={complaint.id}
+                    existingRemark={complaint.adminRemark}
+                    remarkBy={complaint.remarkBy}
+                    remarkAt={complaint.remarkAt}
+                  />
+
+                  {/* Action Buttons */}
+                  <div className="border-t border-orange-100 pt-4 flex justify-end gap-3 flex-wrap">
+                    {canEscalate && (
+                      <EscalateButton
+                        complaintId={complaint.id}
+                        isAlreadyForwarded={complaint.isForwarded}
+                        forwardedBy={complaint.forwardedBy}
+                        forwardNote={complaint.forwardNote}
+                      />
+                    )}
+                    {!complaint.resolved && (
                       <ResolveButton
                         complaintId={complaint.id}
                         resolveAction={resolveComplaint}
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               );
             })}
