@@ -73,11 +73,6 @@ export default function ApprovalActions({
           <p style={{ margin: 0, fontSize: 13, color: "#431407", lineHeight: 1.55 }}>
             {resolutionRemark}
           </p>
-          {resolvedBy && (
-            <p style={{ margin: "5px 0 0", fontSize: 11, color: "#9a3412", opacity: 0.75 }}>
-              — Submitted by {resolvedBy.split("@")[0]}
-            </p>
-          )}
         </div>
       )}
 

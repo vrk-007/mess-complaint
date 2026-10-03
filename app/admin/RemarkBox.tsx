@@ -161,12 +161,6 @@ export default function RemarkBox({
           }}
         >
           <p style={{ margin: 0, fontSize: 13, color: "#431407", lineHeight: 1.55 }}>{saved}</p>
-          {(savedBy || savedAt) && (
-            <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9a3412", opacity: 0.7 }}>
-              — {savedBy ? savedBy.split("@")[0] : "Admin"}
-              {savedAt ? `, ${savedAt}` : ""}
-            </p>
-          )}
         </div>
       ) : (
         <p style={{ fontSize: 13, color: "#9a3412", opacity: 0.55, fontStyle: "italic", margin: 0 }}>

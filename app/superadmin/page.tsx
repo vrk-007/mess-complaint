@@ -327,11 +327,6 @@ export default async function SuperAdminDashboard({
                     >
                       <span style={{ fontWeight: 700 }}>⏳ Resolution pending approval:</span>{" "}
                       {complaint.resolutionRemark}
-                      {complaint.resolvedBy && (
-                        <span style={{ display: "block", fontSize: 11, opacity: 0.7, marginTop: 4 }}>
-                          — Submitted by {complaint.resolvedBy.split("@")[0]}
-                        </span>
-                      )}
                     </div>
                   )}
                 </div>

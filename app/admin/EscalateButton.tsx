@@ -38,11 +38,6 @@ export default function EscalateButton({ complaintId, isAlreadyForwarded, forwar
         title={forwardNote ? `Note: ${forwardNote}` : undefined}
       >
         🚨 Escalated to SuperAdmin
-        {forwardedBy && (
-          <span style={{ fontWeight: 400, opacity: 0.7, fontSize: "11px" }}>
-            &nbsp;by {forwardedBy.split("@")[0]}
-          </span>
-        )}
       </div>
     );
   }

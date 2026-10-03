@@ -191,9 +191,8 @@ export async function sendReminderEmail({
               <div style="font-size:12px;font-weight:700;color:#9a3412;">Awaiting Your Approval</div>
             </div>
           </div>
-          ${
-            complaints.length > 0
-              ? `<table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #fed7aa;">
+          ${complaints.length > 0
+        ? `<table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #fed7aa;">
               <thead>
                 <tr style="background:linear-gradient(135deg,#f97316,#ef4444);">
                   <th style="padding:9px 10px;text-align:left;font-size:12px;color:white;font-weight:700;">Student</th>
@@ -205,8 +204,8 @@ export async function sendReminderEmail({
               <tbody>${rows}</tbody>
             </table>
             ${complaints.length > 10 ? `<p style="font-size:12px;color:#9a3412;text-align:center;margin-top:10px;">+ ${complaints.length - 10} more complaint(s) on the portal</p>` : ""} `
-              : `<p style="text-align:center;color:#78350f;font-size:14px;">🎉 No active complaints right now!</p>`
-          }
+        : `<p style="text-align:center;color:#78350f;font-size:14px;">🎉 No active complaints right now!</p>`
+      }
           <div style="margin-top:24px;text-align:center;">
             <a href="${adminUrl}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#f97316,#ef4444);color:white;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(249,115,22,0.35);">
               📋 Open Admin Portal
