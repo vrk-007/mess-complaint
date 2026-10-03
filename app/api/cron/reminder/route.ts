@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendReminderEmail } from "@/lib/email";
 
+export const dynamic = "force-dynamic";
+
 // This route is called by Vercel Cron every 2 days at 9 AM UTC.
 // It is protected by a CRON_SECRET so nobody can trigger it manually.
 export async function GET(request: Request) {

@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return null;
+  return new Resend(apiKey);
+}
 
 function getFromAddress(): string {
   return process.env.RESEND_FROM_EMAIL?.trim() || "Mess Portal <noreply@nexalaya.com>";
@@ -16,7 +20,8 @@ async function sendEmail({
   subject: string;
   html: string;
 }) {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend();
+  if (!resend) {
     console.error("[email] RESEND_API_KEY is not set");
     return;
   }
