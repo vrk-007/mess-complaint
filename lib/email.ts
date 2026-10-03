@@ -1,17 +1,13 @@
-// ── Brevo (Sendinblue) HTTPS API — works on Vercel (no SMTP port issues) ──────
+import { Resend } from "resend";
 
-const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-function getApiKey(): string {
-  return (process.env.BREVO_API_KEY ?? "").trim();
-}
-
-function getSenderEmail(): string {
-  return (process.env.BREVO_SENDER_EMAIL ?? "").trim();
+function getFromAddress(): string {
+  return process.env.RESEND_FROM_EMAIL?.trim() || "Mess Portal <noreply@nexalaya.com>";
 }
 
 // ── Core send helper ──────────────────────────────────────────────────────────
-async function sendBrevoEmail({
+async function sendEmail({
   to,
   subject,
   html,
@@ -20,35 +16,25 @@ async function sendBrevoEmail({
   subject: string;
   html: string;
 }) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    console.error("[email] BREVO_API_KEY is not set");
+  if (!process.env.RESEND_API_KEY) {
+    console.error("[email] RESEND_API_KEY is not set");
     return;
   }
   if (!to.length) return;
 
-  const body = {
-    sender: { name: "Mess Portal", email: getSenderEmail() },
-    to: to.map((email) => ({ email })),
+  const { data, error } = await resend.emails.send({
+    from: getFromAddress(),
+    to,
     subject,
-    htmlContent: html,
-  };
-
-  const res = await fetch(BREVO_API_URL, {
-    method: "POST",
-    headers: {
-      "api-key": apiKey,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(body),
+    html,
   });
 
-  if (!res.ok) {
-    const error = await res.text();
-    console.error("[email] Brevo send failed:", res.status, error);
-    throw new Error(`Brevo API error ${res.status}: ${error}`);
+  if (error) {
+    console.error("[email] Resend error:", error);
+    throw new Error(`Resend send failed: ${error.message}`);
   }
+
+  return data;
 }
 
 // ── Helper: get comma-separated env emails as array ──────────────────────────
@@ -76,7 +62,7 @@ export async function sendApprovalRequestEmail({
   const to = getEmails("ESCALATE_EMAILS");
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
 
-  await sendBrevoEmail({
+  await sendEmail({
     to,
     subject: "⏳ Approval Required — Complaint Resolution Request",
     html: `
@@ -123,7 +109,7 @@ export async function sendEscalationEmail({
   const to = getEmails("SUPER_ADMIN_EMAILS");
   const superAdminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/superadmin`;
 
-  await sendBrevoEmail({
+  await sendEmail({
     to,
     subject: "🚨 New Complaint Escalated to SuperAdmin",
     html: `
@@ -180,7 +166,7 @@ export async function sendReminderEmail({
     )
     .join("");
 
-  await sendBrevoEmail({
+  await sendEmail({
     to,
     subject: `📋 Reminder: ${pendingCount} Pending Complaint${pendingCount !== 1 ? "s" : ""} Need Attention`,
     html: `
