@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { revalidatePath } from "next/cache";
-import { sendApprovalRequestEmail } from "@/lib/email";
+import { sendApprovalRequestEmail, sendResolutionEmail } from "@/lib/email";
 
 // Helper: get escalator emails from env
 function getEscalateEmails(): string[] {
@@ -111,6 +111,25 @@ export async function approveResolution(
         approvedAt: new Date(),
       },
     });
+
+    // Fire resolution email to the student (non-blocking)
+    try {
+      const complaint = await prisma.complaint.findUnique({
+        where: { id: complaintId },
+        include: { user: { select: { name: true, email: true } } },
+      });
+      if (complaint && complaint.resolutionRemark) {
+        await sendResolutionEmail({
+          studentEmail: complaint.user.email,
+          studentName: complaint.user.name ?? "Student",
+          description: complaint.description,
+          resolutionRemark: complaint.resolutionRemark,
+          mess: complaint.mess,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[approveResolution] Resolution email failed:", emailErr);
+    }
 
     revalidatePath("/admin");
     revalidatePath("/superadmin");

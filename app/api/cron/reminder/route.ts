@@ -14,35 +14,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Fetch all active (unresolved) complaints with student name
-    const activeComplaints = await prisma.complaint.findMany({
-      where: { resolved: false },
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { name: true } },
-      },
-    });
+    const [pendingCount, pendingApprovalCount] = await Promise.all([
+      prisma.complaint.count({ where: { resolved: false, pendingApproval: false } }),
+      prisma.complaint.count({ where: { resolved: false, pendingApproval: true } }),
+    ]);
 
-    const pendingCount = activeComplaints.filter((c) => !c.pendingApproval).length;
-    const pendingApprovalCount = activeComplaints.filter((c) => c.pendingApproval).length;
+    await sendReminderEmail({ pendingCount, pendingApprovalCount });
 
-    await sendReminderEmail({
-      pendingCount,
-      pendingApprovalCount,
-      complaints: activeComplaints.map((c) => ({
-        studentName: c.user.name ?? "Unknown",
-        description: c.description,
-        createdAt: c.createdAt,
-        mess: c.mess,
-      })),
-    });
-
-    return NextResponse.json({
-      ok: true,
-      sent: true,
-      pendingCount,
-      pendingApprovalCount,
-    });
+    return NextResponse.json({ ok: true, sent: true, pendingCount, pendingApprovalCount });
   } catch (err: any) {
     console.error("[cron/reminder] Error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
