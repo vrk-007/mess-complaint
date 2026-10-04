@@ -56,13 +56,13 @@ export async function sendApprovalRequestEmail({
   studentName,
   description,
   remark,
-  submittedBy,
+  mess,
 }: {
   complaintId: string;
   studentName: string;
   description: string;
   remark: string;
-  submittedBy: string;
+  mess?: string | null;
 }) {
   const to = getEmails("ESCALATE_EMAILS");
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
@@ -78,10 +78,10 @@ export async function sendApprovalRequestEmail({
         </div>
         <div style="padding:24px 28px;">
           <table style="width:100%;border-collapse:collapse;font-size:14px;color:#431407;">
-            <tr><td style="padding:8px 0;font-weight:700;width:140px;">Student</td><td style="padding:8px 0;">${studentName}</td></tr>
-            <tr style="background:rgba(249,115,22,0.05);"><td style="padding:8px 10px;font-weight:700;border-radius:6px;">Complaint</td><td style="padding:8px 10px;">${description}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:700;">Resolution note</td><td style="padding:8px 0;font-style:italic;">${remark}</td></tr>
-            <tr style="background:rgba(249,115,22,0.05);"><td style="padding:8px 10px;font-weight:700;border-radius:6px;">Submitted by</td><td style="padding:8px 10px;">${submittedBy}</td></tr>
+            ${mess ? `<tr><td style="padding:8px 0;font-weight:700;width:140px;">Venue</td><td style="padding:8px 0;">${mess}</td></tr>` : ""}
+            <tr style="background:rgba(249,115,22,0.05);"><td style="padding:8px 10px;font-weight:700;border-radius:6px;">Student</td><td style="padding:8px 10px;">${studentName}</td></tr>
+            <tr><td style="padding:8px 0;font-weight:700;">Complaint</td><td style="padding:8px 0;">${description}</td></tr>
+            <tr style="background:rgba(249,115,22,0.05);"><td style="padding:8px 10px;font-weight:700;border-radius:6px;">Resolution note</td><td style="padding:8px 10px;font-style:italic;">${remark}</td></tr>
           </table>
           <div style="margin-top:24px;text-align:center;">
             <a href="${adminUrl}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#f97316,#ef4444);color:white;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(249,115,22,0.35);">

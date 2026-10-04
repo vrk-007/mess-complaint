@@ -66,7 +66,7 @@ export async function requestResolve(
           studentName: complaint.user.name ?? "Unknown",
           description: complaint.description,
           remark: trimmed,
-          submittedBy: userEmail,
+          mess: complaint.mess,
         });
       }
     } catch (emailErr) {
