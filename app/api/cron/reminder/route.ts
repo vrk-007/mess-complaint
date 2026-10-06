@@ -19,6 +19,11 @@ export async function GET(request: Request) {
       prisma.complaint.count({ where: { resolved: false, pendingApproval: true } }),
     ]);
 
+    // If there are no pending complaints, skip sending reminder email
+    if (pendingCount === 0 && pendingApprovalCount === 0) {
+      return NextResponse.json({ ok: true, sent: false, message: "No pending complaints" });
+    }
+
     await sendReminderEmail({ pendingCount, pendingApprovalCount });
 
     return NextResponse.json({ ok: true, sent: true, pendingCount, pendingApprovalCount });

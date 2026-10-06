@@ -8,11 +8,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isApiAuthRoute = pathname.startsWith("/api/auth");
+  const isApiCronRoute = pathname.startsWith("/api/cron");
   const isLoginPage = pathname === "/login";
   const isOnboardingPage = pathname === "/onboarding";
 
-  // Always allow auth API routes
-  if (isApiAuthRoute) {
+  // Always allow auth and cron API routes
+  if (isApiAuthRoute || isApiCronRoute) {
     return NextResponse.next();
   }
 
