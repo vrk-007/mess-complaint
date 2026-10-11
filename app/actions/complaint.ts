@@ -51,13 +51,16 @@ export async function submitComplaint(
     if (!validMesses.includes(mess))
       return { success: false, error: "Invalid venue selection." };
 
-    // ── QR token check (validate and atomically burn — must come first) ───────
-    if (!qrToken)
-      return {
-        success: false,
-        error: "Mess Authority QR scan is required. Please scan the coordinator's QR code.",
-      };
-    const tokenId = await validateAndBurnToken(qrToken);
+    // ── QR token check (validate and atomically burn — only required for Mess) ─
+    let tokenId: string | null = null;
+    if (mess !== MAIN_CANTEEN) {
+      if (!qrToken)
+        return {
+          success: false,
+          error: "Mess Authority QR scan is required. Please scan the coordinator's QR code.",
+        };
+      tokenId = await validateAndBurnToken(qrToken);
+    }
 
     // ── Enum validation (prevents injecting garbage values) ──────────────────
     if (!VALID_MEALS.includes(meal))

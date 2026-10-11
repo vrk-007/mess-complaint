@@ -24,6 +24,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedVenue, setSelectedVenue] = useState(mess); // "My Mess" or "Main Canteen"
+  const isCanteen = selectedVenue === "Main Canteen";
 
   // QR verification state
   const [qrToken, setQrToken] = useState("");
@@ -79,7 +80,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
 
     if (!selectedMeal) return setErrorMsg("Please select a meal.");
     if (!selectedCategory) return setErrorMsg("Please select a category.");
-    if (!qrVerified || !qrToken) return setErrorMsg("Please scan the Mess Authority QR code first.");
+    if (!isCanteen && (!qrVerified || !qrToken)) return setErrorMsg("Please scan the Mess Authority QR code first.");
 
     const formData = new FormData(e.currentTarget);
     formData.set("qrToken", qrToken);
@@ -117,7 +118,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
 
       const res = await submitComplaint(formData);
       if (!res.success) {
-        throw new Error(res.error || "Failed to submit complaint.");
+        throw new Error(res.error || (isCanteen ? "Failed to submit suggestion." : "Failed to submit complaint."));
       }
 
       setStatus("success");
@@ -144,7 +145,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
         {/* Venue Selector */}
         <div>
-          <label className="label">Complaining About</label>
+          <label className="label">{isCanteen ? "Suggestion For" : "Complaining About"}</label>
           <div style={{ display: "flex", gap: 10 }}>
             {[
               { label: mess, icon: "🍽️", value: mess },
@@ -153,7 +154,10 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               <button
                 key={value}
                 type="button"
-                onClick={() => setSelectedVenue(value)}
+                onClick={() => {
+                  setSelectedVenue(value);
+                  if (value === "Main Canteen") setShowScanner(false);
+                }}
                 style={{
                   flex: 1,
                   padding: "13px 16px",
@@ -272,9 +276,9 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           </div>
         </div>
 
-        {/* Description */}
+        {/* Description / Suggestion */}
         <div>
-          <label htmlFor="description" className="label">Description</label>
+          <label htmlFor="description" className="label">{isCanteen ? "Suggestion" : "Description"}</label>
           <textarea
             id="description"
             name="description"
@@ -282,7 +286,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             minLength={10}
             maxLength={DESC_MAX}
             rows={4}
-            placeholder="Describe your complaint in detail…"
+            placeholder={isCanteen ? "Describe your suggestion in detail…" : "Describe your complaint in detail…"}
             className="input"
             style={{ resize: "vertical", lineHeight: 1.6 }}
             onChange={(e) => setDescLen(e.target.value.length)}
@@ -446,88 +450,90 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           )}
         </div>
 
-        {/* ── QR Authority Verification ─────────────────────────────────── */}
-        <div>
-          <label className="label">🔐 Mess Authority Verification</label>
+        {/* ── QR Authority Verification (Only for Mess, not needed for Main Canteen) ── */}
+        {!isCanteen && (
+          <div>
+            <label className="label">🔐 Mess Authority Verification</label>
 
-          {qrVerified ? (
-            /* Verified state */
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "14px 18px",
-                background: "rgba(34,197,94,0.08)",
-                border: "1.5px solid rgba(34,197,94,0.35)",
-                borderRadius: 14,
-              }}
-            >
-              <span style={{ fontSize: "24px" }}>✅</span>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: "14px", color: "#15803d" }}>
-                  Mess Authority Verified
-                </div>
-                <div style={{ fontSize: "12px", color: "#16a34a", marginTop: 2 }}>
-                  QR scanned successfully — you may now submit
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setQrVerified(false); setQrToken(""); }}
+            {qrVerified ? (
+              /* Verified state */
+              <div
                 style={{
-                  marginLeft: "auto",
-                  fontSize: "11px",
-                  color: "#6b7280",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "14px 18px",
+                  background: "rgba(34,197,94,0.08)",
+                  border: "1.5px solid rgba(34,197,94,0.35)",
+                  borderRadius: 14,
                 }}
               >
-                Re-scan
+                <span style={{ fontSize: "24px" }}>✅</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: "14px", color: "#15803d" }}>
+                    Mess Authority Verified
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#16a34a", marginTop: 2 }}>
+                    QR scanned successfully — you may now submit
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setQrVerified(false); setQrToken(""); }}
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: "11px",
+                    color: "#6b7280",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: 0,
+                  }}
+                >
+                  Re-scan
+                </button>
+              </div>
+            ) : (
+              /* Scan button */
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: 14,
+                  border: "2px dashed #fed7aa",
+                  background: "#fff7ed",
+                  color: "#9a3412",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "#ffedd5";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#fb923c";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "#fff7ed";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#fed7aa";
+                }}
+              >
+                <span style={{ fontSize: "22px" }}>📷</span>
+                Scan Mess QR to Verify
               </button>
-            </div>
-          ) : (
-            /* Scan button */
-            <button
-              type="button"
-              onClick={() => setShowScanner(true)}
-              style={{
-                width: "100%",
-                padding: "16px",
-                borderRadius: 14,
-                border: "2px dashed #fed7aa",
-                background: "#fff7ed",
-                color: "#9a3412",
-                fontWeight: 700,
-                fontSize: "15px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "#ffedd5";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#fb923c";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "#fff7ed";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "#fed7aa";
-              }}
-            >
-              <span style={{ fontSize: "22px" }}>📷</span>
-              Scan Mess QR to Verify
-            </button>
-          )}
+            )}
 
-          <div style={{ fontSize: "12px", color: "#78350f", marginTop: 6, fontWeight: 500 }}>
-            The on-duty Mess or Canteen Coordinator will show you the QR to scan.
+            <div style={{ fontSize: "12px", color: "#78350f", marginTop: 6, fontWeight: 500 }}>
+              The on-duty Mess or Canteen Coordinator will show you the QR to scan.
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Status messages */}
         {status === "success" && (
@@ -546,7 +552,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               gap: 8,
             }}
           >
-            ✅ Complaint submitted successfully!
+            {isCanteen ? "✅ Suggestion submitted successfully!" : "✅ Complaint submitted successfully!"}
           </div>
         )}
         {(status === "error" || errorMsg) ? (
@@ -572,16 +578,16 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         {/* Submit */}
         <button
           type="submit"
-          disabled={isPending || !qrVerified}
+          disabled={isPending || (!isCanteen && !qrVerified)}
           className="btn-primary"
           style={{
             padding: "16px 24px",
             fontSize: "16px",
             marginTop: "8px",
             width: "100%",
-            opacity: (isPending || !qrVerified) ? 0.5 : 1,
+            opacity: (isPending || (!isCanteen && !qrVerified)) ? 0.5 : 1,
             transition: "opacity 0.2s ease",
-            cursor: !qrVerified ? "not-allowed" : "pointer",
+            cursor: (!isCanteen && !qrVerified) ? "not-allowed" : "pointer",
           }}
           id="submit-complaint-btn"
         >
@@ -601,7 +607,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               Submitting…
             </>
           ) : (
-            "📢 Submit Complaint"
+            isCanteen ? "💡 Submit Suggestion" : "📢 Submit Complaint"
           )}
         </button>
 
@@ -666,8 +672,8 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         `}</style>
       </form>
 
-      {/* QR Scanner modal (lazy-loaded, only mounts when opened) */}
-      {showScanner && (
+      {/* QR Scanner modal (lazy-loaded, only mounts when opened and not canteen) */}
+      {!isCanteen && showScanner && (
         <Suspense fallback={null}>
           <QRScanner
             onScan={handleScan}
