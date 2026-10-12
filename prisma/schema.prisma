@@ -20,9 +20,10 @@ model User {
   role          Role      @default(STUDENT)
   createdAt     DateTime  @default(now())
 
-  accounts   Account[]
-  sessions   Session[]
-  complaints Complaint[]
+  accounts       Account[]
+  sessions       Session[]
+  complaints     Complaint[]
+  canteenRatings CanteenRating[]
 }
 
 model Account {
@@ -119,4 +120,18 @@ enum Role {
   STUDENT
   ADMIN
   SUPER_ADMIN
+}
+
+model CanteenRating {
+  id        String   @id @default(cuid())
+  userId    String
+  item      String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([item, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }

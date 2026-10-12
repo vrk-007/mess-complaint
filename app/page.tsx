@@ -156,24 +156,8 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* New Complaint Form */}
+        {/* New Complaint / Rating Form */}
         <div className="glass" style={{ padding: "28px 28px" }}>
-          <h2
-            style={{
-              fontSize: "18px",
-              fontWeight: 700,
-              color: "#431407",
-              marginBottom: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            📢 New Complaint
-          </h2>
-          <p style={{ fontSize: "13px", color: "#78350f", marginBottom: "24px" }}>
-            Report an issue with your mess/canteen. We take all complaints seriously.
-          </p>
           <ComplaintForm mess={session.user.mess!} />
         </div>
 
