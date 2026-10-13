@@ -9,6 +9,7 @@ import EscalateButton from "./EscalateButton";
 import RemarkBox from "./RemarkBox";
 import QRModal from "./QRModal";
 import ComplaintPhotoViewer from "./ComplaintPhotoViewer";
+import CanteenAnalytics, { CanteenAnalyticsProps } from "./CanteenAnalytics";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -105,6 +106,104 @@ export default async function AdminDashboard({
       },
     },
   });
+
+  const isCanteen = params.mess === "Main Canteen";
+  let canteenAnalyticsData: CanteenAnalyticsProps | null = null;
+
+  if (isCanteen) {
+    const now = new Date();
+    // 1. Monthly Ratings for Top 3 and Lowest Rated items
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyRatings = await prisma.canteenRating.findMany({
+      where: { createdAt: { gte: monthStart } },
+      select: { item: true, rating: true },
+    });
+
+    const itemMonthlyMap: Record<string, { total: number; count: number }> = {};
+    for (const r of monthlyRatings) {
+      if (!itemMonthlyMap[r.item]) itemMonthlyMap[r.item] = { total: 0, count: 0 };
+      itemMonthlyMap[r.item].total += r.rating;
+      itemMonthlyMap[r.item].count += 1;
+    }
+
+    const itemsArray = Object.entries(itemMonthlyMap).map(([item, stat]) => ({
+      item,
+      avg: Number((stat.total / stat.count).toFixed(1)),
+      count: stat.count,
+    }));
+
+    const topRated = [...itemsArray]
+      .sort((a, b) => b.avg - a.avg || b.count - a.count)
+      .slice(0, 3);
+
+    const worstRated = [...itemsArray]
+      .sort((a, b) => a.avg - b.avg || b.count - a.count)
+      .slice(0, 3);
+
+    // 2. Daily Ratings (Individual & Average)
+    let dayStart: Date;
+    let dayEnd: Date;
+    let dateLabel: string;
+
+    if (params.date) {
+      dayStart = new Date(params.date);
+      dayStart.setHours(0, 0, 0, 0);
+      dayEnd = new Date(params.date);
+      dayEnd.setHours(23, 59, 59, 999);
+      dateLabel = new Intl.DateTimeFormat("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(dayStart);
+    } else {
+      dayStart = new Date(now);
+      dayStart.setHours(0, 0, 0, 0);
+      dayEnd = new Date(now);
+      dayEnd.setHours(23, 59, 59, 999);
+      dateLabel = `Today (${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(now)})`;
+    }
+
+    const dailyRatings = await prisma.canteenRating.findMany({
+      where: { createdAt: { gte: dayStart, lte: dayEnd } },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        item: true,
+        rating: true,
+        createdAt: true,
+      },
+    });
+
+    const dailyIndividual = dailyRatings.map((r) => ({
+      id: r.id,
+      item: r.item,
+      rating: r.rating,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
+    const dailyAvgMap: Record<string, { total: number; count: number }> = {};
+    for (const r of dailyRatings) {
+      if (!dailyAvgMap[r.item]) dailyAvgMap[r.item] = { total: 0, count: 0 };
+      dailyAvgMap[r.item].total += r.rating;
+      dailyAvgMap[r.item].count += 1;
+    }
+
+    const dailyAverages = Object.entries(dailyAvgMap)
+      .map(([item, stat]) => ({
+        item,
+        avg: Number((stat.total / stat.count).toFixed(1)),
+        count: stat.count,
+      }))
+      .sort((a, b) => b.avg - a.avg);
+
+    canteenAnalyticsData = {
+      topRated,
+      worstRated,
+      dailyIndividual,
+      dailyAverages,
+      dateLabel,
+    };
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
@@ -204,10 +303,15 @@ export default async function AdminDashboard({
           <FilterBar />
         </Suspense>
 
-        {/* ── Complaints Header ── */}
+        {/* ── Canteen Analytics (Above Suggestions when Main Canteen is filtered) ── */}
+        {isCanteen && canteenAnalyticsData && (
+          <CanteenAnalytics {...canteenAnalyticsData} />
+        )}
+
+        {/* ── Complaints / Suggestions Header ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#431407", display: "flex", alignItems: "center", gap: 8 }}>
-            📋 Complaints
+            {isCanteen ? "💡 Suggestions" : "📋 Complaints"}
           </h2>
           <span
             style={{
@@ -223,7 +327,7 @@ export default async function AdminDashboard({
           </span>
         </div>
 
-        {/* Complaints List (Card Style) */}
+        {/* Complaints / Suggestions List (Card Style) */}
         {complaints.length === 0 ? (
           <div
             className="glass"
@@ -235,10 +339,10 @@ export default async function AdminDashboard({
           >
             <div style={{ fontSize: "48px", marginBottom: 16 }}>✅</div>
             <div style={{ fontWeight: 600, fontSize: "16px", marginBottom: 6 }}>
-              No complaints found!
+              {isCanteen ? "No suggestions found!" : "No complaints found!"}
             </div>
             <div style={{ fontSize: "14px", opacity: 0.7 }}>
-              Everything is running smoothly.
+              {isCanteen ? "No suggestions have been submitted for Main Canteen." : "Everything is running smoothly."}
             </div>
           </div>
         ) : (
