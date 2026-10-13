@@ -132,11 +132,15 @@ export default async function AdminDashboard({
       count: stat.count,
     }));
 
-    const topRated = [...itemsArray]
+    // Top rated: Only items with avg >= 3.0 stars (Best performers, max 3)
+    const topRated = itemsArray
+      .filter((item) => item.avg >= 3.0)
       .sort((a, b) => b.avg - a.avg || b.count - a.count)
       .slice(0, 3);
 
-    const worstRated = [...itemsArray]
+    // Lowest rated: Only items with avg < 3.0 stars (Needs improvement, max 3)
+    const worstRated = itemsArray
+      .filter((item) => item.avg < 3.0)
       .sort((a, b) => a.avg - b.avg || b.count - a.count)
       .slice(0, 3);
 
