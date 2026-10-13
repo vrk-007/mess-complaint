@@ -61,11 +61,8 @@ export default function CanteenAnalytics({
             <span style={{ fontSize: "20px" }}>🏆</span>
             <div>
               <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#78350f", margin: 0 }}>
-                Top 3 Rated Items
+                Top 3 Rated Items of this Month
               </h3>
-              <span style={{ fontSize: "11px", color: "#b45309", fontWeight: 600 }}>
-                This Month's Best Performers
-              </span>
             </div>
           </div>
 
@@ -141,7 +138,7 @@ export default function CanteenAnalytics({
             <span style={{ fontSize: "20px" }}>⚠️</span>
             <div>
               <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#7f1d1d", margin: 0 }}>
-                Lowest Rated Items
+                Lowest Rated Items of this Month
               </h3>
               <span style={{ fontSize: "11px", color: "#b91c1c", fontWeight: 600 }}>
                 Needs Quality Improvement
