@@ -5,6 +5,7 @@ import { submitComplaint } from "@/app/actions/complaint";
 import { submitCanteenRating } from "@/app/actions/canteenRating";
 import { compressImage } from "@/lib/imageCompression";
 import { supabase } from "@/lib/supabaseClient";
+import FoodIcon from "@/app/components/FoodIcon";
 
 const QRScanner = lazy(() => import("./QRScanner"));
 
@@ -236,53 +237,75 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             </p>
           </div>
 
-          {/* Item Dropdown */}
+          {/* Item Dropdown with Food Icon Preview */}
           <div>
             <label htmlFor="canteen-item-dropdown" className="label" style={{ fontSize: "12px", marginBottom: 6 }}>
               Select Item
             </label>
-            <div style={{ position: "relative" }}>
-              <select
-                id="canteen-item-dropdown"
-                value={selectedItem}
-                onChange={(e) => setSelectedItem(e.target.value)}
-                className="input"
-                style={{
-                  width: "100%",
-                  padding: "12px 38px 12px 14px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  borderRadius: "12px",
-                  border: "1.5px solid #fed7aa",
-                  background: "#ffffff",
-                  color: selectedItem ? "#431407" : "#9ca3af",
-                  cursor: "pointer",
-                  outline: "none",
-                  appearance: "none",
-                }}
-              >
-                <option value="" disabled>
-                  -- Choose an item (e.g. Samosa, Chai...) --
-                </option>
-                {CANTEEN_ITEMS.map((item) => (
-                  <option key={item} value={item} style={{ color: "#431407" }}>
-                    {item}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ position: "relative", flex: 1 }}>
+                <select
+                  id="canteen-item-dropdown"
+                  value={selectedItem}
+                  onChange={(e) => setSelectedItem(e.target.value)}
+                  className="input"
+                  style={{
+                    width: "100%",
+                    padding: "12px 38px 12px 14px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    borderRadius: "12px",
+                    border: "1.5px solid #fed7aa",
+                    background: "#ffffff",
+                    color: selectedItem ? "#431407" : "#9ca3af",
+                    cursor: "pointer",
+                    outline: "none",
+                    appearance: "none",
+                  }}
+                >
+                  <option value="" disabled>
+                    -- Choose an item (e.g. Samosa, Chai...) --
                   </option>
-                ))}
-              </select>
-              <span
-                style={{
-                  position: "absolute",
-                  right: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  pointerEvents: "none",
-                  fontSize: "11px",
-                  color: "#9a3412",
-                }}
-              >
-                ▼
-              </span>
+                  {CANTEEN_ITEMS.map((item) => (
+                    <option key={item} value={item} style={{ color: "#431407" }}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+                <span
+                  style={{
+                    position: "absolute",
+                    right: "14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                    fontSize: "11px",
+                    color: "#9a3412",
+                  }}
+                >
+                  ▼
+                </span>
+              </div>
+              {selectedItem && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: "#ffffff",
+                    border: "1.5px solid #fed7aa",
+                    boxShadow: "0 2px 8px rgba(249, 115, 22, 0.1)",
+                    flexShrink: 0,
+                    animation: "fadeIn 0.2s ease-out",
+                  }}
+                  title={selectedItem}
+                >
+                  <FoodIcon name={selectedItem} size="30px" />
+                </div>
+              )}
             </div>
           </div>
 

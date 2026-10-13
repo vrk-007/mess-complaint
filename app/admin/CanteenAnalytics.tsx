@@ -1,28 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const ITEM_EMOJIS: Record<string, string> = {
-  "Samosa": "🥟",
-  "Vada Pav": "🥪",
-  "Poha": "🥣",
-  "Misal Pav": "🍲",
-  "Tea / Chai": "☕",
-  "Filter Coffee": "☕",
-  "Veg Sandwich": "🥪",
-  "Grilled Cheese Sandwich": "🥪",
-  "Veg Puff / Patties": "🥐",
-  "Masala Dosa": "🥞",
-  "Idli Sambhar": "⚪",
-  "Maggi": "🍜",
-  "Veg Fried Rice": "🍚",
-  "Veg Thali": "🍱",
-  "Paneer Roll": "🌯",
-};
-
-function getItemEmoji(item: string): string {
-  return ITEM_EMOJIS[item] || "🍽️";
-}
+import FoodIcon from "@/app/components/FoodIcon";
 
 function formatTime(isoString: string): string {
   const d = new Date(isoString);
@@ -113,9 +92,10 @@ export default function CanteenAnalytics({
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <span style={{ fontSize: "18px" }}>{medals[idx] || "⭐"}</span>
+                      <FoodIcon name={item.item} size="30px" />
                       <div>
                         <div style={{ fontSize: "14px", fontWeight: 700, color: "#451a03" }}>
-                          {getItemEmoji(item.item)} {item.item}
+                          {item.item}
                         </div>
                         <div style={{ fontSize: "11px", color: "#92400e" }}>
                           {item.count} rating{item.count > 1 ? "s" : ""}
@@ -190,9 +170,10 @@ export default function CanteenAnalytics({
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: "18px" }}>🔻</span>
+                    <FoodIcon name={item.item} size="30px" />
                     <div>
                       <div style={{ fontSize: "14px", fontWeight: 700, color: "#450a0a" }}>
-                        {getItemEmoji(item.item)} {item.item}
+                        {item.item}
                       </div>
                       <div style={{ fontSize: "11px", color: "#991b1b" }}>
                         {item.count} rating{item.count > 1 ? "s" : ""}
@@ -344,12 +325,15 @@ export default function CanteenAnalytics({
                       boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                        {getItemEmoji(r.item)} {r.item}
-                      </div>
-                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
-                        🕒 {formatTime(r.createdAt)}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <FoodIcon name={r.item} size="28px" />
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                          {r.item}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
+                          🕒 {formatTime(r.createdAt)}
+                        </div>
                       </div>
                     </div>
 
@@ -405,7 +389,7 @@ export default function CanteenAnalytics({
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: "20px" }}>{getItemEmoji(item.item)}</span>
+                      <FoodIcon name={item.item} size="32px" />
                       <div>
                         <div style={{ fontSize: "14px", fontWeight: 700, color: "#431407" }}>
                           {item.item}
