@@ -153,7 +153,7 @@ export default async function AdminDashboard({
             comment: { not: null },
           },
           orderBy: { createdAt: "desc" },
-          take: 3,
+          take: 1,
           select: {
             id: true,
             rating: true,
