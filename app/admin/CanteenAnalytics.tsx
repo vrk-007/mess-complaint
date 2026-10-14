@@ -166,7 +166,6 @@ export default function CanteenAnalytics({
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: "18px" }}>🔻</span>
                     <FoodIcon name={item.item} size="30px" />
                     <div>
                       <div style={{ fontSize: "14px", fontWeight: 700, color: "#450a0a" }}>
