@@ -14,8 +14,19 @@ function formatTime(isoString: string): string {
 
 export interface CanteenAnalyticsProps {
   topRated: { item: string; avg: number; count: number }[];
-  worstRated: { item: string; avg: number; count: number }[];
-  dailyIndividual: { id: string; item: string; rating: number; createdAt: string }[];
+  worstRated: {
+    item: string;
+    avg: number;
+    count: number;
+    recentReviews?: { id: string; rating: number; comment: string; createdAt: string }[];
+  }[];
+  dailyIndividual: {
+    id: string;
+    item: string;
+    rating: number;
+    comment?: string | null;
+    createdAt: string;
+  }[];
   dailyAverages: { item: string; avg: number; count: number }[];
   dateLabel: string;
 }
@@ -156,43 +167,122 @@ export default function CanteenAnalytics({
                 <div
                   key={item.item}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 14px",
+                    padding: "12px 14px",
                     borderRadius: 14,
-                    background: "rgba(255, 255, 255, 0.85)",
-                    border: "1px solid rgba(254, 202, 202, 0.8)",
+                    background: "rgba(255, 255, 255, 0.9)",
+                    border: "1px solid rgba(254, 202, 202, 0.85)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    boxShadow: "0 2px 8px rgba(239, 68, 68, 0.04)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <FoodIcon name={item.item} size="30px" />
-                    <div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#450a0a" }}>
-                        {item.item}
-                      </div>
-                      <div style={{ fontSize: "11px", color: "#991b1b" }}>
-                        {item.count} rating{item.count > 1 ? "s" : ""}
-                      </div>
-                    </div>
-                  </div>
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 4,
-                      padding: "4px 10px",
-                      background: "rgba(239, 68, 68, 0.12)",
-                      color: "#b91c1c",
-                      borderRadius: 20,
-                      fontWeight: 800,
-                      fontSize: "13px",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <span>⭐</span>
-                    <span>{item.avg.toFixed(1)}</span>
-                    <span style={{ fontSize: "11px", opacity: 0.7 }}>/ 5</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <FoodIcon name={item.item} size="30px" />
+                      <div>
+                        <div style={{ fontSize: "14px", fontWeight: 700, color: "#450a0a" }}>
+                          {item.item}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#991b1b" }}>
+                          {item.count} rating{item.count > 1 ? "s" : ""}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "4px 10px",
+                        background: "rgba(239, 68, 68, 0.12)",
+                        color: "#b91c1c",
+                        borderRadius: 20,
+                        fontWeight: 800,
+                        fontSize: "13px",
+                      }}
+                    >
+                      <span>⭐</span>
+                      <span>{item.avg.toFixed(1)}</span>
+                      <span style={{ fontSize: "11px", opacity: 0.7 }}>/ 5</span>
+                    </div>
                   </div>
+
+                  {/* Latest Student Remarks for this worst rated item */}
+                  {item.recentReviews && item.recentReviews.length > 0 ? (
+                    <div
+                      style={{
+                        marginTop: 2,
+                        paddingTop: 8,
+                        borderTop: "1px dashed rgba(254, 202, 202, 0.9)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: "#991b1b",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <span>💬</span> Latest Student Remarks:
+                      </div>
+                      {item.recentReviews.map((rev) => (
+                        <div
+                          key={rev.id}
+                          style={{
+                            background: "rgba(254, 242, 242, 0.85)",
+                            borderLeft: "3px solid #ef4444",
+                            padding: "6px 10px",
+                            borderRadius: "0 8px 8px 0",
+                            fontSize: "12px",
+                            color: "#450a0a",
+                            display: "flex",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: 6,
+                          }}
+                        >
+                          <span style={{ fontStyle: "italic", flex: 1, wordBreak: "break-word" }}>
+                            &ldquo;{rev.comment}&rdquo;
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: rev.rating <= 2 ? "#b91c1c" : "#b45309",
+                              flexShrink: 0,
+                            }}
+                          >
+                            ⭐ {rev.rating}/5
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        marginTop: 2,
+                        fontSize: "11px",
+                        color: "#991b1b",
+                        opacity: 0.65,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      No written remarks submitted yet.
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -302,7 +392,7 @@ export default function CanteenAnalytics({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
                   gap: 12,
                 }}
               >
@@ -315,37 +405,77 @@ export default function CanteenAnalytics({
                       background: "#fffaf5",
                       border: "1.5px solid #fed7aa",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                      flexDirection: "column",
                       gap: 8,
                       boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <FoodIcon name={r.item} size="28px" />
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                          {r.item}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <FoodIcon name={r.item} size="28px" />
+                        <div>
+                          <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                            {r.item}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
+                            🕒 {formatTime(r.createdAt)}
+                          </div>
                         </div>
-                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
-                          🕒 {formatTime(r.createdAt)}
-                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 10,
+                          background:
+                            r.rating >= 4
+                              ? "rgba(34,197,94,0.12)"
+                              : r.rating === 3
+                              ? "rgba(245,158,11,0.12)"
+                              : "rgba(239,68,68,0.12)",
+                          color:
+                            r.rating >= 4
+                              ? "#15803d"
+                              : r.rating === 3
+                              ? "#b45309"
+                              : "#b91c1c",
+                          fontWeight: 800,
+                          fontSize: "13px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {"⭐".repeat(r.rating)} {r.rating}/5
                       </div>
                     </div>
 
-                    <div
-                      style={{
-                        padding: "4px 8px",
-                        borderRadius: 10,
-                        background: r.rating >= 4 ? "rgba(34,197,94,0.12)" : r.rating === 3 ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)",
-                        color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
-                        fontWeight: 800,
-                        fontSize: "13px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {"⭐".repeat(r.rating)} {r.rating}/5
-                    </div>
+                    {/* Student Remark under that particular rated item */}
+                    {r.comment && (
+                      <div
+                        style={{
+                          padding: "7px 10px",
+                          background: "rgba(255, 247, 237, 0.95)",
+                          border: "1px dashed #fed7aa",
+                          borderRadius: 8,
+                          fontSize: "12px",
+                          color: "#78350f",
+                          lineHeight: 1.4,
+                          wordBreak: "break-word",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 6,
+                        }}
+                      >
+                        <span style={{ fontSize: "12px", flexShrink: 0 }}>💬</span>
+                        <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

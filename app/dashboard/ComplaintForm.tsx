@@ -65,6 +65,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [selectedItem, setSelectedItem] = useState("");
   const [selectedRating, setSelectedRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
+  const [ratingRemark, setRatingRemark] = useState("");
   const [ratingStatus, setRatingStatus] = useState<"idle" | "success" | "error">("idle");
   const [ratingError, setRatingError] = useState("");
   const [isRatingPending, setIsRatingPending] = useState(false);
@@ -123,6 +124,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       const res = await submitCanteenRating({
         item: selectedItem,
         rating: selectedRating,
+        comment: ratingRemark.trim() || undefined,
       });
 
       if (!res.success) {
@@ -132,6 +134,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       setRatingStatus("success");
       setSelectedItem("");
       setSelectedRating(0);
+      setRatingRemark("");
       setTimeout(() => setRatingStatus("idle"), 4000);
     } catch (err: any) {
       setRatingStatus("error");
@@ -315,6 +318,37 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 {selectedRating === 0 && "Select stars"}
               </div>
             </div>
+          </div>
+
+          {/* Remark Input (Optional) */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <label htmlFor="canteen-rating-remark" className="label" style={{ fontSize: "12px", margin: 0 }}>
+                Remark <span style={{ fontWeight: 400, opacity: 0.7 }}>(Optional)</span>
+              </label>
+              <span style={{ fontSize: "11px", color: ratingRemark.length > 180 ? "#ef4444" : "#9a3412", opacity: 0.7 }}>
+                {ratingRemark.length}/200
+              </span>
+            </div>
+            <input
+              id="canteen-rating-remark"
+              type="text"
+              maxLength={200}
+              value={ratingRemark}
+              onChange={(e) => setRatingRemark(e.target.value)}
+              placeholder="e.g. Crispy and hot, or too salty / oily today..."
+              className="input"
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                fontSize: "13.5px",
+                borderRadius: "12px",
+                border: "1.5px solid #fed7aa",
+                background: "#ffffff",
+                color: "#431407",
+                outline: "none",
+              }}
+            />
           </div>
 
           {/* Rating Feedback Banners */}
@@ -553,10 +587,10 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           </div>
         </div>
 
-        {/* Camera Capture Section */}
+        {/* Camera Capture Section (Rear Camera Only) */}
         <div>
           <label className="label">
-            Add Photo <span style={{ fontWeight: 400, opacity: 0.6 }}>(Optional)</span>
+            Live Photo Evidence <span style={{ fontWeight: 400, opacity: 0.6 }}>(Optional)</span>
           </label>
           <input
             ref={cameraInputRef}
@@ -609,29 +643,34 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => cameraInputRef.current?.click()}
-              disabled={isCompressing}
-              style={{
-                width: "100%",
-                padding: "16px",
-                borderRadius: "14px",
-                border: "2px dashed #fed7aa",
-                background: "rgba(255,255,255,0.6)",
-                color: "#9a3412",
-                fontWeight: 600,
-                fontSize: "14px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {isCompressing ? "⏳ Processing photo…" : "📷 Take or Upload Photo"}
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={isCompressing}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "2px dashed #fed7aa",
+                  background: "rgba(255,255,255,0.6)",
+                  color: "#9a3412",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {isCompressing ? "⏳ Processing photo…" : "📷 Take Live Photo"}
+              </button>
+              <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.75, marginTop: 5, textAlign: "center" }}>
+                Opens camera to capture live evidence directly
+              </div>
+            </div>
           )}
         </div>
 

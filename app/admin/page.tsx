@@ -139,10 +139,42 @@ export default async function AdminDashboard({
       .slice(0, 3);
 
     // Lowest rated: Only items with avg < 3.0 stars (Needs improvement, max 3)
-    const worstRated = itemsArray
+    const worstRatedRaw = itemsArray
       .filter((item) => item.avg < 3.0)
       .sort((a, b) => a.avg - b.avg || b.count - a.count)
       .slice(0, 3);
+
+    // Fetch latest student remarks/reviews for each worst-rated item
+    const worstRated = await Promise.all(
+      worstRatedRaw.map(async (w) => {
+        const reviews = await prisma.canteenRating.findMany({
+          where: {
+            item: w.item,
+            comment: { not: null },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 3,
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
+          },
+        });
+        const validReviews = reviews
+          .filter((r) => r.comment && r.comment.trim().length > 0)
+          .map((r) => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment as string,
+            createdAt: r.createdAt.toISOString(),
+          }));
+        return {
+          ...w,
+          recentReviews: validReviews,
+        };
+      })
+    );
 
     // 2. Daily Ratings (Individual & Average)
     let dayStart: Date;
@@ -174,6 +206,7 @@ export default async function AdminDashboard({
         id: true,
         item: true,
         rating: true,
+        comment: true,
         createdAt: true,
       },
     });
@@ -182,6 +215,7 @@ export default async function AdminDashboard({
       id: r.id,
       item: r.item,
       rating: r.rating,
+      comment: r.comment,
       createdAt: r.createdAt.toISOString(),
     }));
 
