@@ -224,12 +224,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             background: "linear-gradient(135deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.8))",
             border: "1.5px solid #fed7aa",
             borderRadius: "18px",
-            padding: "20px 22px",
+            padding: "18px clamp(12px, 4vw, 20px)",
             marginBottom: "24px",
             boxShadow: "0 4px 16px rgba(249, 115, 22, 0.08)",
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "14px",
+            boxSizing: "border-box",
+            width: "100%",
           }}
         >
           <div>
@@ -239,7 +241,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 Give Ratings
               </h3>
             </div>
-            <p style={{ fontSize: "13px", color: "#9a3412", margin: 0 }}>
+            <p style={{ fontSize: "13px", color: "#9a3412", margin: 0, lineHeight: 1.4 }}>
               Rate canteen items to help us improve food quality.
             </p>
           </div>
@@ -268,14 +270,23 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "10px 8px",
                 background: "#ffffff",
-                padding: "12px 16px",
+                padding: "12px 14px",
                 borderRadius: "12px",
                 border: "1.5px solid #fed7aa",
+                boxSizing: "border-box",
               }}
             >
-              <div style={{ display: "flex", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "clamp(4px, 2vw, 10px)",
+                }}
+              >
                 {[1, 2, 3, 4, 5].map((star) => {
                   const isHighlighted = (hoverRating || selectedRating) >= star;
                   return (
@@ -289,9 +300,11 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                         background: "none",
                         border: "none",
                         cursor: "pointer",
-                        fontSize: "26px",
+                        fontSize: "clamp(24px, 7vw, 28px)",
                         lineHeight: 1,
-                        padding: 0,
+                        padding: "4px 2px",
+                        touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
                         transition: "transform 0.15s ease",
                         transform: isHighlighted ? "scale(1.2)" : "scale(1)",
                         filter: isHighlighted
@@ -308,10 +321,11 @@ export default function ComplaintForm({ mess }: { mess: string }) {
 
               <div
                 style={{
-                  marginLeft: "auto",
                   fontWeight: 700,
                   fontSize: "12px",
                   color: selectedRating > 0 ? "#ea580c" : "#9ca3af",
+                  whiteSpace: "nowrap",
+                  marginLeft: "auto",
                 }}
               >
                 {selectedRating === 5 && "🤩 5 - Excellent"}
@@ -319,7 +333,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 {selectedRating === 3 && "🙂 3 - Average"}
                 {selectedRating === 2 && "😐 2 - Poor"}
                 {selectedRating === 1 && "😞 1 - Terrible"}
-                {selectedRating === 0 && "Select stars"}
+                {selectedRating === 0 && "Tap stars to rate"}
               </div>
             </div>
           </div>
@@ -345,13 +359,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               className="input"
               style={{
                 width: "100%",
-                padding: "10px 14px",
-                fontSize: "13.5px",
+                padding: "12px 14px",
+                fontSize: "15px",
                 borderRadius: "12px",
                 border: "1.5px solid #fed7aa",
                 background: "#ffffff",
                 color: "#431407",
                 outline: "none",
+                boxSizing: "border-box",
               }}
             />
           </div>
@@ -398,11 +413,15 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             disabled={isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim()}
             className="btn-primary"
             style={{
-              padding: "13px 20px",
-              fontSize: "14px",
+              padding: "14px 20px",
+              minHeight: "48px",
+              fontSize: "15px",
+              fontWeight: 700,
               width: "100%",
               opacity: isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim() ? 0.5 : 1,
               cursor: isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim() ? "not-allowed" : "pointer",
+              touchAction: "manipulation",
+              WebkitTapHighlightColor: "transparent",
             }}
           >
             {isRatingPending ? "Submitting Rating…" : "⭐ Submit Rating"}

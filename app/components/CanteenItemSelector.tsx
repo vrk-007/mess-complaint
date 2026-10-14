@@ -92,13 +92,16 @@ export default function CanteenItemSelector({
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 8px 12px;
+          padding: 10px 12px;
+          min-height: 48px;
           border-radius: 10px;
           cursor: pointer;
           transition: all 0.15s ease;
           background: transparent;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
-        .canteen-item-row:hover {
+        .canteen-item-row:hover, .canteen-item-row:active {
           background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
           transform: translateX(2px);
         }
@@ -132,10 +135,11 @@ export default function CanteenItemSelector({
         style={{
           width: "100%",
           padding: "10px 14px",
+          minHeight: "48px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
+          gap: 10,
           background: "#ffffff",
           border: isOpen ? "1.5px solid #f97316" : "1.5px solid #fed7aa",
           borderRadius: "12px",
@@ -146,15 +150,17 @@ export default function CanteenItemSelector({
           outline: "none",
           transition: "all 0.2s ease",
           textAlign: "left",
+          touchAction: "manipulation",
+          WebkitTapHighlightColor: "transparent",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1, overflow: "hidden" }}>
           {value ? (
             <>
               <div
                 style={{
-                  width: 38,
-                  height: 38,
+                  width: 36,
+                  height: 36,
                   borderRadius: 10,
                   background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
                   border: "1px solid #fed7aa",
@@ -165,16 +171,18 @@ export default function CanteenItemSelector({
                   boxShadow: "0 1px 4px rgba(249, 115, 22, 0.1)",
                 }}
               >
-                <FoodIcon name={value} size="28px" />
+                <FoodIcon name={value} size="26px" />
               </div>
               <span
                 style={{
-                  fontSize: "14.5px",
+                  fontSize: "14px",
                   fontWeight: 700,
                   color: "#431407",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+                  minWidth: 0,
+                  flex: 1,
                 }}
               >
                 {value}
@@ -184,8 +192,8 @@ export default function CanteenItemSelector({
             <>
               <div
                 style={{
-                  width: 38,
-                  height: 38,
+                  width: 36,
+                  height: 36,
                   borderRadius: 10,
                   background: "#fef3c7",
                   border: "1px dashed #fcd34d",
@@ -193,16 +201,21 @@ export default function CanteenItemSelector({
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  fontSize: "18px",
+                  fontSize: "17px",
                 }}
               >
                 🍽️
               </div>
               <span
                 style={{
-                  fontSize: "14px",
+                  fontSize: "13.5px",
                   fontWeight: 500,
                   color: "#9ca3af",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minWidth: 0,
+                  flex: 1,
                 }}
               >
                 {placeholder}
@@ -284,7 +297,7 @@ export default function CanteenItemSelector({
                 flex: 1,
                 border: "none",
                 background: "transparent",
-                fontSize: "13px",
+                fontSize: "16px",
                 fontWeight: 600,
                 color: "#431407",
                 outline: "none",
