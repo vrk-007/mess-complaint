@@ -355,7 +355,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
               maxLength={200}
               value={ratingRemark}
               onChange={(e) => setRatingRemark(e.target.value)}
-              placeholder="Explain your rating (e.g. Crispy and hot, or too oily / cold)..."
+              placeholder="(e.g. Crispy and hot, or too oily)..."
               className="input"
               style={{
                 width: "100%",
