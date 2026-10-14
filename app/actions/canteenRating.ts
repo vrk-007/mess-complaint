@@ -40,6 +40,10 @@ export async function submitCanteenRating(data: {
       return { success: false, error: "Please provide a rating between 1 and 5." };
     }
 
+    if (!comment) {
+      return { success: false, error: "Please provide a remark explaining your rating." };
+    }
+
     await prisma.canteenRating.create({
       data: {
         userId: session.user.id,

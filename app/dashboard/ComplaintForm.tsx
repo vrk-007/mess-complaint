@@ -115,6 +115,10 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       setRatingError("Please select a rating from 1 to 5 stars.");
       return;
     }
+    if (!ratingRemark.trim()) {
+      setRatingError("Please provide a remark explaining your rating.");
+      return;
+    }
 
     setIsRatingPending(true);
     setRatingError("");
@@ -320,11 +324,11 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             </div>
           </div>
 
-          {/* Remark Input (Optional) */}
+          {/* Remark Input (Mandatory) */}
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <label htmlFor="canteen-rating-remark" className="label" style={{ fontSize: "12px", margin: 0 }}>
-                Remark <span style={{ fontWeight: 400, opacity: 0.7 }}>(Optional)</span>
+                Remark <span style={{ color: "#ef4444", fontWeight: 700 }}>*</span>
               </label>
               <span style={{ fontSize: "11px", color: ratingRemark.length > 180 ? "#ef4444" : "#9a3412", opacity: 0.7 }}>
                 {ratingRemark.length}/200
@@ -333,10 +337,11 @@ export default function ComplaintForm({ mess }: { mess: string }) {
             <input
               id="canteen-rating-remark"
               type="text"
+              required
               maxLength={200}
               value={ratingRemark}
               onChange={(e) => setRatingRemark(e.target.value)}
-              placeholder="e.g. Crispy and hot, or too salty / oily today..."
+              placeholder="Explain your rating (e.g. Crispy and hot, or too oily / cold)..."
               className="input"
               style={{
                 width: "100%",
@@ -390,14 +395,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           <button
             type="button"
             onClick={handleRatingSubmit}
-            disabled={isRatingPending || !selectedItem || selectedRating === 0}
+            disabled={isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim()}
             className="btn-primary"
             style={{
               padding: "13px 20px",
               fontSize: "14px",
               width: "100%",
-              opacity: isRatingPending || !selectedItem || selectedRating === 0 ? 0.5 : 1,
-              cursor: isRatingPending || !selectedItem || selectedRating === 0 ? "not-allowed" : "pointer",
+              opacity: isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim() ? 0.5 : 1,
+              cursor: isRatingPending || !selectedItem || selectedRating === 0 || !ratingRemark.trim() ? "not-allowed" : "pointer",
             }}
           >
             {isRatingPending ? "Submitting Rating…" : "⭐ Submit Rating"}
