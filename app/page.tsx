@@ -52,7 +52,14 @@ export default async function Home() {
   
   // Admins go to the admin portal
   if (session.user.role === "ADMIN") redirect("/admin");
-  
+
+  // Faculty/staff with a VNIT email (non-student domain) or specific guest emails → dedicated rating page
+  const userEmail = (session.user.email ?? "").toLowerCase();
+  const isGuestRater = userEmail === "adityashamdire@gmail.com";
+  if ((userEmail.endsWith("vnit.ac.in") && !userEmail.endsWith("students.vnit.ac.in")) || isGuestRater) {
+    redirect("/rate");
+  }
+
   if (!session.user.rollNo) redirect("/onboarding");
 
 

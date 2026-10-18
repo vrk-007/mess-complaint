@@ -19,8 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Admins can use any email domain
       if (adminEmails.includes(email)) return true;
 
-      // Everyone else must use the official student domain
-      if (email.endsWith("@students.vnit.ac.in")) return true;
+      // Students and faculty/staff — any VNIT email domain is allowed
+      // Also allow specific guest emails (e.g. canteen testers)
+      if (email.endsWith("vnit.ac.in") || email === "adityashamdire@gmail.com") return true;
 
       // Block everything else
       return false;

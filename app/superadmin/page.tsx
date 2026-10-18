@@ -125,6 +125,27 @@ export default async function SuperAdminDashboard({
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Rate Canteen shortcut */}
+            <a
+              href="/rate"
+              style={{
+                padding: "7px 16px",
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                border: "1.5px solid #fed7aa",
+                background: "rgba(249,115,22,0.07)",
+                color: "#9a3412",
+                cursor: "pointer",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                transition: "all 0.2s",
+              }}
+            >
+              ⭐ Rate Canteen
+            </a>
             {/* View toggle */}
             <a
               href={viewAll ? "/superadmin" : "/superadmin?view=all"}
