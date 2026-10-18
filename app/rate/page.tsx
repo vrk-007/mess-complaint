@@ -69,7 +69,7 @@ export default async function RatePage() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                THE MESS
+                THE CANTEEN
               </span>
               <span className="nav-logo-sub">{" "}PORTAL</span>
             </span>
@@ -112,7 +112,7 @@ export default async function RatePage() {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: "15px", color: "#431407" }}>
-              Welcome, {session.user.name?.split(" ")[0] ?? "there"}!
+              Welcome !
             </div>
             <div style={{ fontSize: "13px", color: "#9a3412", marginTop: 2 }}>
               Share your feedback on canteen food to help us improve quality.
