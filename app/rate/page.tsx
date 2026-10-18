@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
+import RateProfileDropdown from "./RateProfileDropdown";
 import CanteenRatingForm from "./CanteenRatingForm";
 
 export default async function RatePage() {
@@ -76,7 +76,7 @@ export default async function RatePage() {
           </div>
 
           {/* Profile Dropdown */}
-          <ProfileDropdown user={session.user} />
+          <RateProfileDropdown user={session.user} />
         </div>
       </header>
 
