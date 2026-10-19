@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FoodIcon from "@/app/components/FoodIcon";
 
 function formatTime(isoString: string): string {
@@ -39,6 +39,23 @@ export default function CanteenAnalytics({
   dateLabel,
 }: CanteenAnalyticsProps) {
   const [activeTab, setActiveTab] = useState<"individual" | "average">("individual");
+  const [isEnlarged, setIsEnlarged] = useState(false);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setIsEnlarged(false);
+      }
+    }
+    if (isEnlarged) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isEnlarged]);
 
   return (
     <div
@@ -68,13 +85,40 @@ export default function CanteenAnalytics({
             boxShadow: "0 6px 20px rgba(245, 158, 11, 0.08)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <span style={{ fontSize: "20px" }}>🏆</span>
-            <div>
-              <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#78350f", margin: 0 }}>
-                Top 3 Rated Items of this Month
-              </h3>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "20px" }}>🏆</span>
+              <div>
+                <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#78350f", margin: 0 }}>
+                  Top 3 Rated Items of this Month
+                </h3>
+              </div>
             </div>
+            {topRated.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsEnlarged(true)}
+                title="Enlarge for Canteen Display"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "5px 12px",
+                  borderRadius: 10,
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#92400e",
+                  background: "rgba(255, 255, 255, 0.9)",
+                  border: "1.5px solid #fde68a",
+                  cursor: "pointer",
+                  boxShadow: "0 1px 4px rgba(245, 158, 11, 0.1)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <span>⛶</span>
+                <span>Enlarge</span>
+              </button>
+            )}
           </div>
 
           {topRated.length === 0 ? (
@@ -550,6 +594,184 @@ export default function CanteenAnalytics({
           </div>
         )}
       </div>
+
+      {/* ── Fullscreen Display Modal (Clean & Minimal 3-Column Layout) ── */}
+      {isEnlarged && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "linear-gradient(135deg, #fffaf5 0%, #fff7ed 50%, #fef3c7 100%)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "36px 40px",
+            overflowY: "auto",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              maxWidth: 1200,
+              width: "100%",
+              margin: "0 auto",
+            }}
+          >
+            <div>
+              <h1
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 800,
+                  color: "#431407",
+                  margin: 0,
+                  letterSpacing: "-0.5px",
+                }}
+              >
+                Top 3 Rated Items of this Month
+              </h1>
+              <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "#9a3412", opacity: 0.85 }}>
+                VNIT Main Canteen
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsEnlarged(false)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 22px",
+                borderRadius: 14,
+                fontSize: "15px",
+                fontWeight: 700,
+                border: "1.5px solid #fed7aa",
+                background: "rgba(255, 255, 255, 0.95)",
+                color: "#9a3412",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(249, 115, 22, 0.12)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>✕</span>
+              <span>Close</span>
+            </button>
+          </div>
+
+          {/* Minimal 3-Column Cards: Item Name, SVG, Rating below it */}
+          <div
+            style={{
+              maxWidth: 1200,
+              width: "100%",
+              margin: "auto",
+              padding: "24px 0",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: 28,
+            }}
+          >
+            {topRated.map((item) => (
+              <div
+                key={item.item}
+                style={{
+                  background: "rgba(255, 255, 255, 0.92)",
+                  backdropFilter: "blur(20px)",
+                  borderRadius: 24,
+                  border: "1.5px solid #fde68a",
+                  boxShadow: "0 10px 30px rgba(120, 53, 15, 0.06)",
+                  padding: "40px 28px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  gap: 22,
+                  minHeight: 320,
+                }}
+              >
+                {/* 1. Item Name */}
+                <h2
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: 800,
+                    color: "#431407",
+                    margin: 0,
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  {item.item}
+                </h2>
+
+                {/* 2. SVG Icon */}
+                <div
+                  style={{
+                    width: 110,
+                    height: 110,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
+                    border: "2px solid #fde68a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 6px 16px rgba(245, 158, 11, 0.1)",
+                  }}
+                >
+                  <FoodIcon name={item.item} size="72px" />
+                </div>
+
+                {/* 3. Rating below it */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 18px",
+                      background: "rgba(245, 158, 11, 0.14)",
+                      color: "#b45309",
+                      borderRadius: 24,
+                      fontWeight: 800,
+                      fontSize: "19px",
+                      border: "1px solid rgba(245, 158, 11, 0.25)",
+                    }}
+                  >
+                    <span>⭐</span>
+                    <span>{item.avg.toFixed(1)}</span>
+                    <span style={{ fontSize: "14px", opacity: 0.7, fontWeight: 600 }}>/ 5</span>
+                  </div>
+                  <span style={{ fontSize: "13px", color: "#9a3412", opacity: 0.8, fontWeight: 600 }}>
+                    {item.count} rating{item.count > 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer note */}
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "13px",
+              color: "#9a3412",
+              opacity: 0.7,
+            }}
+          >
+            Press <kbd style={{ padding: "2px 6px", background: "rgba(0,0,0,0.06)", borderRadius: 4, fontWeight: 700 }}>Esc</kbd> or click Close to return
+          </div>
+        </div>
+      )}
     </div>
   );
 }
