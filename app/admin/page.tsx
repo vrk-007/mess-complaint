@@ -337,6 +337,22 @@ export default async function AdminDashboard({
         </div>
 
         {/* ── Filter Bar ── */}
+        <div
+          style={{
+            fontSize: "12.5px",
+            color: "#9a3412",
+            fontWeight: 500,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            paddingLeft: 4,
+          }}
+        >
+          <span>ℹ️</span>
+          <span>
+            From below filter, you can see All, past 1 week, past 2 week, Past 1 month complaints/suggestions
+          </span>
+        </div>
         <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
           <FilterBar />
         </Suspense>
