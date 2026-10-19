@@ -611,6 +611,14 @@ export default function CanteenAnalytics({
             boxSizing: "border-box",
           }}
         >
+          {/* Keyframes for Nexalaya-style moving shine sweep */}
+          <style>{`
+            @keyframes nexalaya-shine-display {
+              0%   { transform: translateX(-150%); }
+              100% { transform: translateX(300%); }
+            }
+          `}</style>
+
           {/* Header */}
           <div
             style={{
@@ -623,22 +631,45 @@ export default function CanteenAnalytics({
               paddingBottom: 8,
             }}
           >
-            {/* Golden Glowing Heading in one line */}
-            <h1
+            {/* Nexalaya-style Moving Shine Heading */}
+            <div
               style={{
-                fontSize: "28px",
-                fontWeight: 900,
-                margin: 0,
-                letterSpacing: "-0.5px",
-                whiteSpace: "nowrap",
-                background: "linear-gradient(135deg, #b45309 0%, #d97706 35%, #f59e0b 65%, #b45309 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 0 16px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 32px rgba(251, 191, 36, 0.35))",
+                position: "relative",
+                overflow: "hidden",
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "10px 26px",
+                borderRadius: "50px",
+                border: "1.5px solid rgba(249,115,22,0.3)",
+                background: "rgba(255, 255, 255, 0.88)",
+                boxShadow: "0 4px 18px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.8)",
               }}
             >
-              Top 3 Rated Items of this Month
-            </h1>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "45%",
+                  height: "100%",
+                  background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.85) 50%, transparent 100%)",
+                  animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
+                  pointerEvents: "none",
+                }}
+              />
+              <h1
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 900,
+                  margin: 0,
+                  letterSpacing: "-0.5px",
+                  whiteSpace: "nowrap",
+                  color: "#431407",
+                }}
+              >
+                Top 3 Rated Items of this Month
+              </h1>
+            </div>
 
             {/* Cross Button Only at top right */}
             <button
@@ -709,18 +740,46 @@ export default function CanteenAnalytics({
                     boxSizing: "border-box",
                   }}
                 >
-                  <h2
+                  {/* Item Name with Nexalaya Moving Shine */}
+                  <div
                     style={{
-                      fontSize: "24px",
-                      fontWeight: 800,
-                      color: "#431407",
-                      margin: 0,
-                      letterSpacing: "-0.5px",
-                      textShadow: "0 0 16px rgba(245, 158, 11, 0.55), 0 0 30px rgba(251, 191, 36, 0.35)",
+                      position: "relative",
+                      overflow: "hidden",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "6px 22px",
+                      borderRadius: "30px",
+                      border: "1px solid rgba(249,115,22,0.25)",
+                      background: "rgba(255, 255, 255, 0.9)",
+                      boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
                     }}
                   >
-                    {topRated[0].item}
-                  </h2>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "45%",
+                        height: "100%",
+                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
+                        animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
+                        pointerEvents: "none",
+                      }}
+                    />
+                    <h2
+                      style={{
+                        fontSize: "22px",
+                        fontWeight: 800,
+                        color: "#431407",
+                        margin: 0,
+                        letterSpacing: "-0.5px",
+                      }}
+                    >
+                      {topRated[0].item}
+                    </h2>
+                  </div>
+
                   <div
                     style={{
                       width: 105,
@@ -794,18 +853,46 @@ export default function CanteenAnalytics({
                         boxSizing: "border-box",
                       }}
                     >
-                      <h2
+                      {/* Item Name with Nexalaya Moving Shine */}
+                      <div
                         style={{
-                          fontSize: "24px",
-                          fontWeight: 800,
-                          color: "#431407",
-                          margin: 0,
-                          letterSpacing: "-0.5px",
-                          textShadow: "0 0 16px rgba(245, 158, 11, 0.55), 0 0 30px rgba(251, 191, 36, 0.35)",
+                          position: "relative",
+                          overflow: "hidden",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "6px 22px",
+                          borderRadius: "30px",
+                          border: "1px solid rgba(249,115,22,0.25)",
+                          background: "rgba(255, 255, 255, 0.9)",
+                          boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
                         }}
                       >
-                        {topRated[1].item}
-                      </h2>
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "45%",
+                            height: "100%",
+                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
+                            animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
+                            pointerEvents: "none",
+                          }}
+                        />
+                        <h2
+                          style={{
+                            fontSize: "22px",
+                            fontWeight: 800,
+                            color: "#431407",
+                            margin: 0,
+                            letterSpacing: "-0.5px",
+                          }}
+                        >
+                          {topRated[1].item}
+                        </h2>
+                      </div>
+
                       <div
                         style={{
                           width: 105,
@@ -868,18 +955,46 @@ export default function CanteenAnalytics({
                         boxSizing: "border-box",
                       }}
                     >
-                      <h2
+                      {/* Item Name with Nexalaya Moving Shine */}
+                      <div
                         style={{
-                          fontSize: "24px",
-                          fontWeight: 800,
-                          color: "#431407",
-                          margin: 0,
-                          letterSpacing: "-0.5px",
-                          textShadow: "0 0 16px rgba(245, 158, 11, 0.55), 0 0 30px rgba(251, 191, 36, 0.35)",
+                          position: "relative",
+                          overflow: "hidden",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "6px 22px",
+                          borderRadius: "30px",
+                          border: "1px solid rgba(249,115,22,0.25)",
+                          background: "rgba(255, 255, 255, 0.9)",
+                          boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
                         }}
                       >
-                        {topRated[2].item}
-                      </h2>
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "45%",
+                            height: "100%",
+                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
+                            animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
+                            pointerEvents: "none",
+                          }}
+                        />
+                        <h2
+                          style={{
+                            fontSize: "22px",
+                            fontWeight: 800,
+                            color: "#431407",
+                            margin: 0,
+                            letterSpacing: "-0.5px",
+                          }}
+                        >
+                          {topRated[2].item}
+                        </h2>
+                      </div>
+
                       <div
                         style={{
                           width: 105,
