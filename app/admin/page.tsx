@@ -382,6 +382,7 @@ export default async function AdminDashboard({
             >
               complaints/suggestions
             </span>
+            <span> and by date 📆 as well</span>
           </span>
         </div>
         <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>

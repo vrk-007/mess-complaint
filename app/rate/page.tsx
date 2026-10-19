@@ -22,6 +22,13 @@ export default async function RatePage() {
     redirect("/login");
   }
 
+  // SuperAdmin detection for back to portal option
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isSuperAdmin = session.user.role === "SUPER_ADMIN" || superAdminEmails.includes(userEmail);
+
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
 
@@ -124,6 +131,33 @@ export default async function RatePage() {
         <div className="glass" style={{ padding: "28px 28px" }}>
           <CanteenRatingForm />
         </div>
+
+        {/* Back to Portal (Super Admin only, placed below rating form) */}
+        {isSuperAdmin && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+            <a
+              href="/superadmin"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 24px",
+                borderRadius: 14,
+                fontSize: "14px",
+                fontWeight: 700,
+                border: "1.5px solid #fed7aa",
+                background: "rgba(255, 255, 255, 0.85)",
+                color: "#9a3412",
+                textDecoration: "none",
+                boxShadow: "0 2px 8px rgba(249, 115, 22, 0.08)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>←</span>
+              <span>Back to Super Admin Portal</span>
+            </a>
+          </div>
+        )}
 
       </main>
 
