@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import ProfileDropdown from "@/app/dashboard/ProfileDropdown";
 import SuperAdminFilterBar from "./SuperAdminFilterBar";
 import ComplaintPhotoViewer from "@/app/admin/ComplaintPhotoViewer";
+import CanteenAnalytics, { CanteenAnalyticsProps } from "@/app/admin/CanteenAnalytics";
 import { Suspense } from "react";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -83,6 +84,151 @@ export default async function SuperAdminDashboard({
 
   const totalEscalated = await prisma.complaint.count({ where: { isForwarded: true } });
 
+  const isCanteen = params.mess === "Main Canteen";
+  let canteenAnalyticsData: CanteenAnalyticsProps | null = null;
+
+  if (isCanteen) {
+    const now = new Date();
+    // 1. Monthly Ratings for Top 3 and Lowest Rated items
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyRatings = await prisma.canteenRating.findMany({
+      where: { createdAt: { gte: monthStart } },
+      select: { item: true, rating: true },
+    });
+
+    const itemMonthlyMap: Record<string, { total: number; count: number }> = {};
+    for (const r of monthlyRatings) {
+      if (!itemMonthlyMap[r.item]) itemMonthlyMap[r.item] = { total: 0, count: 0 };
+      itemMonthlyMap[r.item].total += r.rating;
+      itemMonthlyMap[r.item].count += 1;
+    }
+
+    const itemsArray = Object.entries(itemMonthlyMap).map(([item, stat]) => ({
+      item,
+      avg: Number((stat.total / stat.count).toFixed(1)),
+      count: stat.count,
+    }));
+
+    // Top rated: Only items with avg >= 3.0 stars (Best performers, max 3)
+    const topRated = itemsArray
+      .filter((item) => item.avg >= 3.0)
+      .sort((a, b) => b.avg - a.avg || b.count - a.count)
+      .slice(0, 3);
+
+    // Lowest rated: Only items with avg < 3.0 stars (Needs improvement, max 3)
+    const worstRatedRaw = itemsArray
+      .filter((item) => item.avg < 3.0)
+      .sort((a, b) => a.avg - b.avg || b.count - a.count)
+      .slice(0, 3);
+
+    // Fetch latest student remarks/reviews for each worst-rated item
+    const worstRated = await Promise.all(
+      worstRatedRaw.map(async (w) => {
+        const reviews = await prisma.canteenRating.findMany({
+          where: {
+            item: w.item,
+            comment: { not: null },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
+          },
+        });
+        const validReviews = reviews
+          .filter((r) => r.comment && r.comment.trim().length > 0)
+          .map((r) => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment as string,
+            createdAt: r.createdAt.toISOString(),
+          }));
+        return {
+          ...w,
+          recentReviews: validReviews,
+        };
+      })
+    );
+
+    // 2. Daily Ratings (Individual & Average)
+    let dayStart: Date;
+    let dayEnd: Date;
+    let dateLabel: string;
+
+    if (params.date) {
+      dayStart = new Date(params.date);
+      dayStart.setHours(0, 0, 0, 0);
+      dayEnd = new Date(params.date);
+      dayEnd.setHours(23, 59, 59, 999);
+      dateLabel = new Intl.DateTimeFormat("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(dayStart);
+    } else {
+      dayStart = new Date(now);
+      dayStart.setHours(0, 0, 0, 0);
+      dayEnd = new Date(now);
+      dayEnd.setHours(23, 59, 59, 999);
+      dateLabel = `Today (${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(now)})`;
+    }
+
+    const dailyRatings = await prisma.canteenRating.findMany({
+      where: { createdAt: { gte: dayStart, lte: dayEnd } },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        item: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+      },
+    });
+
+    const dailyIndividual = dailyRatings.map((r) => ({
+      id: r.id,
+      item: r.item,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
+    const dailyAvgMap: Record<string, { total: number; count: number }> = {};
+    for (const r of dailyRatings) {
+      if (!dailyAvgMap[r.item]) dailyAvgMap[r.item] = { total: 0, count: 0 };
+      dailyAvgMap[r.item].total += r.rating;
+      dailyAvgMap[r.item].count += 1;
+    }
+
+    const dailyAverages = Object.entries(dailyAvgMap)
+      .map(([item, stat]) => ({
+        item,
+        avg: Number((stat.total / stat.count).toFixed(1)),
+        count: stat.count,
+      }))
+      .sort((a, b) => b.avg - a.avg);
+
+    canteenAnalyticsData = {
+      topRated,
+      worstRated,
+      dailyIndividual,
+      dailyAverages,
+      dateLabel,
+    };
+  }
+
+  // Preserve filters when toggling views
+  const toggleQuery = new URLSearchParams();
+  if (params.mess) toggleQuery.set("mess", params.mess);
+  if (params.status) toggleQuery.set("status", params.status);
+  if (params.period) toggleQuery.set("period", params.period);
+  if (params.date) toggleQuery.set("date", params.date);
+  if (!viewAll) toggleQuery.set("view", "all");
+  const toggleHref = toggleQuery.toString() ? `/superadmin?${toggleQuery.toString()}` : "/superadmin";
+
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
       {/* ── Top Nav ── */}
@@ -148,7 +294,7 @@ export default async function SuperAdminDashboard({
             </a>
             {/* View toggle */}
             <a
-              href={viewAll ? "/superadmin" : "/superadmin?view=all"}
+              href={toggleHref}
               style={{
                 padding: "7px 16px",
                 borderRadius: 10,
@@ -201,10 +347,15 @@ export default async function SuperAdminDashboard({
           <SuperAdminFilterBar viewAll={viewAll} />
         </Suspense>
 
+        {/* ── Canteen Analytics (Above Suggestions when Main Canteen is filtered) ── */}
+        {isCanteen && canteenAnalyticsData && (
+          <CanteenAnalytics {...canteenAnalyticsData} />
+        )}
+
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#431407", display: "flex", alignItems: "center", gap: 8 }}>
-            {viewAll ? "📋 All Complaints" : "🚨 Escalated Complaints"}
+            {isCanteen ? "💡 Suggestions" : viewAll ? "📋 All Complaints" : "🚨 Escalated Complaints"}
           </h2>
           <span style={{ background: "linear-gradient(135deg,#f97316,#ef4444)", color: "white", fontSize: "12px", fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
             {complaints.length}
@@ -218,13 +369,13 @@ export default async function SuperAdminDashboard({
             style={{ padding: "48px 32px", textAlign: "center", color: "#78350f" }}
           >
             <div style={{ fontSize: "48px", marginBottom: 16 }}>
-              {viewAll ? "✅" : "🚨"}
+              {isCanteen ? "💡" : viewAll ? "✅" : "🚨"}
             </div>
             <div style={{ fontWeight: 600, fontSize: "16px", marginBottom: 6 }}>
-              {viewAll ? "No complaints found!" : "No escalated complaints!"}
+              {isCanteen ? "No suggestions found!" : viewAll ? "No complaints found!" : "No escalated complaints!"}
             </div>
             <div style={{ fontSize: "14px", opacity: 0.7 }}>
-              {viewAll ? "Everything is running smoothly." : "No serious complaints have been forwarded yet."}
+              {isCanteen ? "No suggestions have been submitted for Main Canteen." : viewAll ? "Everything is running smoothly." : "No serious complaints have been forwarded yet."}
             </div>
           </div>
         ) : (
