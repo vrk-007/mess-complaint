@@ -762,113 +762,123 @@ export default function CanteenAnalytics({
               </div>
 
               {/* Latest Reviews Ticker */}
-              {dailyIndividual.length > 0 && (
-                <div style={{ flex: "0 0 auto" }}>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      color: "#9a3412",
-                      marginBottom: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      opacity: 0.85,
-                    }}
-                  >
-                    <span>💬</span> Latest Reviews Today
-                  </div>
-                  {/* Marquee container — mask-fade edges for clean look */}
-                  <div
-                    style={{
-                      overflow: "hidden",
-                      width: "100%",
-                      borderRadius: 14,
-                      WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
-                      maskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
-                    }}
-                  >
+              {dailyIndividual.length > 0 && (() => {
+                // Ensure base set always has enough cards to overflow the
+                // container so both halves are never simultaneously visible.
+                const MIN_VISIBLE = 6;
+                const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / dailyIndividual.length));
+                const tickerBase: typeof dailyIndividual = [];
+                for (let i = 0; i < repeatCount; i++) tickerBase.push(...dailyIndividual);
+                // Duplicate for seamless infinite loop (translate -50% → reset)
+                const tickerItems = [...tickerBase, ...tickerBase];
+                const animDuration = Math.max(tickerBase.length * 5, 20);
+                return (
+                  <div style={{ flex: "0 0 auto" }}>
                     <div
                       style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#9a3412",
+                        marginBottom: 8,
                         display: "flex",
-                        gap: 12,
-                        animation: `review-marquee ${Math.max(dailyIndividual.length * 6, 24)}s linear infinite`,
-                        width: "max-content",
-                        willChange: "transform",
+                        alignItems: "center",
+                        gap: 6,
+                        opacity: 0.85,
                       }}
                     >
-                      {/* Duplicate for seamless loop — set A */}
-                      {[...dailyIndividual, ...dailyIndividual].map((r, i) => (
-                        <div
-                          key={`${r.id}-${i}`}
-                          style={{
-                            flexShrink: 0,
-                            width: 196,
-                            position: "relative",
-                            overflow: "hidden",
-                            background: "rgba(255,255,255,0.9)",
-                            border: "1.5px solid #fed7aa",
-                            borderRadius: 14,
-                            padding: "10px 14px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 5,
-                            boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
-                          }}
-                        >
-                          {/* Shine sweep */}
+                      <span>💬</span> Latest Reviews Today
+                    </div>
+                    {/* Marquee container — mask-fade edges for clean look */}
+                    <div
+                      style={{
+                        overflow: "hidden",
+                        width: "100%",
+                        borderRadius: 14,
+                        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
+                        maskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 12,
+                          animation: `review-marquee ${animDuration}s linear infinite`,
+                          width: "max-content",
+                          willChange: "transform",
+                        }}
+                      >
+                        {tickerItems.map((r, i) => (
                           <div
+                            key={`ticker-${r.id}-${i}`}
                             style={{
-                              position: "absolute",
-                              top: 0, left: 0,
-                              width: "40%",
-                              height: "100%",
-                              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
-                              animation: "nexalaya-shine-display 3s ease-in-out infinite",
-                              pointerEvents: "none",
+                              flexShrink: 0,
+                              width: 196,
+                              position: "relative",
+                              overflow: "hidden",
+                              background: "rgba(255,255,255,0.9)",
+                              border: "1.5px solid #fed7aa",
+                              borderRadius: 14,
+                              padding: "10px 14px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 5,
+                              boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
                             }}
-                          />
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.item}</div>
+                          >
+                            {/* Shine sweep */}
                             <div
                               style={{
-                                fontSize: "11px",
-                                fontWeight: 800,
-                                color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
-                                background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : r.rating === 3 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
-                                padding: "2px 7px",
-                                borderRadius: 10,
-                                whiteSpace: "nowrap",
-                                flexShrink: 0,
+                                position: "absolute",
+                                top: 0, left: 0,
+                                width: "40%",
+                                height: "100%",
+                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
+                                animation: "nexalaya-shine-display 3s ease-in-out infinite",
+                                pointerEvents: "none",
                               }}
-                            >
-                              ⭐ {r.rating}/5
+                            />
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                              <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.item}</div>
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 800,
+                                  color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
+                                  background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : r.rating === 3 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                                  padding: "2px 7px",
+                                  borderRadius: 10,
+                                  whiteSpace: "nowrap",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                ⭐ {r.rating}/5
+                              </div>
+                            </div>
+                            {r.comment && (
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#78350f",
+                                  fontStyle: "italic",
+                                  lineHeight: 1.35,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                &ldquo;{r.comment}&rdquo;
+                              </div>
+                            )}
+                            <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
+                              🕒 {formatTime(r.createdAt)}
                             </div>
                           </div>
-                          {r.comment && (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#78350f",
-                                fontStyle: "italic",
-                                lineHeight: 1.35,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              &ldquo;{r.comment}&rdquo;
-                            </div>
-                          )}
-                          <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
-                            🕒 {formatTime(r.createdAt)}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Empty state for reviews */}
               {dailyIndividual.length === 0 && (
@@ -897,8 +907,8 @@ export default function CanteenAnalytics({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
-                padding: "16px 14px",
+                justifyContent: "flex-start",
+                padding: "20px 14px 16px",
                 gap: 14,
               }}
             >
@@ -908,8 +918,8 @@ export default function CanteenAnalytics({
                   position: "relative",
                   overflow: "hidden",
                   textAlign: "center",
-                  padding: "12px 14px",
-                  borderRadius: 16,
+                  padding: "22px 16px 20px",
+                  borderRadius: 20,
                   border: "1.5px solid rgba(249,115,22,0.25)",
                   background: "rgba(255,255,255,0.88)",
                   boxShadow: "0 4px 18px rgba(249,115,22,0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
@@ -932,14 +942,14 @@ export default function CanteenAnalytics({
                 <div style={{ fontSize: "22px", marginBottom: 6 }}>✨</div>
                 <h2
                   style={{
-                    fontSize: "13px",
+                    fontSize: "15px",
                     fontWeight: 900,
                     color: "#431407",
                     margin: 0,
-                    lineHeight: 1.35,
+                    lineHeight: 1.45,
                   }}
                 >
-                  Be the special one to give the feedback
+                  Be the special one<br />to give the feedback
                 </h2>
                 <p
                   style={{
