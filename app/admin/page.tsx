@@ -34,6 +34,7 @@ function formatDate(date: Date) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Kolkata",
   }).format(new Date(date));
 }
 
@@ -44,6 +45,7 @@ function formatIncidentDate(dateString: string | null) {
     weekday: "short",
     day: "numeric",
     month: "short",
+    timeZone: "Asia/Kolkata",
   }).format(date);
 }
 
@@ -344,45 +346,15 @@ export default async function AdminDashboard({
             fontWeight: 500,
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            padding: "8px 14px",
-            borderRadius: 12,
-            border: "1px solid #eab308",
-            background: "rgba(254, 240, 138, 0.2)",
-            boxShadow: "0 2px 8px rgba(234, 179, 8, 0.08)",
+            gap: 6,
             width: "fit-content",
             maxWidth: "100%",
           }}
         >
           <span style={{ fontSize: "14px" }}>ℹ️</span>
           <span>
-            From below{" "}
-            <span
-              style={{
-                fontWeight: 700,
-                color: "#92400e",
-                background: "rgba(245, 158, 11, 0.2)",
-                padding: "2px 6px",
-                borderRadius: 6,
-                border: "1px solid rgba(245, 158, 11, 0.35)",
-              }}
-            >
-              filter
-            </span>
-            , you can see All, past 1 week, past 2 week, Past 1 month{" "}
-            <span
-              style={{
-                fontWeight: 700,
-                color: "#92400e",
-                background: "rgba(245, 158, 11, 0.2)",
-                padding: "2px 6px",
-                borderRadius: 6,
-                border: "1px solid rgba(245, 158, 11, 0.35)",
-              }}
-            >
-              complaints/suggestions
-            </span>
-            <span> and by date 📆 as well</span>
+            From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
+            <strong>complaints/suggestions</strong> and by date 📆 as well
           </span>
         </div>
         <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
