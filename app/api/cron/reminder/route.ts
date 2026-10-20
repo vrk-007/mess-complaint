@@ -4,12 +4,22 @@ import { sendReminderEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
-// This route is called by Vercel Cron every 2 days at 9 AM UTC.
-// It is protected by a CRON_SECRET so nobody can trigger it manually.
+// This route is called by Vercel Cron every 2 days at 6:10 PM IST (12:40 PM UTC).
 export async function GET(request: Request) {
-  // ── Security: verify this is a legitimate Vercel cron call ──────────────────
+  // ── Security: verify this is a legitimate Vercel cron call or authorized key ──
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const userAgent = request.headers.get("user-agent") ?? "";
+  const isVercelCron = userAgent.includes("vercel-cron");
+  const url = new URL(request.url);
+  const keyParam = url.searchParams.get("key");
+
+  const isAuthorized =
+    !process.env.CRON_SECRET ||
+    authHeader === `Bearer ${process.env.CRON_SECRET}` ||
+    (keyParam && keyParam === process.env.CRON_SECRET) ||
+    isVercelCron;
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,11 +28,6 @@ export async function GET(request: Request) {
       prisma.complaint.count({ where: { resolved: false, pendingApproval: false } }),
       prisma.complaint.count({ where: { resolved: false, pendingApproval: true } }),
     ]);
-
-    // If there are no pending complaints, skip sending reminder email
-    if (pendingCount === 0 && pendingApprovalCount === 0) {
-      return NextResponse.json({ ok: true, sent: false, message: "No pending complaints" });
-    }
 
     await sendReminderEmail({ pendingCount, pendingApprovalCount });
 

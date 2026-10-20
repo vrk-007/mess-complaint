@@ -194,18 +194,27 @@ export async function sendReminderEmail({
   const to = getEmails("ESCALATE_EMAILS");
   const adminUrl = `${process.env.NEXTAUTH_URL ?? "https://messportal.vercel.app"}/admin`;
 
+  const hasPending = pendingCount > 0 || pendingApprovalCount > 0;
+  const subject = hasPending
+    ? `📋 Reminder: ${pendingCount} Pending Complaint${pendingCount !== 1 ? "s" : ""} Need Attention`
+    : `✅ Mess Portal Check-in: All Complaints Resolved`;
+
+  const bodyContent = hasPending
+    ? `Just a heads-up — there ${pendingCount === 1 ? "is" : "are"} currently <strong>${pendingCount} active complaint${pendingCount !== 1 ? "s" : ""}</strong>${pendingApprovalCount > 0 ? `, with <strong>${pendingApprovalCount}</strong> awaiting your approval` : ""} on the Mess Portal. Please take a moment to check and action them.`
+    : `All good news! There are currently <strong>no active complaints</strong> on the Mess Portal. Everything is running smoothly and all previous complaints have been resolved.`;
+
   await sendEmail({
     to,
-    subject: `📋 Reminder: ${pendingCount} Pending Complaint${pendingCount !== 1 ? "s" : ""} Need Attention`,
+    subject,
     html: `
       <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#fffaf5;border-radius:16px;overflow:hidden;border:1px solid #fed7aa;">
         <div style="background:linear-gradient(135deg,#f97316,#ef4444);padding:24px 28px;">
-          <h1 style="color:white;margin:0;font-size:20px;font-weight:800;">📋 Mess Portal — Reminder</h1>
+          <h1 style="color:white;margin:0;font-size:20px;font-weight:800;">📋 Mess Portal — ${hasPending ? "Reminder" : "Check-in"}</h1>
           <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">This is your bi-daily check-in from the Mess Complaint Portal.</p>
         </div>
         <div style="padding:28px;">
           <p style="font-size:15px;color:#431407;margin:0 0 6px;">Hey,</p>
-          <p style="font-size:15px;color:#431407;margin:0 0 20px;">Just a heads-up — there ${pendingCount === 1 ? "is" : "are"} currently <strong>${pendingCount} active complaint${pendingCount !== 1 ? "s" : ""}</strong>${pendingApprovalCount > 0 ? `, with <strong>${pendingApprovalCount}</strong> awaiting your approval` : ""} on the Mess Portal. Please take a moment to check and action them.</p>
+          <p style="font-size:15px;color:#431407;margin:0 0 20px;">${bodyContent}</p>
           <div style="text-align:center;">
             <a href="${adminUrl}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#f97316,#ef4444);color:white;font-weight:700;font-size:14px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(249,115,22,0.35);">
               📋 Visit Admin Portal
