@@ -595,7 +595,7 @@ export default function CanteenAnalytics({
         )}
       </div>
 
-      {/* ── Fullscreen Display Modal (Clean & Minimal 3-Column Layout) ── */}
+      {/* ── Fullscreen Display Modal (70% Left + 30% Right layout) ── */}
       {isEnlarged && (
         <div
           style={{
@@ -605,51 +605,59 @@ export default function CanteenAnalytics({
             background: "linear-gradient(135deg, #fffaf5 0%, #fff7ed 50%, #fef3c7 100%)",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "36px 40px",
-            overflowY: "auto",
+            overflow: "hidden",
             boxSizing: "border-box",
           }}
         >
-          {/* Keyframes for Nexalaya-style moving shine sweep */}
+          {/* Keyframes */}
           <style>{`
             @keyframes nexalaya-shine-display {
               0%   { transform: translateX(-150%); }
               100% { transform: translateX(300%); }
             }
+            @keyframes review-marquee {
+              0%   { transform: translateX(0%); }
+              100% { transform: translateX(-50%); }
+            }
+            @keyframes arrow-bounce {
+              0%, 100% { transform: translateY(0px); }
+              50%       { transform: translateY(8px); }
+            }
+            @keyframes glow-pulse {
+              0%, 100% { box-shadow: 0 0 18px rgba(249,115,22,0.2), 0 0 36px rgba(249,115,22,0.08); }
+              50%       { box-shadow: 0 0 28px rgba(249,115,22,0.38), 0 0 56px rgba(249,115,22,0.14); }
+            }
           `}</style>
 
-          {/* Header */}
+          {/* Top Header Bar */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              maxWidth: 1100,
-              width: "100%",
-              margin: "0 auto",
-              paddingBottom: 8,
+              padding: "18px 32px 14px",
+              borderBottom: "1px solid rgba(254,215,170,0.4)",
+              flexShrink: 0,
             }}
           >
-            {/* Nexalaya-style Moving Shine Heading */}
+            {/* Heading with moving shine */}
             <div
               style={{
                 position: "relative",
                 overflow: "hidden",
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 26px",
+                padding: "10px 28px",
                 borderRadius: "50px",
                 border: "1.5px solid rgba(249,115,22,0.3)",
-                background: "rgba(255, 255, 255, 0.88)",
+                background: "rgba(255,255,255,0.88)",
                 boxShadow: "0 4px 18px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.8)",
               }}
             >
               <div
                 style={{
                   position: "absolute",
-                  top: 0,
-                  left: 0,
+                  top: 0, left: 0,
                   width: "45%",
                   height: "100%",
                   background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.85) 50%, transparent 100%)",
@@ -659,19 +667,19 @@ export default function CanteenAnalytics({
               />
               <h1
                 style={{
-                  fontSize: "26px",
+                  fontSize: "22px",
                   fontWeight: 900,
                   margin: 0,
-                  letterSpacing: "-0.5px",
+                  letterSpacing: "-0.3px",
                   whiteSpace: "nowrap",
                   color: "#431407",
                 }}
               >
-                Top 3 Rated Items of this Month
+                🏆 Top 3 Rated Items of this Month
               </h1>
             </div>
 
-            {/* Cross Button Only at top right */}
+            {/* Close button */}
             <button
               type="button"
               onClick={() => setIsEnlarged(false)}
@@ -684,13 +692,13 @@ export default function CanteenAnalytics({
                 fontSize: "18px",
                 fontWeight: 800,
                 border: "1.5px solid #fed7aa",
-                background: "rgba(255, 255, 255, 0.95)",
+                background: "rgba(255,255,255,0.95)",
                 color: "#9a3412",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 3px 12px rgba(249, 115, 22, 0.15)",
+                boxShadow: "0 3px 12px rgba(249,115,22,0.15)",
                 transition: "all 0.2s ease",
                 flexShrink: 0,
               }}
@@ -699,350 +707,464 @@ export default function CanteenAnalytics({
             </button>
           </div>
 
-          {/* Triangle Layout: Center on top, 2nd bottom-left, 3rd bottom-right */}
+          {/* Main Body: 70% Left | 30% Right */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 20,
-              maxWidth: 820,
-              width: "100%",
-              margin: "auto",
-              padding: "16px 0",
+              flex: 1,
+              overflow: "hidden",
             }}
           >
-            {/* Top Center: Rank 1 */}
-            {topRated[0] && (
+            {/* ── LEFT 70%: Triangle + Latest Reviews ── */}
+            <div
+              style={{
+                flex: "0 0 70%",
+                display: "flex",
+                flexDirection: "column",
+                padding: "20px 28px 16px 32px",
+                gap: 18,
+                borderRight: "1px solid rgba(254,215,170,0.5)",
+                overflow: "hidden",
+              }}
+            >
+              {/* Triangle Top-3 layout */}
               <div
                 style={{
-                  width: "100%",
-                  maxWidth: 340,
                   display: "flex",
-                  justifyContent: "center",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 14,
+                  flex: "0 0 auto",
+                }}
+              >
+                {/* Rank 1 — Top center */}
+                {topRated[0] && (
+                  <div style={{ maxWidth: 280, width: "100%" }}>
+                    <DisplayRankCard item={topRated[0]} rank={0} />
+                  </div>
+                )}
+
+                {/* Rank 2 & 3 — Bottom row */}
+                {(topRated[1] || topRated[2]) && (
+                  <div style={{ display: "flex", gap: 20, width: "100%", justifyContent: "center" }}>
+                    {topRated[1] && (
+                      <div style={{ flex: "1 1 0", maxWidth: 260 }}>
+                        <DisplayRankCard item={topRated[1]} rank={1} />
+                      </div>
+                    )}
+                    {topRated[2] && (
+                      <div style={{ flex: "1 1 0", maxWidth: 260 }}>
+                        <DisplayRankCard item={topRated[2]} rank={2} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Latest Reviews Ticker */}
+              {dailyIndividual.length > 0 && (
+                <div style={{ flex: "0 0 auto" }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#9a3412",
+                      marginBottom: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      opacity: 0.85,
+                    }}
+                  >
+                    <span>💬</span> Latest Reviews Today
+                  </div>
+                  {/* Marquee container */}
+                  <div
+                    style={{
+                      overflow: "hidden",
+                      width: "100%",
+                      borderRadius: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 14,
+                        animation: `review-marquee ${Math.max(dailyIndividual.length * 5, 20)}s linear infinite`,
+                        width: "max-content",
+                      }}
+                    >
+                      {/* Duplicate cards for seamless loop */}
+                      {[...dailyIndividual, ...dailyIndividual].map((r, i) => (
+                        <div
+                          key={`${r.id}-${i}`}
+                          style={{
+                            flexShrink: 0,
+                            position: "relative",
+                            overflow: "hidden",
+                            background: "rgba(255,255,255,0.9)",
+                            border: "1.5px solid #fed7aa",
+                            borderRadius: 14,
+                            padding: "10px 14px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 5,
+                            minWidth: 200,
+                            maxWidth: 240,
+                            boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
+                          }}
+                        >
+                          {/* Shine sweep on each card */}
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "40%",
+                              height: "100%",
+                              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
+                              animation: "nexalaya-shine-display 3s ease-in-out infinite",
+                              pointerEvents: "none",
+                            }}
+                          />
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407" }}>{r.item}</div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
+                                background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : r.rating === 3 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                                padding: "2px 8px",
+                                borderRadius: 10,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {"⭐".repeat(r.rating)} {r.rating}/5
+                            </div>
+                          </div>
+                          {r.comment && (
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#78350f",
+                                fontStyle: "italic",
+                                lineHeight: 1.35,
+                                overflow: "hidden",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            >
+                              &ldquo;{r.comment}&rdquo;
+                            </div>
+                          )}
+                          <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
+                            🕒 {formatTime(r.createdAt)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state for reviews */}
+              {dailyIndividual.length === 0 && (
+                <div
+                  style={{
+                    flex: "0 0 auto",
+                    textAlign: "center",
+                    padding: "14px",
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.7)",
+                    border: "1px dashed #fed7aa",
+                    fontSize: "13px",
+                    color: "#9a3412",
+                    opacity: 0.75,
+                  }}
+                >
+                  No reviews submitted today yet. Be the first! 🌟
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT 30%: CTA + QR ── */}
+            <div
+              style={{
+                flex: "0 0 30%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "24px 28px",
+                gap: 24,
+              }}
+            >
+              {/* CTA Text with shine */}
+              <div
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  textAlign: "center",
+                  padding: "16px 20px",
+                  borderRadius: 20,
+                  border: "1.5px solid rgba(249,115,22,0.25)",
+                  background: "rgba(255,255,255,0.88)",
+                  boxShadow: "0 4px 18px rgba(249,115,22,0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  animation: "glow-pulse 3s ease-in-out infinite",
                 }}
               >
                 <div
                   style={{
-                    background: "rgba(255, 255, 255, 0.94)",
-                    backdropFilter: "blur(20px)",
-                    borderRadius: 24,
-                    border: "1.5px solid #fde68a",
-                    boxShadow: "0 10px 30px rgba(245, 158, 11, 0.12), 0 2px 8px rgba(0,0,0,0.04)",
-                    padding: "26px 24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    gap: 16,
-                    width: "100%",
-                    boxSizing: "border-box",
+                    position: "absolute",
+                    top: 0, left: 0,
+                    width: "40%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
+                    animation: "nexalaya-shine-display 2.8s ease-in-out infinite",
+                    pointerEvents: "none",
+                  }}
+                />
+                <div style={{ fontSize: "28px", marginBottom: 8 }}>✨</div>
+                <h2
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: 900,
+                    color: "#431407",
+                    margin: 0,
+                    lineHeight: 1.3,
                   }}
                 >
-                  {/* Item Name with Nexalaya Moving Shine */}
-                  <div
-                    style={{
-                      position: "relative",
-                      overflow: "hidden",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "6px 22px",
-                      borderRadius: "30px",
-                      border: "1px solid rgba(249,115,22,0.25)",
-                      background: "rgba(255, 255, 255, 0.9)",
-                      boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "45%",
-                        height: "100%",
-                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
-                        animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
-                        pointerEvents: "none",
-                      }}
-                    />
-                    <h2
-                      style={{
-                        fontSize: "22px",
-                        fontWeight: 800,
-                        color: "#431407",
-                        margin: 0,
-                        letterSpacing: "-0.5px",
-                      }}
-                    >
-                      {topRated[0].item}
-                    </h2>
-                  </div>
-
-                  <div
-                    style={{
-                      width: 105,
-                      height: 105,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
-                      border: "2px solid #fde68a",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: "0 6px 18px rgba(245, 158, 11, 0.16)",
-                    }}
-                  >
-                    <FoodIcon name={topRated[0].item} size="68px" />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "6px 16px",
-                        background: "rgba(245, 158, 11, 0.14)",
-                        color: "#b45309",
-                        borderRadius: 24,
-                        fontWeight: 800,
-                        fontSize: "18px",
-                        border: "1px solid rgba(245, 158, 11, 0.25)",
-                      }}
-                    >
-                      <span>⭐</span>
-                      <span>{topRated[0].avg.toFixed(1)}</span>
-                      <span style={{ fontSize: "13px", opacity: 0.7, fontWeight: 600 }}>/ 5</span>
-                    </div>
-                    <span style={{ fontSize: "12px", color: "#9a3412", opacity: 0.85, fontWeight: 600 }}>
-                      {topRated[0].count} rating{topRated[0].count > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </div>
+                  Be the special one to give the feedback
+                </h2>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#9a3412",
+                    marginTop: 8,
+                    marginBottom: 0,
+                    fontWeight: 600,
+                    opacity: 0.8,
+                  }}
+                >
+                  Your voice shapes what&apos;s on the menu!
+                </p>
               </div>
-            )}
 
-            {/* Bottom Row: Rank 2 (Left) and Rank 3 (Right) */}
-            {(topRated[1] || topRated[2]) && (
+              {/* Animated Arrow */}
+              <div
+                style={{
+                  fontSize: "32px",
+                  animation: "arrow-bounce 1.4s ease-in-out infinite",
+                  color: "#f97316",
+                  lineHeight: 1,
+                }}
+              >
+                ↓
+              </div>
+
+              {/* QR Code Block */}
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "center",
-                  gap: 32,
-                  width: "100%",
-                  flexWrap: "wrap",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 12,
                 }}
               >
-                {topRated[1] && (
-                  <div style={{ flex: "1 1 300px", maxWidth: 340 }}>
-                    <div
-                      style={{
-                        background: "rgba(255, 255, 255, 0.94)",
-                        backdropFilter: "blur(20px)",
-                        borderRadius: 24,
-                        border: "1.5px solid #fde68a",
-                        boxShadow: "0 10px 30px rgba(245, 158, 11, 0.12), 0 2px 8px rgba(0,0,0,0.04)",
-                        padding: "26px 24px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        textAlign: "center",
-                        gap: 16,
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      {/* Item Name with Nexalaya Moving Shine */}
-                      <div
-                        style={{
-                          position: "relative",
-                          overflow: "hidden",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "6px 22px",
-                          borderRadius: "30px",
-                          border: "1px solid rgba(249,115,22,0.25)",
-                          background: "rgba(255, 255, 255, 0.9)",
-                          boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-                        }}
-                      >
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "45%",
-                            height: "100%",
-                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
-                            animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        <h2
-                          style={{
-                            fontSize: "22px",
-                            fontWeight: 800,
-                            color: "#431407",
-                            margin: 0,
-                            letterSpacing: "-0.5px",
-                          }}
-                        >
-                          {topRated[1].item}
-                        </h2>
-                      </div>
+                {/* Real branded QR code from /public/mess-portal-qr.svg */}
+                <div
+                  style={{
+                    borderRadius: 20,
+                    background: "rgba(255,255,255,0.95)",
+                    border: "2px solid #fde68a",
+                    boxShadow: "0 8px 28px rgba(245,158,11,0.14)",
+                    padding: 10,
+                    boxSizing: "border-box",
+                    animation: "glow-pulse 3s ease-in-out infinite",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/mess-portal-qr.svg"
+                    alt="Scan to rate the canteen"
+                    width={160}
+                    height={160}
+                    style={{ display: "block", borderRadius: 12 }}
+                  />
+                </div>
 
-                      <div
-                        style={{
-                          width: 105,
-                          height: 105,
-                          borderRadius: "50%",
-                          background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
-                          border: "2px solid #fde68a",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: "0 6px 18px rgba(245, 158, 11, 0.16)",
-                        }}
-                      >
-                        <FoodIcon name={topRated[1].item} size="68px" />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                        <div
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                            padding: "6px 16px",
-                            background: "rgba(245, 158, 11, 0.14)",
-                            color: "#b45309",
-                            borderRadius: 24,
-                            fontWeight: 800,
-                            fontSize: "18px",
-                            border: "1px solid rgba(245, 158, 11, 0.25)",
-                          }}
-                        >
-                          <span>⭐</span>
-                          <span>{topRated[1].avg.toFixed(1)}</span>
-                          <span style={{ fontSize: "13px", opacity: 0.7, fontWeight: 600 }}>/ 5</span>
-                        </div>
-                        <span style={{ fontSize: "12px", color: "#9a3412", opacity: 0.85, fontWeight: 600 }}>
-                          {topRated[1].count} rating{topRated[1].count > 1 ? "s" : ""}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {topRated[2] && (
-                  <div style={{ flex: "1 1 300px", maxWidth: 340 }}>
-                    <div
-                      style={{
-                        background: "rgba(255, 255, 255, 0.94)",
-                        backdropFilter: "blur(20px)",
-                        borderRadius: 24,
-                        border: "1.5px solid #fde68a",
-                        boxShadow: "0 10px 30px rgba(245, 158, 11, 0.12), 0 2px 8px rgba(0,0,0,0.04)",
-                        padding: "26px 24px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        textAlign: "center",
-                        gap: 16,
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      {/* Item Name with Nexalaya Moving Shine */}
-                      <div
-                        style={{
-                          position: "relative",
-                          overflow: "hidden",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "6px 22px",
-                          borderRadius: "30px",
-                          border: "1px solid rgba(249,115,22,0.25)",
-                          background: "rgba(255, 255, 255, 0.9)",
-                          boxShadow: "0 2px 10px rgba(249,115,22,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-                        }}
-                      >
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "45%",
-                            height: "100%",
-                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
-                            animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        <h2
-                          style={{
-                            fontSize: "22px",
-                            fontWeight: 800,
-                            color: "#431407",
-                            margin: 0,
-                            letterSpacing: "-0.5px",
-                          }}
-                        >
-                          {topRated[2].item}
-                        </h2>
-                      </div>
-
-                      <div
-                        style={{
-                          width: 105,
-                          height: 105,
-                          borderRadius: "50%",
-                          background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
-                          border: "2px solid #fde68a",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: "0 6px 18px rgba(245, 158, 11, 0.16)",
-                        }}
-                      >
-                        <FoodIcon name={topRated[2].item} size="68px" />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                        <div
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                            padding: "6px 16px",
-                            background: "rgba(245, 158, 11, 0.14)",
-                            color: "#b45309",
-                            borderRadius: 24,
-                            fontWeight: 800,
-                            fontSize: "18px",
-                            border: "1px solid rgba(245, 158, 11, 0.25)",
-                          }}
-                        >
-                          <span>⭐</span>
-                          <span>{topRated[2].avg.toFixed(1)}</span>
-                          <span style={{ fontSize: "13px", opacity: 0.7, fontWeight: 600 }}>/ 5</span>
-                        </div>
-                        <span style={{ fontSize: "12px", color: "#9a3412", opacity: 0.85, fontWeight: 600 }}>
-                          {topRated[2].count} rating{topRated[2].count > 1 ? "s" : ""}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Rate Me label with shine */}
+                <div
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 28px",
+                    borderRadius: "50px",
+                    background: "linear-gradient(135deg, #f97316, #ea580c)",
+                    boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
+                    border: "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0, left: 0,
+                      width: "45%",
+                      height: "100%",
+                      background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)",
+                      animation: "nexalaya-shine-display 2.2s ease-in-out infinite",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <span style={{ fontSize: "18px" }}>⭐</span>
+                  <span style={{ fontSize: "16px", fontWeight: 900, color: "#fff", letterSpacing: "-0.3px" }}>
+                    Rate Me!
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
           </div>
-
-          
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Reusable Display Rank Card (compact for 70% panel) ── */
+function DisplayRankCard({
+  item,
+  rank,
+}: {
+  item: { item: string; avg: number; count: number };
+  rank: number;
+}) {
+  const medals = ["🥇", "🥈", "🥉"];
+  const sizes = [90, 78, 78];
+  const iconSizes = ["56px", "48px", "48px"];
+  const fontSizes = ["18px", "16px", "16px"];
+
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.94)",
+        backdropFilter: "blur(20px)",
+        borderRadius: 20,
+        border: "1.5px solid #fde68a",
+        boxShadow: "0 8px 24px rgba(245,158,11,0.1), 0 2px 8px rgba(0,0,0,0.04)",
+        padding: rank === 0 ? "20px 18px" : "14px 16px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        gap: 10,
+        width: "100%",
+        boxSizing: "border-box",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Shine on card */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0, left: 0,
+          width: "40%",
+          height: "100%",
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)",
+          animation: "nexalaya-shine-display 3s ease-in-out infinite",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Medal + name */}
+      <div
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 16px",
+          borderRadius: "30px",
+          border: "1px solid rgba(249,115,22,0.2)",
+          background: "rgba(255,255,255,0.9)",
+          boxShadow: "0 1px 6px rgba(249,115,22,0.06), inset 0 1px 0 rgba(255,255,255,0.8)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 0, left: 0,
+            width: "45%",
+            height: "100%",
+            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
+            animation: "nexalaya-shine-display 2.6s ease-in-out infinite",
+            pointerEvents: "none",
+          }}
+        />
+        <span style={{ fontSize: fontSizes[rank] }}>{medals[rank]}</span>
+        <h2
+          style={{
+            fontSize: fontSizes[rank],
+            fontWeight: 800,
+            color: "#431407",
+            margin: 0,
+            letterSpacing: "-0.3px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {item.item}
+        </h2>
+      </div>
+
+      {/* Food icon circle */}
+      <div
+        style={{
+          width: sizes[rank],
+          height: sizes[rank],
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
+          border: "2px solid #fde68a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 14px rgba(245,158,11,0.14)",
+        }}
+      >
+        <FoodIcon name={item.item} size={iconSizes[rank]} />
+      </div>
+
+      {/* Rating */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "4px 12px",
+            background: "rgba(245,158,11,0.12)",
+            color: "#b45309",
+            borderRadius: 20,
+            fontWeight: 800,
+            fontSize: fontSizes[rank],
+            border: "1px solid rgba(245,158,11,0.22)",
+          }}
+        >
+          <span>⭐</span>
+          <span>{item.avg.toFixed(1)}</span>
+          <span style={{ fontSize: "11px", opacity: 0.7, fontWeight: 600 }}>/ 5</span>
+        </div>
+        <span style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, fontWeight: 600 }}>
+          {item.count} rating{item.count > 1 ? "s" : ""}
+        </span>
+      </div>
     </div>
   );
 }
