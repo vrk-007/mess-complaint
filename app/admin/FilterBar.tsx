@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useTransition, useState, useEffect } from "react";
 
-const MESS_OPTIONS = ["Swadanand Mess", "Aaswad Mess", "Main Canteen", "Ruchira Mess"];
+const MESS_OPTIONS = ["Swadanand Mess", "Aaswad Mess", "VNIT Canteen", "Ruchira Mess"];
 
 const PERIOD_OPTIONS = [
   { label: "All",      value: "" },

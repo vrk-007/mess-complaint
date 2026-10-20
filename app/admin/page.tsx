@@ -109,7 +109,7 @@ export default async function AdminDashboard({
     },
   });
 
-  const isCanteen = params.mess === "Main Canteen";
+  const isCanteen = params.mess === "VNIT Canteen";
   let canteenAnalyticsData: CanteenAnalyticsProps | null = null;
 
   if (isCanteen) {
@@ -361,7 +361,7 @@ export default async function AdminDashboard({
           <FilterBar />
         </Suspense>
 
-        {/* ── Canteen Analytics (Above Suggestions when Main Canteen is filtered) ── */}
+        {/* ── Canteen Analytics (Above Suggestions when VNIT Canteen is filtered) ── */}
         {isCanteen && canteenAnalyticsData && (
           <CanteenAnalytics {...canteenAnalyticsData} />
         )}
@@ -400,7 +400,7 @@ export default async function AdminDashboard({
               {isCanteen ? "No suggestions found!" : "No complaints found!"}
             </div>
             <div style={{ fontSize: "14px", opacity: 0.7 }}>
-              {isCanteen ? "No suggestions have been submitted for Main Canteen." : "Everything is running smoothly."}
+              {isCanteen ? "No suggestions have been submitted for VNIT Canteen." : "Everything is running smoothly."}
             </div>
           </div>
         ) : (
@@ -429,16 +429,16 @@ export default async function AdminDashboard({
                             borderRadius: 20,
                             fontSize: "12px",
                             fontWeight: 700,
-                            background: complaint.mess === "Main Canteen"
+                            background: complaint.mess === "VNIT Canteen"
                               ? "rgba(139,92,246,0.1)"
                               : "rgba(249,115,22,0.08)",
-                            color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
-                            border: complaint.mess === "Main Canteen"
+                            color: complaint.mess === "VNIT Canteen" ? "#5b21b6" : "#c2410c",
+                            border: complaint.mess === "VNIT Canteen"
                               ? "1px solid rgba(139,92,246,0.25)"
                               : "1px solid rgba(249,115,22,0.2)",
                           }}
                         >
-                          {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
+                          {complaint.mess === "VNIT Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
                         </span>
                         <span
                           style={{

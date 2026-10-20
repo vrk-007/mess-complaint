@@ -37,9 +37,9 @@ const CANTEEN_ITEMS = [
 ];
 
 export default function ComplaintForm({ mess }: { mess: string }) {
-  // Venue toggle: "My Mess" or "Main Canteen"
+  // Venue toggle: "My Mess" or "VNIT Canteen"
   const [selectedVenue, setSelectedVenue] = useState(mess);
-  const isCanteen = selectedVenue === "Main Canteen";
+  const isCanteen = selectedVenue === "VNIT Canteen";
 
   // ── Complaint / Suggestion Form State ────────────────────────
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -218,7 +218,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
     <>
       {/* ── TOP SECTION (ABOVE VENUE) ── */}
       {isCanteen ? (
-        /* When Main Canteen is selected: Give Ratings option above Venue */
+        /* When VNIT Canteen is selected: Give Ratings option above Venue */
         <div
           style={{
             background: "linear-gradient(135deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.8))",
@@ -457,14 +457,14 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           <div style={{ display: "flex", gap: 10 }}>
             {[
               { label: mess, icon: "🍽️", value: mess },
-              { label: "Main Canteen", icon: "☕", value: "Main Canteen" },
+              { label: "VNIT Canteen", icon: "☕", value: "VNIT Canteen" },
             ].map(({ label, icon, value }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => {
                   setSelectedVenue(value);
-                  if (value === "Main Canteen") setShowScanner(false);
+                  if (value === "VNIT Canteen") setShowScanner(false);
                 }}
                 style={{
                   flex: 1,
@@ -698,7 +698,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
           )}
         </div>
 
-        {/* QR Authority Verification (Only for Mess, not needed for Main Canteen) */}
+        {/* QR Authority Verification (Only for Mess, not needed for VNIT Canteen) */}
         {!isCanteen && (
           <div>
             <label className="label">🔐 Mess Authority Verification</label>

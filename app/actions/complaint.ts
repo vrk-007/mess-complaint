@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 // ─── Limits ──────────────────────────────────────────────────────────────────
 const VALID_MEALS      = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 const VALID_CATEGORIES = ["Food Quality", "Hygiene", "Quantity", "Service", "Other"];
-const MAIN_CANTEEN     = "Main Canteen";
+const MAIN_CANTEEN     = "VNIT Canteen";
 const DESC_MIN = 10;
 const DESC_MAX = 500;
 

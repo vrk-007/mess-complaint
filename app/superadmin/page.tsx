@@ -85,7 +85,7 @@ export default async function SuperAdminDashboard({
 
   const totalEscalated = await prisma.complaint.count({ where: { isForwarded: true } });
 
-  const isCanteen = params.mess === "Main Canteen";
+  const isCanteen = params.mess === "VNIT Canteen";
   let canteenAnalyticsData: CanteenAnalyticsProps | null = null;
 
   if (isCanteen) {
@@ -368,7 +368,7 @@ export default async function SuperAdminDashboard({
           <SuperAdminFilterBar viewAll={viewAll} />
         </Suspense>
 
-        {/* ── Canteen Analytics (Above Suggestions when Main Canteen is filtered) ── */}
+        {/* ── Canteen Analytics (Above Suggestions when VNIT Canteen is filtered) ── */}
         {isCanteen && canteenAnalyticsData && (
           <CanteenAnalytics {...canteenAnalyticsData} />
         )}
@@ -396,7 +396,7 @@ export default async function SuperAdminDashboard({
               {isCanteen ? "No suggestions found!" : viewAll ? "No complaints found!" : "No escalated complaints!"}
             </div>
             <div style={{ fontSize: "14px", opacity: 0.7 }}>
-              {isCanteen ? "No suggestions have been submitted for Main Canteen." : viewAll ? "Everything is running smoothly." : "No serious complaints have been forwarded yet."}
+              {isCanteen ? "No suggestions have been submitted for VNIT Canteen." : viewAll ? "Everything is running smoothly." : "No serious complaints have been forwarded yet."}
             </div>
           </div>
         ) : (
@@ -427,11 +427,11 @@ export default async function SuperAdminDashboard({
                         {/* Venue badge */}
                         <span style={{
                           padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 700,
-                          background: complaint.mess === "Main Canteen" ? "rgba(139,92,246,0.1)" : "rgba(249,115,22,0.08)",
-                          color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
-                          border: complaint.mess === "Main Canteen" ? "1px solid rgba(139,92,246,0.25)" : "1px solid rgba(249,115,22,0.2)",
+                          background: complaint.mess === "VNIT Canteen" ? "rgba(139,92,246,0.1)" : "rgba(249,115,22,0.08)",
+                          color: complaint.mess === "VNIT Canteen" ? "#5b21b6" : "#c2410c",
+                          border: complaint.mess === "VNIT Canteen" ? "1px solid rgba(139,92,246,0.25)" : "1px solid rgba(249,115,22,0.2)",
                         }}>
-                          {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
+                          {complaint.mess === "VNIT Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
                         </span>
                         <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: "12px", fontWeight: 700, background: `${catColor}18`, color: catColor, border: `1px solid ${catColor}40` }}>
                           {complaint.category}

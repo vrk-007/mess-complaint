@@ -236,16 +236,16 @@ export default async function Home() {
                             borderRadius: 20,
                             fontSize: "12px",
                             fontWeight: 700,
-                            background: complaint.mess === "Main Canteen"
+                            background: complaint.mess === "VNIT Canteen"
                               ? "rgba(139,92,246,0.1)"
                               : "rgba(249,115,22,0.08)",
-                            color: complaint.mess === "Main Canteen" ? "#5b21b6" : "#c2410c",
-                            border: complaint.mess === "Main Canteen"
+                            color: complaint.mess === "VNIT Canteen" ? "#5b21b6" : "#c2410c",
+                            border: complaint.mess === "VNIT Canteen"
                               ? "1px solid rgba(139,92,246,0.25)"
                               : "1px solid rgba(249,115,22,0.2)",
                           }}
                         >
-                          {complaint.mess === "Main Canteen" ? "☕" : "🍽️"} {complaint.mess}
+                          {complaint.mess === "VNIT Canteen" ? "☕" : "🍽️"} {complaint.mess}
                         </span>
                       )}
                       <span
