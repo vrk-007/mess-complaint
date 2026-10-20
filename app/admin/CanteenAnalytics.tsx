@@ -675,7 +675,7 @@ export default function CanteenAnalytics({
                   color: "#431407",
                 }}
               >
-                🏆 Top 3 Rated Items of this Month
+                Top 3 Rated Items of this Month
               </h1>
             </div>
 
@@ -707,7 +707,7 @@ export default function CanteenAnalytics({
             </button>
           </div>
 
-          {/* Main Body: 70% Left | 30% Right */}
+          {/* Main Body: 80% Left | 20% Right */}
           <div
             style={{
               display: "flex",
@@ -715,14 +715,14 @@ export default function CanteenAnalytics({
               overflow: "hidden",
             }}
           >
-            {/* ── LEFT 70%: Triangle + Latest Reviews ── */}
+            {/* ── LEFT 80%: Triangle + Latest Reviews ── */}
             <div
               style={{
-                flex: "0 0 70%",
+                flex: "0 0 80%",
                 display: "flex",
                 flexDirection: "column",
-                padding: "20px 28px 16px 32px",
-                gap: 18,
+                padding: "16px 24px 14px 28px",
+                gap: 14,
                 borderRight: "1px solid rgba(254,215,170,0.5)",
                 overflow: "hidden",
               }}
@@ -778,28 +778,32 @@ export default function CanteenAnalytics({
                   >
                     <span>💬</span> Latest Reviews Today
                   </div>
-                  {/* Marquee container */}
+                  {/* Marquee container — mask-fade edges for clean look */}
                   <div
                     style={{
                       overflow: "hidden",
                       width: "100%",
                       borderRadius: 14,
+                      WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
+                      maskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
                     }}
                   >
                     <div
                       style={{
                         display: "flex",
-                        gap: 14,
-                        animation: `review-marquee ${Math.max(dailyIndividual.length * 5, 20)}s linear infinite`,
+                        gap: 12,
+                        animation: `review-marquee ${Math.max(dailyIndividual.length * 6, 24)}s linear infinite`,
                         width: "max-content",
+                        willChange: "transform",
                       }}
                     >
-                      {/* Duplicate cards for seamless loop */}
+                      {/* Duplicate for seamless loop — set A */}
                       {[...dailyIndividual, ...dailyIndividual].map((r, i) => (
                         <div
                           key={`${r.id}-${i}`}
                           style={{
                             flexShrink: 0,
+                            width: 196,
                             position: "relative",
                             overflow: "hidden",
                             background: "rgba(255,255,255,0.9)",
@@ -809,12 +813,10 @@ export default function CanteenAnalytics({
                             display: "flex",
                             flexDirection: "column",
                             gap: 5,
-                            minWidth: 200,
-                            maxWidth: 240,
                             boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
                           }}
                         >
-                          {/* Shine sweep on each card */}
+                          {/* Shine sweep */}
                           <div
                             style={{
                               position: "absolute",
@@ -826,20 +828,21 @@ export default function CanteenAnalytics({
                               pointerEvents: "none",
                             }}
                           />
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407" }}>{r.item}</div>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.item}</div>
                             <div
                               style={{
                                 fontSize: "11px",
                                 fontWeight: 800,
                                 color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
                                 background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : r.rating === 3 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
-                                padding: "2px 8px",
+                                padding: "2px 7px",
                                 borderRadius: 10,
                                 whiteSpace: "nowrap",
+                                flexShrink: 0,
                               }}
                             >
-                              {"⭐".repeat(r.rating)} {r.rating}/5
+                              ⭐ {r.rating}/5
                             </div>
                           </div>
                           {r.comment && (
@@ -850,9 +853,8 @@ export default function CanteenAnalytics({
                                 fontStyle: "italic",
                                 lineHeight: 1.35,
                                 overflow: "hidden",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
                               }}
                             >
                               &ldquo;{r.comment}&rdquo;
@@ -888,16 +890,16 @@ export default function CanteenAnalytics({
               )}
             </div>
 
-            {/* ── RIGHT 30%: CTA + QR ── */}
+            {/* ── RIGHT 20%: CTA + QR ── */}
             <div
               style={{
-                flex: "0 0 30%",
+                flex: "0 0 20%",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "24px 28px",
-                gap: 24,
+                padding: "16px 14px",
+                gap: 14,
               }}
             >
               {/* CTA Text with shine */}
@@ -906,8 +908,8 @@ export default function CanteenAnalytics({
                   position: "relative",
                   overflow: "hidden",
                   textAlign: "center",
-                  padding: "16px 20px",
-                  borderRadius: 20,
+                  padding: "12px 14px",
+                  borderRadius: 16,
                   border: "1.5px solid rgba(249,115,22,0.25)",
                   background: "rgba(255,255,255,0.88)",
                   boxShadow: "0 4px 18px rgba(249,115,22,0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
@@ -927,23 +929,23 @@ export default function CanteenAnalytics({
                     pointerEvents: "none",
                   }}
                 />
-                <div style={{ fontSize: "28px", marginBottom: 8 }}>✨</div>
+                <div style={{ fontSize: "22px", marginBottom: 6 }}>✨</div>
                 <h2
                   style={{
-                    fontSize: "18px",
+                    fontSize: "13px",
                     fontWeight: 900,
                     color: "#431407",
                     margin: 0,
-                    lineHeight: 1.3,
+                    lineHeight: 1.35,
                   }}
                 >
                   Be the special one to give the feedback
                 </h2>
                 <p
                   style={{
-                    fontSize: "12px",
+                    fontSize: "11px",
                     color: "#9a3412",
-                    marginTop: 8,
+                    marginTop: 6,
                     marginBottom: 0,
                     fontWeight: 600,
                     opacity: 0.8,
@@ -956,7 +958,7 @@ export default function CanteenAnalytics({
               {/* Animated Arrow */}
               <div
                 style={{
-                  fontSize: "32px",
+                  fontSize: "24px",
                   animation: "arrow-bounce 1.4s ease-in-out infinite",
                   color: "#f97316",
                   lineHeight: 1,
@@ -977,11 +979,11 @@ export default function CanteenAnalytics({
                 {/* Real branded QR code from /public/mess-portal-qr.svg */}
                 <div
                   style={{
-                    borderRadius: 20,
+                    borderRadius: 16,
                     background: "rgba(255,255,255,0.95)",
                     border: "2px solid #fde68a",
                     boxShadow: "0 8px 28px rgba(245,158,11,0.14)",
-                    padding: 10,
+                    padding: 8,
                     boxSizing: "border-box",
                     animation: "glow-pulse 3s ease-in-out infinite",
                   }}
@@ -990,9 +992,9 @@ export default function CanteenAnalytics({
                   <img
                     src="/mess-portal-qr.svg"
                     alt="Scan to rate the canteen"
-                    width={160}
-                    height={160}
-                    style={{ display: "block", borderRadius: 12 }}
+                    width={120}
+                    height={120}
+                    style={{ display: "block", borderRadius: 10 }}
                   />
                 </div>
 
@@ -1044,7 +1046,7 @@ function DisplayRankCard({
   item: { item: string; avg: number; count: number };
   rank: number;
 }) {
-  const medals = ["🥇", "🥈", "🥉"];
+  const rankNums = ["1", "2", "3"];
   const sizes = [90, 78, 78];
   const iconSizes = ["56px", "48px", "48px"];
   const fontSizes = ["18px", "16px", "16px"];
@@ -1083,7 +1085,7 @@ function DisplayRankCard({
         }}
       />
 
-      {/* Medal + name */}
+      {/* Rank number badge + name */}
       <div
         style={{
           position: "relative",
@@ -1109,7 +1111,7 @@ function DisplayRankCard({
             pointerEvents: "none",
           }}
         />
-        <span style={{ fontSize: fontSizes[rank] }}>{medals[rank]}</span>
+        <span style={{ fontSize: fontSizes[rank], fontWeight: 900, color: "#b45309" }}>#{rankNums[rank]}</span>
         <h2
           style={{
             fontSize: fontSizes[rank],
