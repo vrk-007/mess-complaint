@@ -203,10 +203,7 @@ export async function sendReminderEmail({
     ? `Just a heads-up — there ${pendingCount === 1 ? "is" : "are"} currently <strong>${pendingCount} active complaint${pendingCount !== 1 ? "s" : ""}</strong>${pendingApprovalCount > 0 ? `, with <strong>${pendingApprovalCount}</strong> awaiting your approval` : ""} on the Mess Portal. Please take a moment to check and action them.`
     : `All good news! There are currently <strong>no active complaints</strong> on the Mess Portal. Everything is running smoothly and all previous complaints have been resolved.`;
 
-  await sendEmail({
-    to,
-    subject,
-    html: `
+  const html = `
       <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#fffaf5;border-radius:16px;overflow:hidden;border:1px solid #fed7aa;">
         <div style="background:linear-gradient(135deg,#f97316,#ef4444);padding:24px 28px;">
           <h1 style="color:white;margin:0;font-size:20px;font-weight:800;">📋 Mess Portal — ${hasPending ? "Reminder" : "Check-in"}</h1>
@@ -225,6 +222,11 @@ export async function sendReminderEmail({
           Mess Complaint Portal · Powered by <strong>Nexalaya</strong> · Reminder sent every 2 days
         </div>
       </div>
-    `,
-  });
+    `;
+
+  // Send individually to each recipient so Gmail treats them as 1:1 transactional
+  // emails rather than bulk — prevents overnight delivery delays
+  await Promise.all(
+    to.map((recipient) => sendEmail({ to: [recipient], subject, html }))
+  );
 }
