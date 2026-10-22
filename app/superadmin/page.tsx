@@ -192,14 +192,13 @@ export default async function SuperAdminDashboard({
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
-      {/* ── Nav styles: orange chips + mobile header wrapping ── */}
+      {/* ── Nav styles: orange chips, always visible on mobile ── */}
       <style>{`
-        /* Shared orange nav chip */
         .sa-nav-chip {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 6px 13px;
+          gap: 4px;
+          padding: 6px 11px;
           border-radius: 20px;
           font-size: 12px;
           font-weight: 700;
@@ -211,36 +210,29 @@ export default async function SuperAdminDashboard({
           color: #fff !important;
           border: none;
           box-shadow: 0 2px 8px rgba(249,115,22,0.30);
+          -webkit-tap-highlight-color: transparent;
         }
-        .sa-nav-chip:hover {
-          filter: brightness(1.08);
-          box-shadow: 0 4px 14px rgba(249,115,22,0.45);
-        }
-        .sa-nav-chip:active {
-          filter: brightness(1.0);
-          box-shadow: 0 2px 8px rgba(249,115,22,0.30);
-        }
+        .sa-nav-chip:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(249,115,22,0.45); }
+        .sa-nav-chip:active { filter: brightness(1.0); }
 
-        /* Hide label text on very small screens */
-        .sa-nav-label { display: inline; }
-        @media (max-width: 390px) {
-          .sa-nav-label { display: none; }
-          .sa-nav-chip { padding: 6px 9px; }
-        }
-
-        /* Keep header from overflowing on mobile */
         .sa-nav-right {
           display: flex;
           align-items: center;
-          gap: 7px;
+          gap: 6px;
           flex-shrink: 0;
+        }
+
+        /* Tighten up on small phones — keep text visible */
+        @media (max-width: 400px) {
+          .sa-nav-chip { padding: 5px 8px; font-size: 11px; gap: 3px; }
+          .sa-nav-right { gap: 5px; }
         }
       `}</style>
 
       {/* ── Top Nav ── */}
       <header
         style={{
-          background: "rgba(255,255,255,0.88)",
+          background: "rgba(255,255,255,0.92)",
           backdropFilter: "blur(16px)",
           borderBottom: "1px solid #fed7aa",
           position: "sticky",
@@ -248,33 +240,28 @@ export default async function SuperAdminDashboard({
           zIndex: 50,
         }}
       >
-        <div className="nav-inner">
-          {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, overflow: "hidden" }}>
-            <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#431407", whiteSpace: "nowrap" }}>
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #f97316, #ef4444)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Super Admin
-              </span>
-              <span className="nav-logo-sub">{" "}PORTAL</span>
-            </span>
+        <div className="nav-inner" style={{ height: 56 }}>
+          {/* 🍽️ Mess icon — compact logo mark, no text */}
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <div
+              style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: "linear-gradient(135deg, #f97316, #ef4444)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 17,
+                boxShadow: "0 3px 10px rgba(249,115,22,0.28)",
+              }}
+            >
+              🍽️
+            </div>
           </div>
 
-          {/* Right side: Rate + Toggle + Profile */}
+          {/* Right side: Rate Canteen + All Complaints toggle + Profile */}
           <div className="sa-nav-right">
-            {/* ⭐ Rate button */}
-            <a
-              href="/rate"
-              title="Rate VNIT Canteen"
-              className="sa-nav-chip"
-            >
+            {/* ⭐ Rate Canteen */}
+            <a href="/rate" title="Rate VNIT Canteen" className="sa-nav-chip">
               <span style={{ fontSize: 13 }}>⭐</span>
-              <span className="sa-nav-label">Rate</span>
+              Rate Canteen
             </a>
 
             {/* 📋 / 🚨 View toggle */}
@@ -284,7 +271,7 @@ export default async function SuperAdminDashboard({
               className="sa-nav-chip"
             >
               <span style={{ fontSize: 13 }}>{viewAll ? "📋" : "🚨"}</span>
-              <span className="sa-nav-label">{viewAll ? "All Complaints" : "Escalated Only"}</span>
+              {viewAll ? "All Complaints" : "Escalated Only"}
             </a>
 
             <ProfileDropdown user={session.user} isAdmin={true} />
