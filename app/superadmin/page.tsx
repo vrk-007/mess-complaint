@@ -206,17 +206,6 @@ export default async function SuperAdminDashboard({
         <div className="nav-inner">
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 38, height: 38, borderRadius: "10px",
-                background: "linear-gradient(135deg, #f97316, #ef4444)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "18px",
-                boxShadow: "0 4px 12px rgba(249,115,22,0.3)",
-              }}
-            >
-              👑
-            </div>
             <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#431407" }}>
               <span
                 style={{
@@ -283,11 +272,17 @@ export default async function SuperAdminDashboard({
 
       {/* ── Main Content ── */}
       <main className="page-main-wide">
-        {/* Stats */}
+
+        {/* ── Step 1: Select Mess ── */}
+        <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
+          <SuperAdminFilterBar viewAll={viewAll} section="mess" />
+        </Suspense>
+
+        {/* ── Step 2: Stats Card (non-Canteen only) ── */}
         {!isCanteen && (
           <div className="glass card-pad">
             <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
-              SuperAdmin Stats
+              Mess Complaints Stats
             </div>
             <div className="stats-grid">
               {[
@@ -305,32 +300,36 @@ export default async function SuperAdminDashboard({
           </div>
         )}
 
-        {/* Filter Bar Helper Note */}
+        {/* ── Step 3: Filter hint + period/date/status filters (non-Canteen only) ── */}
         {!isCanteen && (
-          <div
-            style={{
-              fontSize: "12.5px",
-              color: "#9a3412",
-              fontWeight: 500,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              width: "fit-content",
-              maxWidth: "100%",
-            }}
-          >
-            <span style={{ fontSize: "14px" }}>ℹ️</span>
-            <span>
-              From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
-              <strong>complaints/suggestions</strong> and by date 📆 as well
-            </span>
-          </div>
+          <>
+            <div
+              style={{
+                fontSize: "12.5px",
+                color: "#9a3412",
+                fontWeight: 500,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                width: "fit-content",
+                maxWidth: "100%",
+                padding: "6px 12px",
+                background: "rgba(249,115,22,0.06)",
+                border: "1px solid rgba(249,115,22,0.18)",
+                borderRadius: 10,
+              }}
+            >
+              <span style={{ fontSize: 14 }}>ℹ️</span>
+              <span>
+                From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
+                <strong>complaints/suggestions</strong> and by date 📆 as well
+              </span>
+            </div>
+            <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
+              <SuperAdminFilterBar viewAll={viewAll} section="filters" />
+            </Suspense>
+          </>
         )}
-
-        {/* Filter Bar */}
-        <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
-          <SuperAdminFilterBar viewAll={viewAll} />
-        </Suspense>
 
         {/* ── Canteen Analytics (Above Suggestions when VNIT Canteen is filtered) ── */}
         {isCanteen && canteenAnalyticsData && (

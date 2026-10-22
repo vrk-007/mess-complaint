@@ -269,7 +269,13 @@ export default async function AdminDashboard({
 
       {/* ── Main Content ── */}
       <main className="page-main-wide">
-        {/* Stats Card (Same as Student) */}
+
+        {/* ── Step 1: Select Mess ── */}
+        <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
+          <FilterBar section="mess" />
+        </Suspense>
+
+        {/* ── Step 2: Stats Card (non-Canteen only) ── */}
         {!isCanteen && (
           <div className="glass card-pad">
             <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
@@ -277,10 +283,10 @@ export default async function AdminDashboard({
             </div>
             <div className="stats-grid">
               {[
-                { label: "Total",           value: complaints.length,                                            color: "#f97316" },
+                { label: "Total",           value: complaints.length,                                                color: "#f97316" },
                 { label: "Active",           value: complaints.filter(c => !c.resolved && !c.pendingApproval).length, color: "#ef4444" },
-                { label: "Pending Approval", value: complaints.filter(c => c.pendingApproval).length,              color: "#f59e0b" },
-                { label: "Resolved",         value: complaints.filter(c => c.resolved).length,                     color: "#22c55e" },
+                { label: "Pending Approval", value: complaints.filter(c => c.pendingApproval).length,                color: "#f59e0b" },
+                { label: "Resolved",         value: complaints.filter(c => c.resolved).length,                       color: "#22c55e" },
               ].map(({ label, value, color }) => (
                 <div
                   key={label}
@@ -300,30 +306,36 @@ export default async function AdminDashboard({
           </div>
         )}
 
-        {/* ── Filter Bar ── */}
+        {/* ── Step 3: Filter hint + period/date filters (non-Canteen only) ── */}
         {!isCanteen && (
-          <div
-            style={{
-              fontSize: "12.5px",
-              color: "#9a3412",
-              fontWeight: 500,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              width: "fit-content",
-              maxWidth: "100%",
-            }}
-          >
-            <span style={{ fontSize: "14px" }}>ℹ️</span>
-            <span>
-              From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
-              <strong>complaints/suggestions</strong> and by date 📆 as well
-            </span>
-          </div>
+          <>
+            <div
+              style={{
+                fontSize: "12.5px",
+                color: "#9a3412",
+                fontWeight: 500,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                width: "fit-content",
+                maxWidth: "100%",
+                padding: "6px 12px",
+                background: "rgba(249,115,22,0.06)",
+                border: "1px solid rgba(249,115,22,0.18)",
+                borderRadius: 10,
+              }}
+            >
+              <span style={{ fontSize: 14 }}>ℹ️</span>
+              <span>
+                From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
+                <strong>complaints/suggestions</strong> and by date 📆 as well
+              </span>
+            </div>
+            <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
+              <FilterBar section="filters" />
+            </Suspense>
+          </>
         )}
-        <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
-          <FilterBar />
-        </Suspense>
 
         {/* ── Canteen Analytics (Above Suggestions when VNIT Canteen is filtered) ── */}
         {isCanteen && canteenAnalyticsData && (

@@ -22,7 +22,7 @@ This project is an automated Mess & Canteen Complaint & Feedback Management Port
 - `STUDENT`: Can view student dashboard (`/dashboard`), submit complaints via QR token (`/`), rate VNIT Canteen items (`/rate`), and edit profile/hostel/mess (`/onboarding`).
 - `ADMIN`: Hostel/Mess Admin (`/admin`). Generates single-use QR tokens, views complaints for their assigned mess, submits remarks, forwards severe issues to SuperAdmin, and submits resolution requests.
 - `SUPER_ADMIN`: Institute SuperAdmin (`/superadmin`). Cross-mess analytics, inspects system stats, reviews escalated complaints, adds superadmin remarks, and approves pending resolutions.
-- **Special Venue ("VNIT Canteen"):** Canteen complaints/ratings operate under special filtering. In the superadmin view, system/superadmin stats are hidden when "VNIT Canteen" is selected.
+- **Special Venue ("VNIT Canteen"):** Canteen complaints/ratings operate under special filtering. In both Admin (`/admin`) and SuperAdmin (`/superadmin`) portals, selecting "VNIT Canteen" hides system/superadmin complaint stats and complaint-specific filter bar controls (status, timeframes, date picker). Instead, dedicated canteen analytics and ratings are displayed.
 
 ---
 
@@ -75,6 +75,12 @@ mess/
 - If a complaint was NOT escalated: Admin marks it resolved directly (`resolved = true`).
 - If a complaint WAS escalated: When an Admin submits a resolution, it enters `pendingApproval = true` with `resolutionRemark` and `resolvedBy`.
 - The SuperAdmin (or escalating admin) must review and approve the resolution (`approvedBy`, `approvedAt`), which transitions `pendingApproval = false` and `resolved = true`.
+
+### 4. VNIT Canteen & Feedback Analytics Workflow
+- **Canteen Isolation:** Because VNIT Canteen operates as a food and beverage rating system rather than a hostel complaint mess, regular complaint stats and filter bars (Status, All, 1 Wk, 2 Wks, 1 Month, Date) are suppressed on Admin and SuperAdmin portals when "VNIT Canteen" is selected.
+- **Analytics Data Fetching:** Parent pages (`app/admin/page.tsx`, `app/superadmin/page.tsx`) query all historical canteen reviews (`allRatings`) alongside monthly aggregates (Top 3 & Lowest Rated dishes) from Prisma and pass them into `CanteenAnalytics`.
+- **Client-Side Period Filtering:** Inside the Daily Ratings section, users can dynamically filter ratings without server reloads using period pills (`All ratings`, `Past 1 week`, `Past 2 weeks`, `Past 1 month`, and `📅 By Date` with an inline date picker).
+- **Fullscreen Kiosk Mode & Ticker:** Features an interactive fullscreen modal with a live reviews marquee ticker that automatically synchronizes with the active period filter.
 
 ---
 
