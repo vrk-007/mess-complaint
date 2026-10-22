@@ -192,6 +192,14 @@ export default async function SuperAdminDashboard({
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
+      {/* Nav button responsive styles */}
+      <style>{`
+        .sa-nav-label { display: inline; }
+        @media (max-width: 360px) {
+          .sa-nav-label { display: none; }
+        }
+      `}</style>
+
       {/* ── Top Nav ── */}
       <header
         style={{
@@ -214,57 +222,79 @@ export default async function SuperAdminDashboard({
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                SUPER ADMIN
+                Super Admin
               </span>
               <span className="nav-logo-sub">{" "}PORTAL</span>
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Rate Canteen shortcut */}
             <a
               href="/rate"
+              title="Rate VNIT Canteen"
               style={{
-                padding: "7px 16px",
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: 700,
-                border: "1.5px solid #fed7aa",
-                background: "rgba(249,115,22,0.07)",
-                color: "#9a3412",
-                cursor: "pointer",
-                textDecoration: "none",
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                transition: "all 0.2s",
+                gap: 5,
+                padding: "6px 12px",
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.01em",
+                border: "1.5px solid rgba(249,115,22,0.25)",
+                background: "rgba(249,115,22,0.06)",
+                color: "#9a3412",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                transition: "all 0.18s ease",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(249,115,22,0.12)";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(249,115,22,0.45)";
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 3px 10px rgba(249,115,22,0.18)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(249,115,22,0.06)";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(249,115,22,0.25)";
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
               }}
             >
-              ⭐ Rate Canteen
+              <span style={{ fontSize: 13 }}>⭐</span>
+              <span className="sa-nav-label">Rate Canteen</span>
             </a>
+
             {/* View toggle */}
             <a
               href={toggleHref}
+              title={viewAll ? "Show Escalated Only" : "Show All Complaints"}
               style={{
-                padding: "7px 16px",
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: 700,
-                border: "1.5px solid",
-                borderColor: viewAll ? "#f97316" : "#fed7aa",
-                background: viewAll ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(249,115,22,0.07)",
-                color: viewAll ? "white" : "#9a3412",
-                cursor: "pointer",
-                textDecoration: "none",
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                transition: "all 0.2s",
-                boxShadow: viewAll ? "0 4px 14px rgba(249,115,22,0.3)" : "none",
+                gap: 5,
+                padding: "6px 12px",
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.01em",
+                border: `1.5px solid ${viewAll ? "rgba(249,115,22,0.6)" : "rgba(249,115,22,0.25)"}`,
+                background: viewAll
+                  ? "linear-gradient(135deg, #f97316, #ef4444)"
+                  : "rgba(249,115,22,0.06)",
+                color: viewAll ? "#fff" : "#9a3412",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                transition: "all 0.18s ease",
+                boxShadow: viewAll
+                  ? "0 3px 12px rgba(249,115,22,0.35)"
+                  : "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
-              {viewAll ? "📋 All Complaints" : "🚨 Escalated Only"}
+              <span style={{ fontSize: 13 }}>{viewAll ? "📋" : "🚨"}</span>
+              <span className="sa-nav-label">{viewAll ? "All Complaints" : "Escalated"}</span>
             </a>
+
             <ProfileDropdown user={session.user} isAdmin={true} />
           </div>
         </div>
