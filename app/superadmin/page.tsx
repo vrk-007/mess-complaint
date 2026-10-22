@@ -46,7 +46,7 @@ export default async function SuperAdminDashboard({
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
 
-  const userEmail = (session.user.email ?? "").trim().toLowerCase();
+  const userEmail = (session.user?.email ?? "").trim().toLowerCase();
   if (!superAdminEmails.includes(userEmail)) redirect("/");
 
   // ── Build where clause ────────────────────────────────────────────────────
@@ -192,11 +192,25 @@ export default async function SuperAdminDashboard({
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
-      {/* Nav button responsive styles */}
+      {/* Nav button responsive and hover styles (pure CSS for Server Component compliance) */}
       <style>{`
         .sa-nav-label { display: inline; }
         @media (max-width: 360px) {
           .sa-nav-label { display: none; }
+        }
+        .sa-rate-btn:hover {
+          background: rgba(249,115,22,0.14) !important;
+          border-color: rgba(249,115,22,0.45) !important;
+          box-shadow: 0 3px 10px rgba(249,115,22,0.18) !important;
+        }
+        .sa-toggle-inactive:hover {
+          background: rgba(249,115,22,0.12) !important;
+          border-color: rgba(249,115,22,0.45) !important;
+          box-shadow: 0 3px 10px rgba(249,115,22,0.18) !important;
+        }
+        .sa-toggle-active:hover {
+          filter: brightness(1.05);
+          box-shadow: 0 4px 14px rgba(249,115,22,0.45) !important;
         }
       `}</style>
 
@@ -233,6 +247,7 @@ export default async function SuperAdminDashboard({
             <a
               href="/rate"
               title="Rate VNIT Canteen"
+              className="sa-rate-btn"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -250,16 +265,6 @@ export default async function SuperAdminDashboard({
                 transition: "all 0.18s ease",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(249,115,22,0.12)";
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(249,115,22,0.45)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 3px 10px rgba(249,115,22,0.18)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(249,115,22,0.06)";
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(249,115,22,0.25)";
-                (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
-              }}
             >
               <span style={{ fontSize: 13 }}>⭐</span>
               <span className="sa-nav-label">Rate Canteen food</span>
@@ -269,6 +274,7 @@ export default async function SuperAdminDashboard({
             <a
               href={toggleHref}
               title={viewAll ? "Show Escalated Only" : "Show All Complaints"}
+              className={viewAll ? "sa-toggle-active" : "sa-toggle-inactive"}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -292,7 +298,7 @@ export default async function SuperAdminDashboard({
               }}
             >
               <span style={{ fontSize: 13 }}>{viewAll ? "📋" : "🚨"}</span>
-              <span className="sa-nav-label">{viewAll ? "All Complaints" : "Escalated"}</span>
+              <span className="sa-nav-label">{viewAll ? "All Complaints" : "Escalated Only"}</span>
             </a>
 
             <ProfileDropdown user={session.user} isAdmin={true} />
