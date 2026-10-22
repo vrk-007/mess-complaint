@@ -192,32 +192,55 @@ export default async function SuperAdminDashboard({
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
-      {/* Nav button responsive and hover styles (pure CSS for Server Component compliance) */}
+      {/* ── Nav styles: orange chips + mobile header wrapping ── */}
       <style>{`
+        /* Shared orange nav chip */
+        .sa-nav-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 13px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: filter 0.18s ease, box-shadow 0.18s ease;
+          background: linear-gradient(135deg, #f97316, #ef4444);
+          color: #fff !important;
+          border: none;
+          box-shadow: 0 2px 8px rgba(249,115,22,0.30);
+        }
+        .sa-nav-chip:hover {
+          filter: brightness(1.08);
+          box-shadow: 0 4px 14px rgba(249,115,22,0.45);
+        }
+        .sa-nav-chip:active {
+          filter: brightness(1.0);
+          box-shadow: 0 2px 8px rgba(249,115,22,0.30);
+        }
+
+        /* Hide label text on very small screens */
         .sa-nav-label { display: inline; }
-        @media (max-width: 360px) {
+        @media (max-width: 390px) {
           .sa-nav-label { display: none; }
+          .sa-nav-chip { padding: 6px 9px; }
         }
-        .sa-rate-btn:hover {
-          background: rgba(249,115,22,0.14) !important;
-          border-color: rgba(249,115,22,0.45) !important;
-          box-shadow: 0 3px 10px rgba(249,115,22,0.18) !important;
-        }
-        .sa-toggle-inactive:hover {
-          background: rgba(249,115,22,0.12) !important;
-          border-color: rgba(249,115,22,0.45) !important;
-          box-shadow: 0 3px 10px rgba(249,115,22,0.18) !important;
-        }
-        .sa-toggle-active:hover {
-          filter: brightness(1.05);
-          box-shadow: 0 4px 14px rgba(249,115,22,0.45) !important;
+
+        /* Keep header from overflowing on mobile */
+        .sa-nav-right {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          flex-shrink: 0;
         }
       `}</style>
 
       {/* ── Top Nav ── */}
       <header
         style={{
-          background: "rgba(255,255,255,0.8)",
+          background: "rgba(255,255,255,0.88)",
           backdropFilter: "blur(16px)",
           borderBottom: "1px solid #fed7aa",
           position: "sticky",
@@ -227,8 +250,8 @@ export default async function SuperAdminDashboard({
       >
         <div className="nav-inner">
           {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#431407" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, overflow: "hidden" }}>
+            <span style={{ fontWeight: 800, fontSize: "18px", letterSpacing: "-0.5px", color: "#431407", whiteSpace: "nowrap" }}>
               <span
                 style={{
                   background: "linear-gradient(135deg, #f97316, #ef4444)",
@@ -242,60 +265,23 @@ export default async function SuperAdminDashboard({
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Rate Canteen shortcut */}
+          {/* Right side: Rate + Toggle + Profile */}
+          <div className="sa-nav-right">
+            {/* ⭐ Rate button */}
             <a
               href="/rate"
               title="Rate VNIT Canteen"
-              className="sa-rate-btn"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "6px 12px",
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.01em",
-                border: "1.5px solid rgba(249,115,22,0.25)",
-                background: "rgba(249,115,22,0.06)",
-                color: "#9a3412",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                transition: "all 0.18s ease",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-              }}
+              className="sa-nav-chip"
             >
               <span style={{ fontSize: 13 }}>⭐</span>
-              <span className="sa-nav-label">Rate Canteen food</span>
+              <span className="sa-nav-label">Rate</span>
             </a>
 
-            {/* View toggle */}
+            {/* 📋 / 🚨 View toggle */}
             <a
               href={toggleHref}
-              title={viewAll ? "Show Escalated Only" : "Show All Complaints"}
-              className={viewAll ? "sa-toggle-active" : "sa-toggle-inactive"}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "6px 12px",
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.01em",
-                border: `1.5px solid ${viewAll ? "rgba(249,115,22,0.6)" : "rgba(249,115,22,0.25)"}`,
-                background: viewAll
-                  ? "linear-gradient(135deg, #f97316, #ef4444)"
-                  : "rgba(249,115,22,0.06)",
-                color: viewAll ? "#fff" : "#9a3412",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                transition: "all 0.18s ease",
-                boxShadow: viewAll
-                  ? "0 3px 12px rgba(249,115,22,0.35)"
-                  : "0 1px 3px rgba(0,0,0,0.04)",
-              }}
+              title={viewAll ? "Switch to Escalated Only" : "Switch to All Complaints"}
+              className="sa-nav-chip"
             >
               <span style={{ fontSize: 13 }}>{viewAll ? "📋" : "🚨"}</span>
               <span className="sa-nav-label">{viewAll ? "All Complaints" : "Escalated Only"}</span>
