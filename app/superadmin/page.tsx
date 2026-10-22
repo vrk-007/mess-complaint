@@ -262,7 +262,7 @@ export default async function SuperAdminDashboard({
               }}
             >
               <span style={{ fontSize: 13 }}>⭐</span>
-              <span className="sa-nav-label">Rate Canteen</span>
+              <span className="sa-nav-label">Rate Canteen food</span>
             </a>
 
             {/* View toggle */}
