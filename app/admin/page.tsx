@@ -309,34 +309,36 @@ export default async function AdminDashboard({
 
       {/* ── Main Content ── */}
       <main className="page-main-wide">
-        {/* Stats Card (Same as Student) */}
-        <div className="glass card-pad">
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
-            System Stats
+        {!isCanteen && (
+          {/* Stats Card (Same as Student) */}
+          <div className="glass card-pad">
+            <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+              System Stats
+            </div>
+            <div className="stats-grid">
+              {[
+                { label: "Total",           value: complaints.length,                                            color: "#f97316" },
+                { label: "Active",           value: complaints.filter(c => !c.resolved && !c.pendingApproval).length, color: "#ef4444" },
+                { label: "Pending Approval", value: complaints.filter(c => c.pendingApproval).length,              color: "#f59e0b" },
+                { label: "Resolved",         value: complaints.filter(c => c.resolved).length,                     color: "#22c55e" },
+              ].map(({ label, value, color }) => (
+                <div
+                  key={label}
+                  style={{
+                    padding: "10px",
+                    background: `${color}10`,
+                    borderRadius: 12,
+                    border: `1px solid ${color}30`,
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontSize: "18px", fontWeight: 800, color }}>{value}</div>
+                  <div style={{ fontSize: "10px", color: "#78350f", fontWeight: 700 }}>{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="stats-grid">
-            {[
-              { label: "Total",           value: complaints.length,                                            color: "#f97316" },
-              { label: "Active",           value: complaints.filter(c => !c.resolved && !c.pendingApproval).length, color: "#ef4444" },
-              { label: "Pending Approval", value: complaints.filter(c => c.pendingApproval).length,              color: "#f59e0b" },
-              { label: "Resolved",         value: complaints.filter(c => c.resolved).length,                     color: "#22c55e" },
-            ].map(({ label, value, color }) => (
-              <div
-                key={label}
-                style={{
-                  padding: "10px",
-                  background: `${color}10`,
-                  borderRadius: 12,
-                  border: `1px solid ${color}30`,
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: "18px", fontWeight: 800, color }}>{value}</div>
-                <div style={{ fontSize: "10px", color: "#78350f", fontWeight: 700 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* ── Filter Bar ── */}
         <div
