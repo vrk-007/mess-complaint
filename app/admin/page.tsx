@@ -178,31 +178,8 @@ export default async function AdminDashboard({
       })
     );
 
-    // 2. Daily Ratings (Individual & Average)
-    let dayStart: Date;
-    let dayEnd: Date;
-    let dateLabel: string;
-
-    if (params.date) {
-      dayStart = new Date(params.date);
-      dayStart.setHours(0, 0, 0, 0);
-      dayEnd = new Date(params.date);
-      dayEnd.setHours(23, 59, 59, 999);
-      dateLabel = new Intl.DateTimeFormat("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }).format(dayStart);
-    } else {
-      dayStart = new Date(now);
-      dayStart.setHours(0, 0, 0, 0);
-      dayEnd = new Date(now);
-      dayEnd.setHours(23, 59, 59, 999);
-      dateLabel = `Today (${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(now)})`;
-    }
-
-    const dailyRatings = await prisma.canteenRating.findMany({
-      where: { createdAt: { gte: dayStart, lte: dayEnd } },
+    // 2. All ratings (unfiltered) for client-side period filtering in the Daily Ratings section
+    const allRatingsRaw = await prisma.canteenRating.findMany({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -213,7 +190,7 @@ export default async function AdminDashboard({
       },
     });
 
-    const dailyIndividual = dailyRatings.map((r) => ({
+    const allRatings = allRatingsRaw.map((r) => ({
       id: r.id,
       item: r.item,
       rating: r.rating,
@@ -221,27 +198,10 @@ export default async function AdminDashboard({
       createdAt: r.createdAt.toISOString(),
     }));
 
-    const dailyAvgMap: Record<string, { total: number; count: number }> = {};
-    for (const r of dailyRatings) {
-      if (!dailyAvgMap[r.item]) dailyAvgMap[r.item] = { total: 0, count: 0 };
-      dailyAvgMap[r.item].total += r.rating;
-      dailyAvgMap[r.item].count += 1;
-    }
-
-    const dailyAverages = Object.entries(dailyAvgMap)
-      .map(([item, stat]) => ({
-        item,
-        avg: Number((stat.total / stat.count).toFixed(1)),
-        count: stat.count,
-      }))
-      .sort((a, b) => b.avg - a.avg);
-
     canteenAnalyticsData = {
       topRated,
       worstRated,
-      dailyIndividual,
-      dailyAverages,
-      dateLabel,
+      allRatings,
     };
   }
 
@@ -309,8 +269,8 @@ export default async function AdminDashboard({
 
       {/* ── Main Content ── */}
       <main className="page-main-wide">
+        {/* Stats Card (Same as Student) */}
         {!isCanteen && (
-          {/* Stats Card (Same as Student) */}
           <div className="glass card-pad">
             <div style={{ fontSize: "12px", fontWeight: 600, color: "#9a3412", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
               System Stats
@@ -341,24 +301,26 @@ export default async function AdminDashboard({
         )}
 
         {/* ── Filter Bar ── */}
-        <div
-          style={{
-            fontSize: "12.5px",
-            color: "#9a3412",
-            fontWeight: 500,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            width: "fit-content",
-            maxWidth: "100%",
-          }}
-        >
-          <span style={{ fontSize: "14px" }}>ℹ️</span>
-          <span>
-            From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
-            <strong>complaints/suggestions</strong> and by date 📆 as well
-          </span>
-        </div>
+        {!isCanteen && (
+          <div
+            style={{
+              fontSize: "12.5px",
+              color: "#9a3412",
+              fontWeight: 500,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              width: "fit-content",
+              maxWidth: "100%",
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>ℹ️</span>
+            <span>
+              From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
+              <strong>complaints/suggestions</strong> and by date 📆 as well
+            </span>
+          </div>
+        )}
         <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
           <FilterBar />
         </Suspense>

@@ -21,26 +21,64 @@ export interface CanteenAnalyticsProps {
     count: number;
     recentReviews?: { id: string; rating: number; comment: string; createdAt: string }[];
   }[];
-  dailyIndividual: {
+  allRatings: {
     id: string;
     item: string;
     rating: number;
     comment?: string | null;
     createdAt: string;
   }[];
-  dailyAverages: { item: string; avg: number; count: number }[];
-  dateLabel: string;
+}
+
+type Period = "all" | "1w" | "2w" | "1m" | "date";
+
+const PERIOD_LABELS: { value: Period; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "1w",  label: "1 Wk" },
+  { value: "2w",  label: "2 Wks" },
+  { value: "1m",  label: "1 Month" },
+  { value: "date", label: "📅 By Date" },
+];
+
+function getFilteredRatings(
+  ratings: CanteenAnalyticsProps["allRatings"],
+  period: Period,
+  customDate: string
+) {
+  const now = new Date();
+  if (period === "1w") {
+    const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return ratings.filter((r) => new Date(r.createdAt) >= from);
+  }
+  if (period === "2w") {
+    const from = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    return ratings.filter((r) => new Date(r.createdAt) >= from);
+  }
+  if (period === "1m") {
+    const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return ratings.filter((r) => new Date(r.createdAt) >= from);
+  }
+  if (period === "date" && customDate) {
+    const start = new Date(customDate); start.setHours(0, 0, 0, 0);
+    const end   = new Date(customDate); end.setHours(23, 59, 59, 999);
+    return ratings.filter((r) => {
+      const d = new Date(r.createdAt);
+      return d >= start && d <= end;
+    });
+  }
+  return ratings; // "all"
 }
 
 export default function CanteenAnalytics({
   topRated,
   worstRated,
-  dailyIndividual,
-  dailyAverages,
-  dateLabel,
+  allRatings,
 }: CanteenAnalyticsProps) {
-  const [activeTab, setActiveTab] = useState<"individual" | "average">("individual");
+  const [period, setPeriod] = useState<Period>("all");
+  const [customDate, setCustomDate] = useState("");
   const [isEnlarged, setIsEnlarged] = useState(false);
+
+  const filteredRatings = getFilteredRatings(allRatings, period, customDate);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -335,7 +373,7 @@ export default function CanteenAnalytics({
         </div>
       </div>
 
-      {/* ── Daily Ratings (Individual vs Average Toggle) ── */}
+      {/* ── Ratings Section with Period Filter ── */}
       <div
         className="glass"
         style={{
@@ -346,252 +384,203 @@ export default function CanteenAnalytics({
           boxShadow: "0 6px 24px rgba(120, 53, 15, 0.05)",
         }}
       >
-        {/* Header & Tabs */}
+        {/* Header */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 12,
-            marginBottom: 18,
+            marginBottom: 16,
             paddingBottom: 14,
             borderBottom: "1px solid rgba(254, 215, 170, 0.6)",
           }}
         >
           <div>
             <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#431407", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>📅</span> Daily Ratings
+              <span>⭐</span> Ratings
             </h3>
             <span style={{ fontSize: "12px", color: "#9a3412", fontWeight: 600 }}>
-              {dateLabel}
+              {filteredRatings.length} rating{filteredRatings.length !== 1 ? "s" : ""} shown
             </span>
           </div>
 
-          {/* Toggle Pills */}
-          <div
-            style={{
-              display: "flex",
-              background: "rgba(255, 247, 237, 0.9)",
-              padding: "4px",
-              borderRadius: 14,
-              border: "1px solid #fed7aa",
-              gap: 4,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setActiveTab("individual")}
-              style={{
-                padding: "8px 16px",
-                borderRadius: 10,
-                fontSize: "13px",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                background: activeTab === "individual" ? "linear-gradient(135deg, #f97316, #ef4444)" : "transparent",
-                color: activeTab === "individual" ? "#ffffff" : "#78350f",
-                boxShadow: activeTab === "individual" ? "0 2px 8px rgba(249, 115, 22, 0.3)" : "none",
-              }}
-            >
-              📝 Individual ({dailyIndividual.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("average")}
-              style={{
-                padding: "8px 16px",
-                borderRadius: 10,
-                fontSize: "13px",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                background: activeTab === "average" ? "linear-gradient(135deg, #f97316, #ef4444)" : "transparent",
-                color: activeTab === "average" ? "#ffffff" : "#78350f",
-                boxShadow: activeTab === "average" ? "0 2px 8px rgba(249, 115, 22, 0.3)" : "none",
-              }}
-            >
-              📊 Daily Average ({dailyAverages.length})
-            </button>
+          {/* Period Pills + Date Picker */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+            {PERIOD_LABELS.map(({ value, label }) => {
+              const isActive = period === value && (value !== "date" || !customDate || period === "date");
+              return value === "date" ? (
+                <div key="date" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <button
+                    type="button"
+                    onClick={() => setPeriod("date")}
+                    style={{
+                      padding: "7px 14px",
+                      borderRadius: 10,
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      border: "1.5px solid",
+                      borderColor: period === "date" ? "#f97316" : "#fed7aa",
+                      cursor: "pointer",
+                      background: period === "date" ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(255,255,255,0.8)",
+                      color: period === "date" ? "#fff" : "#78350f",
+                      boxShadow: period === "date" ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                      transition: "all 0.2s ease",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {label}
+                  </button>
+                  {period === "date" && (
+                    <input
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => setCustomDate(e.target.value)}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 10,
+                        border: "1.5px solid #f97316",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#431407",
+                        background: "rgba(255,255,255,0.9)",
+                        outline: "none",
+                        cursor: "pointer",
+                        boxShadow: "0 0 0 3px rgba(249,115,22,0.12)",
+                      }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => { setPeriod(value); setCustomDate(""); }}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 10,
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    border: "1.5px solid",
+                    borderColor: period === value ? "#f97316" : "#fed7aa",
+                    cursor: "pointer",
+                    background: period === value ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(255,255,255,0.8)",
+                    color: period === value ? "#fff" : "#78350f",
+                    boxShadow: period === value ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                    transition: "all 0.2s ease",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Tab 1: Individual Ratings */}
-        {activeTab === "individual" && (
-          <div>
-            {dailyIndividual.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "36px 16px",
-                  color: "#9a3412",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                }}
-              >
-                No individual ratings submitted for this day yet.
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                  gap: 12,
-                }}
-              >
-                {dailyIndividual.map((r) => (
-                  <div
-                    key={r.id}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 14,
-                      background: "#fffaf5",
-                      border: "1.5px solid #fed7aa",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 8,
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <FoodIcon name={r.item} size="28px" />
-                        <div>
-                          <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                            {r.item}
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
-                            🕒 {formatTime(r.createdAt)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          padding: "4px 8px",
-                          borderRadius: 10,
-                          background:
-                            r.rating >= 4
-                              ? "rgba(34,197,94,0.12)"
-                              : r.rating === 3
-                              ? "rgba(245,158,11,0.12)"
-                              : "rgba(239,68,68,0.12)",
-                          color:
-                            r.rating >= 4
-                              ? "#15803d"
-                              : r.rating === 3
-                              ? "#b45309"
-                              : "#b91c1c",
-                          fontWeight: 800,
-                          fontSize: "13px",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {"⭐".repeat(r.rating)} {r.rating}/5
-                      </div>
-                    </div>
-
-                    {/* Student Remark under that particular rated item */}
-                    {r.comment && (
-                      <div
-                        style={{
-                          padding: "7px 10px",
-                          background: "rgba(255, 247, 237, 0.95)",
-                          border: "1px dashed #fed7aa",
-                          borderRadius: 8,
-                          fontSize: "12px",
-                          color: "#78350f",
-                          lineHeight: 1.4,
-                          wordBreak: "break-word",
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: 6,
-                        }}
-                      >
-                        <span style={{ fontSize: "12px", flexShrink: 0 }}>💬</span>
-                        <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Ratings List */}
+        {filteredRatings.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "36px 16px",
+              color: "#9a3412",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            No ratings found for the selected period.
           </div>
-        )}
-
-        {/* Tab 2: Daily Average */}
-        {activeTab === "average" && (
-          <div>
-            {dailyAverages.length === 0 ? (
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {filteredRatings.map((r) => (
               <div
+                key={r.id}
                 style={{
-                  textAlign: "center",
-                  padding: "36px 16px",
-                  color: "#9a3412",
-                  fontSize: "14px",
-                  fontWeight: 600,
+                  padding: "12px 14px",
+                  borderRadius: 14,
+                  background: "#fffaf5",
+                  border: "1.5px solid #fed7aa",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
                 }}
               >
-                No ratings submitted for this day yet.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {dailyAverages.map((item) => (
-                  <div
-                    key={item.item}
-                    style={{
-                      padding: "12px 16px",
-                      borderRadius: 14,
-                      background: "#fffaf5",
-                      border: "1.5px solid #fed7aa",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <FoodIcon name={item.item} size="32px" />
-                      <div>
-                        <div style={{ fontSize: "14px", fontWeight: 700, color: "#431407" }}>
-                          {item.item}
-                        </div>
-                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8 }}>
-                          Based on {item.count} rating{item.count > 1 ? "s" : ""} today
-                        </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <FoodIcon name={r.item} size="28px" />
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                        {r.item}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
+                        🕒 {formatTime(r.createdAt)}
                       </div>
                     </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "5px 12px",
-                        background: "rgba(249, 115, 22, 0.1)",
-                        color: "#c2410c",
-                        borderRadius: 20,
-                        fontWeight: 800,
-                        fontSize: "14px",
-                      }}
-                    >
-                      <span>⭐</span>
-                      <span>{item.avg.toFixed(1)}</span>
-                      <span style={{ fontSize: "11px", opacity: 0.7 }}>/ 5</span>
-                    </div>
                   </div>
-                ))}
+
+                  <div
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: 10,
+                      background:
+                        r.rating >= 4
+                          ? "rgba(34,197,94,0.12)"
+                          : r.rating === 3
+                          ? "rgba(245,158,11,0.12)"
+                          : "rgba(239,68,68,0.12)",
+                      color:
+                        r.rating >= 4
+                          ? "#15803d"
+                          : r.rating === 3
+                          ? "#b45309"
+                          : "#b91c1c",
+                      fontWeight: 800,
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {"⭐".repeat(r.rating)} {r.rating}/5
+                  </div>
+                </div>
+
+                {r.comment && (
+                  <div
+                    style={{
+                      padding: "7px 10px",
+                      background: "rgba(255, 247, 237, 0.95)",
+                      border: "1px dashed #fed7aa",
+                      borderRadius: 8,
+                      fontSize: "12px",
+                      color: "#78350f",
+                      lineHeight: 1.4,
+                      wordBreak: "break-word",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 6,
+                    }}
+                  >
+                    <span style={{ fontSize: "12px", flexShrink: 0 }}>💬</span>
+                    <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>
@@ -763,13 +752,13 @@ export default function CanteenAnalytics({
               </div>
 
               {/* Latest Reviews Ticker */}
-              {dailyIndividual.length > 0 && (() => {
+              {filteredRatings.length > 0 && (() => {
                 // Ensure base set always has enough cards to overflow the
                 // container so both halves are never simultaneously visible.
                 const MIN_VISIBLE = 6;
-                const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / dailyIndividual.length));
-                const tickerBase: typeof dailyIndividual = [];
-                for (let i = 0; i < repeatCount; i++) tickerBase.push(...dailyIndividual);
+                const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / filteredRatings.length));
+                const tickerBase: typeof filteredRatings = [];
+                for (let i = 0; i < repeatCount; i++) tickerBase.push(...filteredRatings);
                 // Duplicate for seamless infinite loop (translate -50% → reset)
                 const tickerItems = [...tickerBase, ...tickerBase];
                 const animDuration = Math.max(tickerBase.length * 5, 20);
@@ -787,7 +776,7 @@ export default function CanteenAnalytics({
                         opacity: 0.85,
                       }}
                     >
-                      <span>💬</span> Latest Reviews Today
+                      <span>💬</span> Latest Reviews
                     </div>
                     {/* Marquee container — mask-fade edges for clean look */}
                     <div
@@ -882,7 +871,7 @@ export default function CanteenAnalytics({
               })()}
 
               {/* Empty state for reviews */}
-              {dailyIndividual.length === 0 && (
+              {filteredRatings.length === 0 && (
                 <div
                   style={{
                     flex: "0 0 auto",
@@ -896,7 +885,7 @@ export default function CanteenAnalytics({
                     opacity: 0.75,
                   }}
                 >
-                  No reviews submitted today yet. Be the first! 🌟
+                  No reviews found for the selected period. 🌟
                 </div>
               )}
             </div>

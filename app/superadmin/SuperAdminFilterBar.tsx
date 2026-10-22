@@ -29,13 +29,25 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
 
   const update = useCallback(
     (key: string, value: string) => {
-      if (key === "mess")   setOptMess(value);
+      if (key === "mess") {
+        setOptMess(value);
+        if (value === "VNIT Canteen") {
+          setOptStatus("");
+          setOptPeriod("");
+          setOptDate("");
+        }
+      }
       if (key === "status") setOptStatus(value);
       if (key === "period") { setOptPeriod(value); setOptDate(""); }
       if (key === "date")   { setOptDate(value);   setOptPeriod(""); }
 
       const params = new URLSearchParams(searchParams.toString());
       if (value) params.set(key, value); else params.delete(key);
+      if (key === "mess" && value === "VNIT Canteen") {
+        params.delete("status");
+        params.delete("period");
+        params.delete("date");
+      }
       if (key === "period") params.delete("date");
       if (key === "date")   params.delete("period");
 
@@ -43,6 +55,8 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
     },
     [router, searchParams]
   );
+
+  const isCanteen = optMess === "VNIT Canteen";
 
   return (
     <>
@@ -210,80 +224,84 @@ export default function SuperAdminFilterBar({ viewAll }: { viewAll: boolean }) {
             value={optMess}
             onChange={(e) => update("mess", e.target.value)}
             className="sa-select"
-            style={{ width: 138 }}
+            style={{ width: isCanteen ? 180 : 138 }}
           >
             <option value="">All Messes</option>
             {MESS_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
 
-        <div className="sa-divider" />
+        {!isCanteen && (
+          <>
+            <div className="sa-divider" />
 
-        {/* 📌 Status */}
-        <div className="sa-group">
-          <span className="sa-group-label">📌 Status</span>
-          <select
-            id="sa-status-filter"
-            value={optStatus}
-            onChange={(e) => update("status", e.target.value)}
-            className="sa-select"
-            style={{ width: 118 }}
-          >
-            <option value="">All</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="resolved">✅ Resolved</option>
-          </select>
-        </div>
-
-        <div className="sa-divider" />
-
-        {/* ⏱ Period Pills */}
-        <div className="sa-pills">
-          {PERIOD_OPTIONS.map(({ label, value }) => {
-            const isActive = !optDate && optPeriod === value;
-            return (
-              <button
-                key={value}
-                id={`sa-period-${value || "all"}`}
-                onClick={() => update("period", value)}
-                className={`sa-pill${isActive ? " active" : ""}`}
+            {/* 📌 Status */}
+            <div className="sa-group">
+              <span className="sa-group-label">📌 Status</span>
+              <select
+                id="sa-status-filter"
+                value={optStatus}
+                onChange={(e) => update("status", e.target.value)}
+                className="sa-select"
+                style={{ width: 118 }}
               >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+                <option value="">All</option>
+                <option value="pending">⏳ Pending</option>
+                <option value="resolved">✅ Resolved</option>
+              </select>
+            </div>
 
-        <div className="sa-divider" />
+            <div className="sa-divider" />
 
-        {/* 📅 Date Picker */}
-        <div className="sa-date-group">
-          <span style={{ fontSize: 15, flexShrink: 0 }}>📅</span>
-          <input
-            id="sa-date-filter"
-            type="date"
-            value={optDate}
-            onChange={(e) => update("date", e.target.value)}
-            className="sa-date"
-            style={optDate ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
-          />
-          {optDate && (
-            <button
-              onClick={() => update("date", "")}
-              title="Clear date"
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: 15, color: "#9a3412", padding: "2px 4px",
-                lineHeight: 1, borderRadius: 6, flexShrink: 0,
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#ef4444"; }}
-              onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#9a3412"; }}
-            >
-              ✕
-            </button>
-          )}
-        </div>
+            {/* ⏱ Period Pills */}
+            <div className="sa-pills">
+              {PERIOD_OPTIONS.map(({ label, value }) => {
+                const isActive = !optDate && optPeriod === value;
+                return (
+                  <button
+                    key={value}
+                    id={`sa-period-${value || "all"}`}
+                    onClick={() => update("period", value)}
+                    className={`sa-pill${isActive ? " active" : ""}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="sa-divider" />
+
+            {/* 📅 Date Picker */}
+            <div className="sa-date-group">
+              <span style={{ fontSize: 15, flexShrink: 0 }}>📅</span>
+              <input
+                id="sa-date-filter"
+                type="date"
+                value={optDate}
+                onChange={(e) => update("date", e.target.value)}
+                className="sa-date"
+                style={optDate ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
+              />
+              {optDate && (
+                <button
+                  onClick={() => update("date", "")}
+                  title="Clear date"
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: 15, color: "#9a3412", padding: "2px 4px",
+                    lineHeight: 1, borderRadius: 6, flexShrink: 0,
+                    transition: "color 0.15s",
+                  }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#ef4444"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#9a3412"; }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Loading indicator */}
         {isPending && (

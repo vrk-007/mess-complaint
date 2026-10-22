@@ -30,13 +30,23 @@ export default function FilterBar() {
   const update = useCallback(
     (key: string, value: string) => {
       // 1️⃣ Optimistically update UI instantly
-      if (key === "mess")   setOptMess(value);
+      if (key === "mess") {
+        setOptMess(value);
+        if (value === "VNIT Canteen") {
+          setOptPeriod("");
+          setOptDate("");
+        }
+      }
       if (key === "period") { setOptPeriod(value); setOptDate(""); }
       if (key === "date")   { setOptDate(value);   setOptPeriod(""); }
 
       // 2️⃣ Then push to server in background
       const params = new URLSearchParams(searchParams.toString());
       if (value) params.set(key, value); else params.delete(key);
+      if (key === "mess" && value === "VNIT Canteen") {
+        params.delete("period");
+        params.delete("date");
+      }
       if (key === "period") params.delete("date");
       if (key === "date")   params.delete("period");
 
@@ -44,6 +54,8 @@ export default function FilterBar() {
     },
     [router, searchParams]
   );
+
+  const isCanteen = optMess === "VNIT Canteen";
 
   return (
     <>
@@ -158,7 +170,7 @@ export default function FilterBar() {
         }}
       >
         {/* 🍽️ Mess Dropdown */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "1 1 auto", minWidth: 180 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: isCanteen ? "0 1 260px" : "1 1 auto", minWidth: 180 }}>
           <span style={{ fontSize: "13px", fontWeight: 700, color: "#9a3412", whiteSpace: "nowrap" }}>
             🍽️ Mess:
           </span>
@@ -175,50 +187,54 @@ export default function FilterBar() {
           </select>
         </div>
 
-        {/* ⏱ Period Pills */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 auto" }}>
-          {PERIOD_OPTIONS.map(({ label, value }) => {
-            const isActive = !optDate && optPeriod === value;
-            return (
-              <button
-                key={value}
-                id={`period-filter-${value || "all"}`}
-                onClick={() => update("period", value)}
-                className={`fb-pill${isActive ? " active" : ""}`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        {!isCanteen && (
+          <>
+            {/* ⏱ Period Pills */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 auto" }}>
+              {PERIOD_OPTIONS.map(({ label, value }) => {
+                const isActive = !optDate && optPeriod === value;
+                return (
+                  <button
+                    key={value}
+                    id={`period-filter-${value || "all"}`}
+                    onClick={() => update("period", value)}
+                    className={`fb-pill${isActive ? " active" : ""}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
 
-        {/* 📅 Date Picker */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flex: "1 1 auto", minWidth: 170 }}>
-          <span style={{ fontSize: "14px" }}>📅</span>
-          <input
-            id="date-filter"
-            type="date"
-            value={optDate}
-            onChange={(e) => update("date", e.target.value)}
-            className="fb-date"
-            style={optDate ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
-          />
-          {optDate && (
-            <button
-              onClick={() => update("date", "")}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: 16, color: "#9a3412", padding: "2px 4px", lineHeight: 1,
-                borderRadius: 6, transition: "all 0.15s ease",
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#ef4444"; }}
-              onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#9a3412"; }}
-              title="Clear date"
-            >
-              ✕
-            </button>
-          )}
-        </div>
+            {/* 📅 Date Picker */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flex: "1 1 auto", minWidth: 170 }}>
+              <span style={{ fontSize: "14px" }}>📅</span>
+              <input
+                id="date-filter"
+                type="date"
+                value={optDate}
+                onChange={(e) => update("date", e.target.value)}
+                className="fb-date"
+                style={optDate ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
+              />
+              {optDate && (
+                <button
+                  onClick={() => update("date", "")}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: 16, color: "#9a3412", padding: "2px 4px", lineHeight: 1,
+                    borderRadius: 6, transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#ef4444"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#9a3412"; }}
+                  title="Clear date"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Loading dot — subtle, in-bar indicator */}
         {isPending && (
