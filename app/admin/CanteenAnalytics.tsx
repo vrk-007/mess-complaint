@@ -77,8 +77,23 @@ export default function CanteenAnalytics({
   const [period, setPeriod] = useState<Period>("all");
   const [customDate, setCustomDate] = useState("");
   const [isEnlarged, setIsEnlarged] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 5;
 
   const filteredRatings = getFilteredRatings(allRatings, period, customDate);
+
+  // Reset page when period or customDate changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [period, customDate]);
+
+  const totalPages = Math.ceil(filteredRatings.length / ITEMS_PER_PAGE) || 1;
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+  const paginatedRatings = filteredRatings.slice(
+    (safeCurrentPage - 1) * ITEMS_PER_PAGE,
+    safeCurrentPage * ITEMS_PER_PAGE
+  );
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -373,6 +388,11 @@ export default function CanteenAnalytics({
         </div>
       </div>
 
+      {/* ── Hint: Filter Ratings ── */}
+      <p style={{ fontSize: "13px", color: "#78350f", margin: 0 }}>
+        From below 👇🏻 <strong>filter</strong>, you can see all <strong>Ratings</strong>
+      </p>
+
       {/* ── Ratings Section with Period Filter ── */}
       <div
         className="glass"
@@ -500,7 +520,7 @@ export default function CanteenAnalytics({
               gap: 12,
             }}
           >
-            {filteredRatings.map((r) => (
+            {paginatedRatings.map((r) => (
               <div
                 key={r.id}
                 style={{
@@ -529,7 +549,7 @@ export default function CanteenAnalytics({
                         {r.item}
                       </div>
                       <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
-                        🕒 {formatTime(r.createdAt)}
+                        {formatTime(r.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -575,12 +595,103 @@ export default function CanteenAnalytics({
                       gap: 6,
                     }}
                   >
-                    <span style={{ fontSize: "12px", flexShrink: 0 }}>💬</span>
                     <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
                   </div>
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── Ratings Pagination Bar ── */}
+        {filteredRatings.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 18,
+              paddingTop: 14,
+              borderTop: "1px solid rgba(254, 215, 170, 0.6)",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <span style={{ fontSize: "12.5px", color: "#9a3412", fontWeight: 600 }}>
+              Showing{" "}
+              <strong>
+                {((safeCurrentPage - 1) * ITEMS_PER_PAGE) + 1}–
+                {Math.min(safeCurrentPage * ITEMS_PER_PAGE, filteredRatings.length)}
+              </strong>{" "}
+              of <strong>{filteredRatings.length}</strong> rating{filteredRatings.length !== 1 ? "s" : ""}
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={safeCurrentPage <= 1}
+                title="Previous page"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  border: "1.5px solid",
+                  borderColor: safeCurrentPage <= 1 ? "rgba(254, 215, 170, 0.5)" : "#fed7aa",
+                  background: safeCurrentPage <= 1 ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.9)",
+                  color: safeCurrentPage <= 1 ? "#fdba74" : "#78350f",
+                  cursor: safeCurrentPage <= 1 ? "not-allowed" : "pointer",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  transition: "all 0.2s ease",
+                  boxShadow: safeCurrentPage <= 1 ? "none" : "0 2px 6px rgba(249,115,22,0.12)",
+                }}
+              >
+                ←
+              </button>
+
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "#431407",
+                  padding: "0 6px",
+                  minWidth: "75px",
+                  textAlign: "center",
+                }}
+              >
+                Page {safeCurrentPage} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={safeCurrentPage >= totalPages}
+                title="Next page"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  border: "1.5px solid",
+                  borderColor: safeCurrentPage >= totalPages ? "rgba(254, 215, 170, 0.5)" : "#fed7aa",
+                  background: safeCurrentPage >= totalPages ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.9)",
+                  color: safeCurrentPage >= totalPages ? "#fdba74" : "#78350f",
+                  cursor: safeCurrentPage >= totalPages ? "not-allowed" : "pointer",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  transition: "all 0.2s ease",
+                  boxShadow: safeCurrentPage >= totalPages ? "none" : "0 2px 6px rgba(249,115,22,0.12)",
+                }}
+              >
+                →
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -860,7 +971,7 @@ export default function CanteenAnalytics({
                               </div>
                             )}
                             <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
-                              🕒 {formatTime(r.createdAt)}
+                              {formatTime(r.createdAt)}
                             </div>
                           </div>
                         ))}

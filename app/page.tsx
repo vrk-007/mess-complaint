@@ -219,7 +219,6 @@ export default async function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {complaints.map((complaint) => {
                 const catColor = CATEGORY_COLORS[complaint.category] ?? "#6b7280";
-                const mealIcon = MEAL_ICONS[complaint.meal] ?? "🍴";
 
                 return (
                   <div
@@ -227,67 +226,50 @@ export default async function Home() {
                     className="glass"
                     style={{ padding: "16px 18px" }}
                   >
-                    {/* Badge row — no status here, no clutter on mobile */}
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                    {/* Details row without boxes */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px", marginBottom: 10 }}>
                       {complaint.mess && (
-                        <span
-                          style={{
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            background: complaint.mess === "VNIT Canteen"
-                              ? "rgba(139,92,246,0.1)"
-                              : "rgba(249,115,22,0.08)",
-                            color: complaint.mess === "VNIT Canteen" ? "#5b21b6" : "#c2410c",
-                            border: complaint.mess === "VNIT Canteen"
-                              ? "1px solid rgba(139,92,246,0.25)"
-                              : "1px solid rgba(249,115,22,0.2)",
-                          }}
-                        >
-                          {complaint.mess === "VNIT Canteen" ? "☕" : "🍽️"} {complaint.mess}
-                        </span>
+                        <>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c",
+                            }}
+                          >
+                            {complaint.mess}
+                          </span>
+                          <span style={{ color: "#fdba74" }}>•</span>
+                        </>
                       )}
                       <span
                         style={{
-                          padding: "3px 10px",
-                          borderRadius: 20,
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          background: `${catColor}18`,
+                          fontWeight: 600,
                           color: catColor,
-                          border: `1px solid ${catColor}40`,
                         }}
                       >
                         {complaint.category}
                       </span>
+                      <span style={{ color: "#fdba74" }}>•</span>
                       <span
                         style={{
-                          padding: "3px 10px",
-                          borderRadius: 20,
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          background: "rgba(249,115,22,0.1)",
-                          color: "#c2410c",
-                          border: "1px solid rgba(249,115,22,0.2)",
+                          fontWeight: 500,
+                          color: "#9a3412",
                         }}
                       >
-                        {mealIcon} {complaint.meal}
+                        {complaint.meal}
                       </span>
                       {complaint.imageUrl && (
-                        <span
-                          style={{
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            background: "rgba(249,115,22,0.12)",
-                            color: "#c2410c",
-                            border: "1px solid rgba(249,115,22,0.3)",
-                          }}
-                        >
-                          📸 Photo
-                        </span>
+                        <>
+                          <span style={{ color: "#fdba74" }}>•</span>
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              color: "#ea580c",
+                            }}
+                          >
+                            Photo
+                          </span>
+                        </>
                       )}
                     </div>
 
@@ -322,23 +304,17 @@ export default async function Home() {
                       }}
                     >
                       <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7 }}>
-                        🕒 {formatDate(complaint.createdAt)}
+                        {formatDate(complaint.createdAt)}
                       </div>
                       <span
                         style={{
-                          padding: "3px 12px",
-                          borderRadius: 20,
                           fontSize: "12px",
                           fontWeight: 700,
-                          background: complaint.resolved
-                            ? "rgba(34,197,94,0.12)"
-                            : "rgba(239,68,68,0.10)",
                           color: complaint.resolved ? "#15803d" : "#b91c1c",
-                          border: `1px solid ${complaint.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.25)"}`,
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {complaint.resolved ? "✅ Resolved" : "⏳ Pending"}
+                        {complaint.resolved ? "Resolved" : "Pending"}
                       </span>
                     </div>
                   </div>

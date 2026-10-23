@@ -309,28 +309,9 @@ export default async function AdminDashboard({
         {/* ── Step 3: Filter hint + period/date filters (non-Canteen only) ── */}
         {!isCanteen && (
           <>
-            <div
-              style={{
-                fontSize: "12.5px",
-                color: "#9a3412",
-                fontWeight: 500,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                width: "fit-content",
-                maxWidth: "100%",
-                padding: "6px 12px",
-                background: "rgba(249,115,22,0.06)",
-                border: "1px solid rgba(249,115,22,0.18)",
-                borderRadius: 10,
-              }}
-            >
-              <span style={{ fontSize: 14 }}>ℹ️</span>
-              <span>
-                From below filter, you can see All, past 1 week, past 2 week, Past 1 month{" "}
-                <strong>complaints/suggestions</strong> and by date 📆 as well
-              </span>
-            </div>
+            <p style={{ fontSize: "13px", color: "#78350f", margin: 0 }}>
+              From below 👇🏻 <strong>filter</strong>, you can see all <strong>complaints/suggestions</strong>
+            </p>
             <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
               <FilterBar section="filters" />
             </Suspense>
@@ -383,7 +364,6 @@ export default async function AdminDashboard({
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {complaints.map((complaint) => {
               const catColor = CATEGORY_COLORS[complaint.category] ?? "#6b7280";
-              const mealIcon = MEAL_ICONS[complaint.meal] ?? "🍴";
 
               return (
                 <div
@@ -391,97 +371,49 @@ export default async function AdminDashboard({
                   className="glass"
                   style={{ padding: "20px 22px" }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-                    {/* Student Name & Badges */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      <div style={{ fontWeight: 500, color: "#78350f", fontSize: "14px", display: "flex", alignItems: "center", gap: 8 }}>
-                        👤 {complaint.user.name}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                    {/* Student Name & Details */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14px" }}>
+                        {complaint.user.name}
                       </div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {/* Venue badge */}
-                        <span
-                          style={{
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            background: complaint.mess === "VNIT Canteen"
-                              ? "rgba(139,92,246,0.1)"
-                              : "rgba(249,115,22,0.08)",
-                            color: complaint.mess === "VNIT Canteen" ? "#5b21b6" : "#c2410c",
-                            border: complaint.mess === "VNIT Canteen"
-                              ? "1px solid rgba(139,92,246,0.25)"
-                              : "1px solid rgba(249,115,22,0.2)",
-                          }}
-                        >
-                          {complaint.mess === "VNIT Canteen" ? "☕" : "🍽️"} {complaint.mess ?? complaint.user.mess ?? "—"}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px" }}>
+                        <span style={{ fontWeight: 700, color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c" }}>
+                          {complaint.mess ?? complaint.user.mess ?? "—"}
                         </span>
-                        <span
-                          style={{
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            background: `${catColor}18`,
-                            color: catColor,
-                            border: `1px solid ${catColor}40`,
-                          }}
-                        >
+                        <span style={{ color: "#fdba74" }}>•</span>
+                        <span style={{ fontWeight: 600, color: catColor }}>
                           {complaint.category}
                         </span>
-                        <span
-                          style={{
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            background: "rgba(249,115,22,0.1)",
-                            color: "#c2410c",
-                            border: "1px solid rgba(249,115,22,0.2)",
-                          }}
-                        >
-                          {mealIcon} {complaint.meal}
+                        <span style={{ color: "#fdba74" }}>•</span>
+                        <span style={{ fontWeight: 500, color: "#9a3412" }}>
+                          {complaint.meal}
                         </span>
-
                       </div>
                     </div>
 
                     {/* Status & Date */}
-                    <div className="flex flex-col items-end gap-2">
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                       <span
                         style={{
-                          padding: "4px 12px",
-                          borderRadius: 20,
                           fontSize: "12px",
                           fontWeight: 700,
-                          background: complaint.resolved
-                            ? "rgba(34,197,94,0.12)"
-                            : complaint.pendingApproval
-                            ? "rgba(245,158,11,0.12)"
-                            : "rgba(239,68,68,0.10)",
                           color: complaint.resolved
                             ? "#15803d"
                             : complaint.pendingApproval
-                            ? "#92400e"
+                            ? "#b45309"
                             : "#b91c1c",
-                          border: `1px solid ${
-                            complaint.resolved
-                              ? "rgba(34,197,94,0.3)"
-                              : complaint.pendingApproval
-                              ? "rgba(245,158,11,0.35)"
-                              : "rgba(239,68,68,0.25)"
-                          }`,
                           whiteSpace: "nowrap",
                         }}
                       >
                         {complaint.resolved
-                          ? "✅ Resolved"
+                          ? "Resolved"
                           : complaint.pendingApproval
-                          ? "⏳ Pending Approval"
-                          : "🔴 Active"}
+                          ? "Pending Approval"
+                          : "Active"}
                       </span>
                       <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
-                        🕒 {formatDate(complaint.createdAt)}
+                        {formatDate(complaint.createdAt)}
                       </div>
                     </div>
                   </div>
