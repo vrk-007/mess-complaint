@@ -380,14 +380,14 @@ export default async function AdminDashboard({
                   className="glass"
                   style={{ padding: "20px 22px" }}
                 >
-                  {/* Top row: Student Name & Status/Date */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14.5px" }}>
-                      {complaint.user.name}
+                  {/* Top row: Student Name & Status/Time anchored to top right */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+                    <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14.5px", minWidth: 0, flex: 1 }}>
+                      👤 {complaint.user.name}
                     </div>
 
-                    {/* Status & Date */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
+                    {/* Top Right: Status & Time */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, textAlign: "right" }}>
                       <span
                         style={{
                           fontSize: "12px",
@@ -400,13 +400,13 @@ export default async function AdminDashboard({
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {complaint.resolved
+                        ● {complaint.resolved
                           ? "Resolved"
                           : complaint.pendingApproval
                           ? "Pending Approval"
                           : "Active"}
                       </span>
-                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
+                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7, whiteSpace: "nowrap" }}>
                         {formatDate(complaint.createdAt)}
                       </div>
                     </div>

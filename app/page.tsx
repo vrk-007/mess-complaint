@@ -226,51 +226,70 @@ export default async function Home() {
                     className="glass"
                     style={{ padding: "16px 18px" }}
                   >
-                    {/* Details row without boxes */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px", marginBottom: 10 }}>
-                      {complaint.mess && (
-                        <>
-                          <span
-                            style={{
-                              fontWeight: 700,
-                              color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c",
-                            }}
-                          >
-                            {complaint.mess}
-                          </span>
-                          <span style={{ color: "#fdba74" }}>•</span>
-                        </>
-                      )}
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color: catColor,
-                        }}
-                      >
-                        {complaint.category}
-                      </span>
-                      <span style={{ color: "#fdba74" }}>•</span>
-                      <span
-                        style={{
-                          fontWeight: 500,
-                          color: "#9a3412",
-                        }}
-                      >
-                        {complaint.meal}
-                      </span>
-                      {complaint.imageUrl && (
-                        <>
-                          <span style={{ color: "#fdba74" }}>•</span>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              color: "#ea580c",
-                            }}
-                          >
-                            Photo
-                          </span>
-                        </>
-                      )}
+                    {/* Top row: Details & Status/Time anchored to top right */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px", minWidth: 0, flex: 1 }}>
+                        {complaint.mess && (
+                          <>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c",
+                              }}
+                            >
+                              {complaint.mess}
+                            </span>
+                            <span style={{ color: "#fdba74" }}>•</span>
+                          </>
+                        )}
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: catColor,
+                          }}
+                        >
+                          {complaint.category}
+                        </span>
+                        <span style={{ color: "#fdba74" }}>•</span>
+                        <span
+                          style={{
+                            fontWeight: 500,
+                            color: "#9a3412",
+                          }}
+                        >
+                          {complaint.meal}
+                        </span>
+                        {complaint.imageUrl && (
+                          <>
+                            <span style={{ color: "#fdba74" }}>•</span>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                color: "#ea580c",
+                              }}
+                            >
+                              Photo
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Top Right: Status & Time */}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, textAlign: "right" }}>
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: complaint.resolved ? "#15803d" : "#b91c1c",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          ● {complaint.resolved ? "Resolved" : "Pending"}
+                        </span>
+                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7, whiteSpace: "nowrap" }}>
+                          {formatDate(complaint.createdAt)}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Description */}
@@ -279,7 +298,7 @@ export default async function Home() {
                         color: "#431407",
                         fontSize: "14px",
                         lineHeight: 1.6,
-                        marginBottom: complaint.imageUrl ? 10 : 12,
+                        marginBottom: complaint.imageUrl ? 10 : 0,
                       }}
                     >
                       {complaint.description}
@@ -289,34 +308,6 @@ export default async function Home() {
                     {complaint.imageUrl && (
                       <ComplaintPhotoViewer src={complaint.imageUrl} />
                     )}
-
-                    {/* Footer row: submitted date (left) + status (right) */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: 8,
-                        marginTop: complaint.imageUrl ? 14 : 4,
-                        paddingTop: 10,
-                        borderTop: "1px solid rgba(254,215,170,0.5)",
-                      }}
-                    >
-                      <div style={{ fontSize: "12px", color: "#9a3412", opacity: 0.7 }}>
-                        {formatDate(complaint.createdAt)}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: complaint.resolved ? "#15803d" : "#b91c1c",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {complaint.resolved ? "Resolved" : "Pending"}
-                      </span>
-                    </div>
                   </div>
                 );
               })}

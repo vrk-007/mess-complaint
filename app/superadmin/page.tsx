@@ -375,34 +375,36 @@ export default async function SuperAdminDashboard({
                   }}
                 >
 
-                  {/* Top row: Student Name & Status/Date */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14.5px", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                      <span>{complaint.user.name}</span>
+                  {/* Top row: Student Name & Status/Time anchored to top right */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+                    <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14.5px", minWidth: 0, flex: 1, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span>👤 {complaint.user.name}</span>
                       {complaint.user.rollNo && (
                         <span style={{ fontSize: 12, color: "#9a3412", opacity: 0.7 }}>({complaint.user.rollNo})</span>
                       )}
                     </div>
 
-                    {/* Status & Date */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
-                      <span style={{
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        color: complaint.resolved
-                          ? "#15803d"
-                          : complaint.pendingApproval
-                          ? "#b45309"
-                          : "#b91c1c",
-                        whiteSpace: "nowrap",
-                      }}>
-                        {complaint.resolved
+                    {/* Top Right: Status & Time */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0, textAlign: "right" }}>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          color: complaint.resolved
+                            ? "#15803d"
+                            : complaint.pendingApproval
+                            ? "#b45309"
+                            : "#b91c1c",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        ● {complaint.resolved
                           ? "Resolved"
                           : complaint.pendingApproval
                           ? "Pending Approval"
                           : "Active"}
                       </span>
-                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7 }}>
+                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7, whiteSpace: "nowrap" }}>
                         {formatDate(complaint.createdAt)}
                       </div>
                     </div>

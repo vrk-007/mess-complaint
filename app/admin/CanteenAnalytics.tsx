@@ -871,14 +871,16 @@ export default function CanteenAnalytics({
                 )}
               </div>
 
-              {/* Latest Reviews Ticker */}
-              {filteredRatings.length > 0 && (() => {
+              {/* Latest Reviews Ticker (Only 3 stars and above) */}
+              {(() => {
+                const highRatings = filteredRatings.filter((r) => r.rating >= 3);
+                if (highRatings.length === 0) return null;
                 // Ensure base set always has enough cards to overflow the
                 // container so both halves are never simultaneously visible.
                 const MIN_VISIBLE = 6;
-                const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / filteredRatings.length));
-                const tickerBase: typeof filteredRatings = [];
-                for (let i = 0; i < repeatCount; i++) tickerBase.push(...filteredRatings);
+                const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / highRatings.length));
+                const tickerBase: typeof highRatings = [];
+                for (let i = 0; i < repeatCount; i++) tickerBase.push(...highRatings);
                 // Duplicate for seamless infinite loop (translate -50% → reset)
                 const tickerItems = [...tickerBase, ...tickerBase];
                 const animDuration = Math.max(tickerBase.length * 5, 20);
@@ -896,7 +898,7 @@ export default function CanteenAnalytics({
                         opacity: 0.85,
                       }}
                     >
-                      <span>💬</span> Latest Reviews
+                      Latest Reviews
                     </div>
                     {/* Marquee container — mask-fade edges for clean look */}
                     <div
@@ -953,8 +955,8 @@ export default function CanteenAnalytics({
                                 style={{
                                   fontSize: "11px",
                                   fontWeight: 800,
-                                  color: r.rating >= 4 ? "#15803d" : r.rating === 3 ? "#b45309" : "#b91c1c",
-                                  background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : r.rating === 3 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                                  color: r.rating >= 4 ? "#15803d" : "#b45309",
+                                  background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
                                   padding: "2px 7px",
                                   borderRadius: 10,
                                   whiteSpace: "nowrap",
@@ -991,7 +993,7 @@ export default function CanteenAnalytics({
               })()}
 
               {/* Empty state for reviews */}
-              {filteredRatings.length === 0 && (
+              {filteredRatings.filter((r) => r.rating >= 3).length === 0 && (
                 <div
                   style={{
                     flex: "0 0 auto",
@@ -1005,7 +1007,7 @@ export default function CanteenAnalytics({
                     opacity: 0.75,
                   }}
                 >
-                  No reviews found for the selected period. 🌟
+                  No reviews as of now
                 </div>
               )}
             </div>
