@@ -312,8 +312,17 @@ export default async function SuperAdminDashboard({
         {/* ── Step 3: Filter hint + period/date/status filters (non-Canteen only) ── */}
         {!isCanteen && (
           <>
-            <p style={{ fontSize: "13px", color: "#78350f", margin: 0 }}>
-              From below 👇🏻 <strong>filter</strong>, you can see all <strong>complaints/suggestions</strong>
+            <p
+              style={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "#78350f",
+                textAlign: "center",
+                width: "100%",
+                margin: "4px 0",
+              }}
+            >
+              From below 👇🏻 filter, you can see all complaints/suggestions
             </p>
             <Suspense fallback={<div style={{ height: 64, background: "rgba(255,255,255,0.5)", borderRadius: 16 }} />}>
               <SuperAdminFilterBar viewAll={viewAll} section="filters" />
@@ -366,40 +375,17 @@ export default async function SuperAdminDashboard({
                   }}
                 >
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-                    {/* Student Name & Details */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0, flex: 1 }}>
-                      <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14px", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                        <span>{complaint.user.name}</span>
-                        {complaint.user.rollNo && (
-                          <span style={{ fontSize: 12, color: "#9a3412", opacity: 0.7 }}>({complaint.user.rollNo})</span>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px" }}>
-                        <span style={{ fontWeight: 700, color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c" }}>
-                          {complaint.mess ?? complaint.user.mess ?? "—"}
-                        </span>
-                        <span style={{ color: "#fdba74" }}>•</span>
-                        <span style={{ fontWeight: 600, color: catColor }}>
-                          {complaint.category}
-                        </span>
-                        <span style={{ color: "#fdba74" }}>•</span>
-                        <span style={{ fontWeight: 500, color: "#9a3412" }}>
-                          {complaint.meal}
-                        </span>
-                        {complaint.user.hostel && (
-                          <>
-                            <span style={{ color: "#fdba74" }}>•</span>
-                            <span style={{ fontWeight: 500, color: "#9a3412" }}>
-                              {complaint.user.hostel}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                  {/* Top row: Student Name & Status/Date */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 600, color: "#78350f", fontSize: "14.5px", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span>{complaint.user.name}</span>
+                      {complaint.user.rollNo && (
+                        <span style={{ fontSize: 12, color: "#9a3412", opacity: 0.7 }}>({complaint.user.rollNo})</span>
+                      )}
                     </div>
 
                     {/* Status & Date */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
                       <span style={{
                         fontSize: "12px",
                         fontWeight: 700,
@@ -420,6 +406,29 @@ export default async function SuperAdminDashboard({
                         {formatDate(complaint.createdAt)}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Details row — full width so it fits in 1 line on mobile */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: "12.5px", marginBottom: 10 }}>
+                    <span style={{ fontWeight: 700, color: complaint.mess === "VNIT Canteen" ? "#6d28d9" : "#c2410c" }}>
+                      {complaint.mess ?? complaint.user.mess ?? "—"}
+                    </span>
+                    <span style={{ color: "#fdba74" }}>•</span>
+                    <span style={{ fontWeight: 600, color: catColor }}>
+                      {complaint.category}
+                    </span>
+                    <span style={{ color: "#fdba74" }}>•</span>
+                    <span style={{ fontWeight: 500, color: "#9a3412" }}>
+                      {complaint.meal}
+                    </span>
+                    {complaint.user.hostel && (
+                      <>
+                        <span style={{ color: "#fdba74" }}>•</span>
+                        <span style={{ fontWeight: 500, color: "#9a3412" }}>
+                          {complaint.user.hostel}
+                        </span>
+                      </>
+                    )}
                   </div>
 
                   {/* Description */}

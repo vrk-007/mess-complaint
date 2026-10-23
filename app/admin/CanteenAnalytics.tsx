@@ -389,8 +389,17 @@ export default function CanteenAnalytics({
       </div>
 
       {/* ── Hint: Filter Ratings ── */}
-      <p style={{ fontSize: "13px", color: "#78350f", margin: 0 }}>
-        From below 👇🏻 <strong>filter</strong>, you can see all <strong>Ratings</strong>
+      <p
+        style={{
+          fontSize: "15px",
+          fontWeight: 700,
+          color: "#78350f",
+          textAlign: "center",
+          width: "100%",
+          margin: "4px 0",
+        }}
+      >
+        From below 👇🏻 filter, you can see all Ratings
       </p>
 
       {/* ── Ratings Section with Period Filter ── */}
