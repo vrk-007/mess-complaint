@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { submitCanteenRating } from "@/app/actions/canteenRating";
 import CanteenItemSelector from "@/app/components/CanteenItemSelector";
 
@@ -123,6 +124,7 @@ function OptionalStarPicker({ label, emoji, value, onChange }: OptionalStarPicke
 }
 
 export default function CanteenRatingForm() {
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState("");
   const [selectedRating, setSelectedRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -172,6 +174,7 @@ export default function CanteenRatingForm() {
       }
 
       setRatingStatus("success");
+      router.refresh();
       setSelectedItem("");
       setSelectedRating(0);
       setRatingRemark("");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, lazy, Suspense, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { submitComplaint } from "@/app/actions/complaint";
 import { submitCanteenRating } from "@/app/actions/canteenRating";
 import { compressImage } from "@/lib/imageCompression";
@@ -137,6 +138,7 @@ function OptionalStarPicker({ label, emoji, value, onChange }: OptionalStarPicke
 }
 
 export default function ComplaintForm({ mess }: { mess: string }) {
+  const router = useRouter();
   // Venue toggle: "My Mess" or "VNIT Canteen"
   const [selectedVenue, setSelectedVenue] = useState(mess);
   const isCanteen = selectedVenue === "VNIT Canteen";
@@ -247,6 +249,7 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       }
 
       setRatingStatus("success");
+      router.refresh();
       setSelectedItem("");
       setSelectedRating(0);
       setRatingRemark("");

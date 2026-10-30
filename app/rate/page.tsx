@@ -6,21 +6,10 @@ import CanteenRatingForm from "./CanteenRatingForm";
 export default async function RatePage() {
   const session = await auth();
 
-  // Must be logged in
+  // Must be logged in to rate
   if (!session) redirect("/login");
 
-  // Regular ADMIN → admin portal (admins don't need this page)
-  if (session.user.role === "ADMIN") redirect("/admin");
-
-  // Students (students.vnit.ac.in) → main dashboard
   const userEmail = (session.user.email ?? "").toLowerCase();
-  if (userEmail.endsWith("students.vnit.ac.in")) redirect("/");
-
-  // Only VNIT emails (faculty, staff, superadmin) or specific guest emails allowed here
-  const isGuestRater = userEmail === "adityashamdire@gmail.com";
-  if (!userEmail.endsWith("vnit.ac.in") && session.user.role !== "SUPER_ADMIN" && !isGuestRater) {
-    redirect("/login");
-  }
 
   // SuperAdmin detection for back to portal option
   const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? "")
@@ -28,6 +17,8 @@ export default async function RatePage() {
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
   const isSuperAdmin = session.user.role === "SUPER_ADMIN" || superAdminEmails.includes(userEmail);
+  const isAdmin = session.user.role === "ADMIN";
+  const isStudent = userEmail.endsWith("students.vnit.ac.in") || session.user.role === "STUDENT";
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
@@ -132,11 +123,11 @@ export default async function RatePage() {
           <CanteenRatingForm />
         </div>
 
-        {/* Back to Portal (Super Admin only, placed below rating form) */}
-        {isSuperAdmin && (
+        {/* Back to Portal (SuperAdmin, Admin, or Student) */}
+        {(isSuperAdmin || isAdmin || isStudent) && (
           <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
             <a
-              href="/superadmin"
+              href={isSuperAdmin ? "/superadmin" : isAdmin ? "/admin" : "/"}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -154,7 +145,13 @@ export default async function RatePage() {
               }}
             >
               <span>←</span>
-              <span>Back to Super Admin Portal</span>
+              <span>
+                {isSuperAdmin
+                  ? "Back to Super Admin Portal"
+                  : isAdmin
+                  ? "Back to Admin Portal"
+                  : "Back to Dashboard"}
+              </span>
             </a>
           </div>
         )}

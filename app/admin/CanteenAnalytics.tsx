@@ -361,14 +361,68 @@ function ItemDetailModal({
 }
 
 export default function CanteenAnalytics({
-  topRated,
-  worstRated,
+  topRated: initialTopRated = [],
+  worstRated: initialWorstRated = [],
   allRatings,
 }: CanteenAnalyticsProps) {
   const [period, setPeriod] = useState<Period>("all");
   const [customDate, setCustomDate] = useState("");
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ── Dynamically compute Top 3 & Lowest Rated directly from allRatings ──
+  // This guarantees that whenever any rating is submitted (student, prof, admin, anywhere),
+  // Top 3 and Lowest Rated update IMMEDIATELY in real-time!
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthRatings = allRatings.filter((r) => new Date(r.createdAt) >= monthStart);
+  // Use current month ratings if there are at least 2 items; otherwise use allRatings
+  const ratingsForHighlights = currentMonthRatings.length >= 2 ? currentMonthRatings : allRatings;
+
+  const itemMap: Record<
+    string,
+    {
+      total: number;
+      count: number;
+      recentReviews: { id: string; rating: number; comment: string; createdAt: string }[];
+    }
+  > = {};
+
+  for (const r of ratingsForHighlights) {
+    if (!itemMap[r.item]) {
+      itemMap[r.item] = { total: 0, count: 0, recentReviews: [] };
+    }
+    itemMap[r.item].total += r.rating;
+    itemMap[r.item].count += 1;
+    if (r.comment && r.comment.trim().length > 0 && itemMap[r.item].recentReviews.length === 0) {
+      itemMap[r.item].recentReviews.push({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment.trim(),
+        createdAt: r.createdAt,
+      });
+    }
+  }
+
+  const itemsArray = Object.entries(itemMap).map(([item, stat]) => ({
+    item,
+    avg: Number((stat.total / stat.count).toFixed(1)),
+    count: stat.count,
+    recentReviews: stat.recentReviews,
+  }));
+
+  const dynamicTopRated = itemsArray
+    .filter((item) => item.avg >= 3.0)
+    .sort((a, b) => b.avg - a.avg || b.count - a.count)
+    .slice(0, 3);
+
+  const dynamicWorstRated = itemsArray
+    .filter((item) => item.avg < 3.0)
+    .sort((a, b) => a.avg - b.avg || b.count - a.count)
+    .slice(0, 3);
+
+  const topRated = dynamicTopRated.length > 0 ? dynamicTopRated : initialTopRated;
+  const worstRated = dynamicWorstRated.length > 0 ? dynamicWorstRated : initialWorstRated;
 
   // New Dimension Filter state ("staff" | "cleanliness" | null)
   const [activeDimension, setActiveDimension] = useState<Dimension>(null);
@@ -827,22 +881,20 @@ export default function CanteenAnalytics({
             {/* Visual Divider between Dimension Options and Period Options */}
             <div style={{ width: 1, height: 22, background: "#fed7aa", margin: "0 2px" }} />
 
-            {/* Period Pills + Date Picker (Disabled when dimension is active) */}
+            {/* Period Pills + Date Picker */}
             {PERIOD_LABELS.map(({ value, label }) => {
               const isPeriodActive =
                 !isDimensionActive &&
                 period === value &&
                 (value !== "date" || !customDate || period === "date");
 
-              const isDisabled = isDimensionActive;
-
               return value === "date" ? (
                 <div key="date" style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <button
                     type="button"
-                    disabled={isDisabled}
                     onClick={() => {
-                      if (!isDisabled) setPeriod("date");
+                      setActiveDimension(null);
+                      setPeriod("date");
                     }}
                     style={{
                       padding: "7px 14px",
@@ -851,7 +903,7 @@ export default function CanteenAnalytics({
                       fontWeight: 700,
                       border: "1.5px solid",
                       borderColor: isPeriodActive ? "#f97316" : "#fed7aa",
-                      cursor: isDisabled ? "not-allowed" : "pointer",
+                      cursor: "pointer",
                       background: isPeriodActive
                         ? "linear-gradient(135deg,#f97316,#ef4444)"
                         : "rgba(255,255,255,0.8)",
@@ -859,12 +911,11 @@ export default function CanteenAnalytics({
                       boxShadow: isPeriodActive ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
                       transition: "all 0.2s ease",
                       whiteSpace: "nowrap",
-                      opacity: isDisabled ? 0.45 : 1,
                     }}
                   >
                     {label}
                   </button>
-                  {period === "date" && !isDisabled && (
+                  {isPeriodActive && (
                     <input
                       type="date"
                       value={customDate}
@@ -888,12 +939,10 @@ export default function CanteenAnalytics({
                 <button
                   key={value}
                   type="button"
-                  disabled={isDisabled}
                   onClick={() => {
-                    if (!isDisabled) {
-                      setPeriod(value);
-                      setCustomDate("");
-                    }
+                    setActiveDimension(null);
+                    setPeriod(value);
+                    setCustomDate("");
                   }}
                   style={{
                     padding: "7px 14px",
@@ -902,7 +951,7 @@ export default function CanteenAnalytics({
                     fontWeight: 700,
                     border: "1.5px solid",
                     borderColor: isPeriodActive ? "#f97316" : "#fed7aa",
-                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    cursor: "pointer",
                     background: isPeriodActive
                       ? "linear-gradient(135deg,#f97316,#ef4444)"
                       : "rgba(255,255,255,0.8)",
@@ -910,7 +959,6 @@ export default function CanteenAnalytics({
                     boxShadow: isPeriodActive ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
                     transition: "all 0.2s ease",
                     whiteSpace: "nowrap",
-                    opacity: isDisabled ? 0.45 : 1,
                   }}
                 >
                   {label}

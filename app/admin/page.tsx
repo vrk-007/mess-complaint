@@ -12,6 +12,9 @@ import ComplaintPhotoViewer from "./ComplaintPhotoViewer";
 import CanteenAnalytics, { CanteenAnalyticsProps } from "./CanteenAnalytics";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const CATEGORY_COLORS: Record<string, string> = {
   "Food Quality": "#f97316",
   "Hygiene":      "#ef4444",

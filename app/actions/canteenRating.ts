@@ -74,9 +74,10 @@ export async function submitCanteenRating(data: {
       },
     });
 
-    revalidatePath("/");
-    revalidatePath("/admin");
-    revalidatePath("/superadmin");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/superadmin", "layout");
+    revalidatePath("/rate", "layout");
     return { success: true };
   } catch (err: any) {
     return {
