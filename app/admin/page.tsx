@@ -187,6 +187,10 @@ export default async function AdminDashboard({
         rating: true,
         comment: true,
         createdAt: true,
+        quantityRating: true,
+        hygieneRating: true,
+        staffRating: true,
+        cleanlinessRating: true,
       },
     });
 
@@ -196,6 +200,10 @@ export default async function AdminDashboard({
       rating: r.rating,
       comment: r.comment,
       createdAt: r.createdAt.toISOString(),
+      quantityRating: r.quantityRating,
+      hygieneRating: r.hygieneRating,
+      staffRating: r.staffRating,
+      cleanlinessRating: r.cleanlinessRating,
     }));
 
     canteenAnalyticsData = {

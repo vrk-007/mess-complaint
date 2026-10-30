@@ -123,12 +123,16 @@ enum Role {
 }
 
 model CanteenRating {
-  id        String   @id @default(cuid())
-  userId    String
-  item      String
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid())
+  userId            String
+  item              String
+  rating            Int
+  comment           String?
+  quantityRating    Int?     // optional 1-5 stars for quantity of food item
+  hygieneRating     Int?     // optional 1-5 stars for hygiene of food item
+  staffRating       Int?     // optional 1-5 stars for behaviour of staff
+  cleanlinessRating Int?     // optional 1-5 stars for cleanliness of canteen
+  createdAt         DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -9,6 +9,10 @@ export async function submitCanteenRating(data: {
   item: string;
   rating: number;
   comment?: string;
+  quantityRating?: number;
+  hygieneRating?: number;
+  staffRating?: number;
+  cleanlinessRating?: number;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const session = await auth();
@@ -44,17 +48,35 @@ export async function submitCanteenRating(data: {
       return { success: false, error: "Please provide a remark explaining your rating." };
     }
 
+    // Validate optional ratings (must be 1-5 if provided)
+    const validateOptional = (val?: number) =>
+      val === undefined || val === null || (Number.isInteger(val) && val >= 1 && val <= 5);
+
+    if (!validateOptional(data.quantityRating))
+      return { success: false, error: "Quantity rating must be between 1 and 5." };
+    if (!validateOptional(data.hygieneRating))
+      return { success: false, error: "Hygiene rating must be between 1 and 5." };
+    if (!validateOptional(data.staffRating))
+      return { success: false, error: "Staff behaviour rating must be between 1 and 5." };
+    if (!validateOptional(data.cleanlinessRating))
+      return { success: false, error: "Cleanliness rating must be between 1 and 5." };
+
     await prisma.canteenRating.create({
       data: {
         userId: session.user.id,
         item,
         rating,
         comment,
+        quantityRating: data.quantityRating ?? null,
+        hygieneRating: data.hygieneRating ?? null,
+        staffRating: data.staffRating ?? null,
+        cleanlinessRating: data.cleanlinessRating ?? null,
       },
     });
 
     revalidatePath("/");
     revalidatePath("/admin");
+    revalidatePath("/superadmin");
     return { success: true };
   } catch (err: any) {
     return {

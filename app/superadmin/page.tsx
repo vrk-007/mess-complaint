@@ -163,6 +163,10 @@ export default async function SuperAdminDashboard({
         rating: true,
         comment: true,
         createdAt: true,
+        quantityRating: true,
+        hygieneRating: true,
+        staffRating: true,
+        cleanlinessRating: true,
       },
     });
 
@@ -172,6 +176,10 @@ export default async function SuperAdminDashboard({
       rating: r.rating,
       comment: r.comment,
       createdAt: r.createdAt.toISOString(),
+      quantityRating: r.quantityRating,
+      hygieneRating: r.hygieneRating,
+      staffRating: r.staffRating,
+      cleanlinessRating: r.cleanlinessRating,
     }));
 
     canteenAnalyticsData = {

@@ -27,10 +27,15 @@ export interface CanteenAnalyticsProps {
     rating: number;
     comment?: string | null;
     createdAt: string;
+    quantityRating?: number | null;
+    hygieneRating?: number | null;
+    staffRating?: number | null;
+    cleanlinessRating?: number | null;
   }[];
 }
 
 type Period = "all" | "1w" | "2w" | "1m" | "date";
+type Dimension = "staff" | "cleanliness" | null;
 
 const PERIOD_LABELS: { value: Period; label: string }[] = [
   { value: "all", label: "All" },
@@ -69,6 +74,292 @@ function getFilteredRatings(
   return ratings; // "all"
 }
 
+/* ── Circular Score Component (e.g. 50/100, 76/100) ── */
+function CircularScore({
+  score,
+  total = 100,
+  label,
+  count,
+}: {
+  score: number;
+  total?: number;
+  label: string;
+  count: number;
+}) {
+  const radius = 48;
+  const stroke = 9;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (Math.min(Math.max(score, 0), total) / total) * circumference;
+
+  const ringColor =
+    score >= 70 ? "#16a34a" : score >= 50 ? "#ea580c" : "#dc2626";
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px 20px",
+        background: "linear-gradient(135deg, rgba(255, 247, 237, 0.9), rgba(255, 237, 213, 0.6))",
+        border: "1.5px solid #fed7aa",
+        borderRadius: "18px",
+        gap: 8,
+        boxShadow: "0 4px 16px rgba(249, 115, 22, 0.08)",
+        width: "fit-content",
+        margin: "0 auto",
+      }}
+    >
+      <div style={{ position: "relative", width: 116, height: 116 }}>
+        <svg height="116" width="116" style={{ transform: "rotate(-90deg)" }}>
+          {/* Background circle */}
+          <circle
+            stroke="rgba(254, 215, 170, 0.5)"
+            fill="transparent"
+            strokeWidth={stroke}
+            r={normalizedRadius}
+            cx="58"
+            cy="58"
+          />
+          {/* Progress circle */}
+          <circle
+            stroke={ringColor}
+            fill="transparent"
+            strokeWidth={stroke}
+            strokeDasharray={`${circumference} ${circumference}`}
+            style={{
+              strokeDashoffset,
+              transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+            strokeLinecap="round"
+            r={normalizedRadius}
+            cx="58"
+            cy="58"
+          />
+        </svg>
+
+        {/* Text inside circle */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1.1,
+          }}
+        >
+          <span style={{ fontSize: "22px", fontWeight: 900, color: "#431407" }}>
+            {score}
+          </span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: "#9a3412", opacity: 0.85 }}>
+            / {total}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: "14px", fontWeight: 800, color: "#431407" }}>
+          {label}
+        </div>
+        <div style={{ fontSize: "11px", color: "#9a3412", fontWeight: 600, marginTop: 2 }}>
+          Based on {count} rating{count !== 1 ? "s" : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Item Detail Modal (Shows only 3 parameters: Overall, Quantity if rated, Hygiene if rated) ── */
+function ItemDetailModal({
+  rating,
+  onClose,
+}: {
+  rating: CanteenAnalyticsProps["allRatings"][0];
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        background: "rgba(0, 0, 0, 0.45)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "linear-gradient(135deg, #ffffff 0%, #fffaf5 100%)",
+          border: "1.5px solid #fed7aa",
+          borderRadius: "20px",
+          padding: "24px",
+          maxWidth: "420px",
+          width: "100%",
+          boxShadow: "0 12px 36px rgba(120, 53, 15, 0.2)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "14px",
+          position: "relative",
+          animation: "modal-pop 0.2s ease-out",
+        }}
+      >
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: "absolute",
+            top: 14,
+            right: 14,
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "1px solid #fed7aa",
+            background: "#fff",
+            color: "#9a3412",
+            fontSize: "16px",
+            fontWeight: 800,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 32 }}>
+          <FoodIcon name={rating.item} size="36px" />
+          <div>
+            <h4 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#431407" }}>
+              {rating.item}
+            </h4>
+            <span style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8 }}>
+              {formatTime(rating.createdAt)}
+            </span>
+          </div>
+        </div>
+
+        {/* Parameters Section */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            background: "rgba(255, 247, 237, 0.75)",
+            border: "1px solid #fed7aa",
+            borderRadius: "14px",
+            padding: "14px 16px",
+          }}
+        >
+          {/* 1. ⭐ Overall (Always shown) */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+              ⭐ Overall
+            </span>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                color: rating.rating >= 4 ? "#15803d" : rating.rating === 3 ? "#b45309" : "#b91c1c",
+                background: "#ffffff",
+                padding: "3px 10px",
+                borderRadius: "10px",
+                border: "1px solid #fed7aa",
+              }}
+            >
+              {"⭐".repeat(rating.rating)} {rating.rating}/5
+            </span>
+          </div>
+
+          {/* 2. ⭐ Quantity (Shown only if rated) */}
+          {rating.quantityRating != null && rating.quantityRating > 0 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                🍽️ Quantity
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  color: rating.quantityRating >= 4 ? "#15803d" : rating.quantityRating === 3 ? "#b45309" : "#b91c1c",
+                  background: "#ffffff",
+                  padding: "3px 10px",
+                  borderRadius: "10px",
+                  border: "1px solid #fed7aa",
+                }}
+              >
+                {"⭐".repeat(rating.quantityRating)} {rating.quantityRating}/5
+              </span>
+            </div>
+          )}
+
+          {/* 3. ⭐ Hygiene (Shown only if rated) */}
+          {rating.hygieneRating != null && rating.hygieneRating > 0 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                🧼 Hygiene
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  color: rating.hygieneRating >= 4 ? "#15803d" : rating.hygieneRating === 3 ? "#b45309" : "#b91c1c",
+                  background: "#ffffff",
+                  padding: "3px 10px",
+                  borderRadius: "10px",
+                  border: "1px solid #fed7aa",
+                }}
+              >
+                {"⭐".repeat(rating.hygieneRating)} {rating.hygieneRating}/5
+              </span>
+            </div>
+          )}
+
+          {/* Notice if no optional parameters were given */}
+          {rating.quantityRating == null && rating.hygieneRating == null && (
+            <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.7, fontStyle: "italic", textAlign: "center" }}>
+              (Optional quantity & hygiene ratings were not provided for this submission)
+            </div>
+          )}
+        </div>
+
+        {/* Remark */}
+        {rating.comment && (
+          <div
+            style={{
+              padding: "10px 14px",
+              background: "#ffffff",
+              border: "1px dashed #fed7aa",
+              borderRadius: "10px",
+              fontSize: "12.5px",
+              color: "#78350f",
+              lineHeight: 1.45,
+            }}
+          >
+            <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#9a3412", marginBottom: 3 }}>
+              Student Remark:
+            </div>
+            &ldquo;{rating.comment}&rdquo;
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CanteenAnalytics({
   topRated,
   worstRated,
@@ -79,14 +370,48 @@ export default function CanteenAnalytics({
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // New Dimension Filter state ("staff" | "cleanliness" | null)
+  const [activeDimension, setActiveDimension] = useState<Dimension>(null);
+
+  // Selected rating for detailed modal
+  const [selectedRating, setSelectedRating] = useState<CanteenAnalyticsProps["allRatings"][0] | null>(null);
+
   const ITEMS_PER_PAGE = 5;
 
-  const filteredRatings = getFilteredRatings(allRatings, period, customDate);
+  // When a dimension is active, we filter by that dimension from all ratings
+  const isDimensionActive = activeDimension !== null;
 
-  // Reset page when period or customDate changes
+  const filteredRatings = isDimensionActive
+    ? allRatings.filter((r) =>
+        activeDimension === "staff"
+          ? r.staffRating != null && r.staffRating > 0
+          : r.cleanlinessRating != null && r.cleanlinessRating > 0
+      )
+    : getFilteredRatings(allRatings, period, customDate);
+
+  // Calculate circular score (out of 100) for the active dimension
+  const dimensionRatings = isDimensionActive
+    ? allRatings.filter((r) =>
+        activeDimension === "staff"
+          ? r.staffRating != null && r.staffRating > 0
+          : r.cleanlinessRating != null && r.cleanlinessRating > 0
+      )
+    : [];
+
+  const dimensionCount = dimensionRatings.length;
+  const dimensionSum = dimensionRatings.reduce(
+    (sum, r) =>
+      sum + (activeDimension === "staff" ? r.staffRating || 0 : r.cleanlinessRating || 0),
+    0
+  );
+  const dimensionAvgStars = dimensionCount > 0 ? dimensionSum / dimensionCount : 0;
+  // Convert 1-5 stars to 0-100 score: (avg / 5) * 100 = avg * 20
+  const dimensionScore = Math.round(dimensionAvgStars * 20);
+
+  // Reset page when period, customDate, or activeDimension changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [period, customDate]);
+  }, [period, customDate, activeDimension]);
 
   const totalPages = Math.ceil(filteredRatings.length / ITEMS_PER_PAGE) || 1;
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
@@ -99,6 +424,7 @@ export default function CanteenAnalytics({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsEnlarged(false);
+        setSelectedRating(null);
       }
     }
     if (isEnlarged) {
@@ -402,7 +728,7 @@ export default function CanteenAnalytics({
         From below 👇🏻 filter, you can see all Ratings
       </p>
 
-      {/* ── Ratings Section with Period Filter ── */}
+      {/* ── Ratings Section with Period & Dimension Filter ── */}
       <div
         className="glass"
         style={{
@@ -428,40 +754,117 @@ export default function CanteenAnalytics({
         >
           <div>
             <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#431407", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>⭐</span> Ratings
+              <span>⭐</span>{" "}
+              {activeDimension === "staff"
+                ? "Staff Behaviour Ratings"
+                : activeDimension === "cleanliness"
+                ? "Canteen Cleanliness Ratings"
+                : "Ratings"}
             </h3>
             <span style={{ fontSize: "12px", color: "#9a3412", fontWeight: 600 }}>
-              {filteredRatings.length} rating{filteredRatings.length !== 1 ? "s" : ""} shown
+              {isDimensionActive
+                ? `${filteredRatings.length} rating${filteredRatings.length !== 1 ? "s" : ""} recorded for this aspect`
+                : `${filteredRatings.length} rating${filteredRatings.length !== 1 ? "s" : ""} shown`}
             </span>
           </div>
 
-          {/* Period Pills + Date Picker */}
+          {/* Filter Bar: Dimension Pills on Left + Period Pills on Right */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+            {/* 1. ⭐ Staff Behaviour (left of "All") */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveDimension((prev) => (prev === "staff" ? null : "staff"));
+              }}
+              style={{
+                padding: "7px 14px",
+                borderRadius: 10,
+                fontSize: "12px",
+                fontWeight: 700,
+                border: "1.5px solid",
+                borderColor: activeDimension === "staff" ? "#f97316" : "#fed7aa",
+                cursor: "pointer",
+                background:
+                  activeDimension === "staff"
+                    ? "linear-gradient(135deg,#f97316,#ef4444)"
+                    : "rgba(255,255,255,0.85)",
+                color: activeDimension === "staff" ? "#fff" : "#78350f",
+                boxShadow: activeDimension === "staff" ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                transition: "all 0.2s ease",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⭐ Staff Behaviour
+            </button>
+
+            {/* 2. ⭐ Cleanliness (left of "All") */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveDimension((prev) => (prev === "cleanliness" ? null : "cleanliness"));
+              }}
+              style={{
+                padding: "7px 14px",
+                borderRadius: 10,
+                fontSize: "12px",
+                fontWeight: 700,
+                border: "1.5px solid",
+                borderColor: activeDimension === "cleanliness" ? "#f97316" : "#fed7aa",
+                cursor: "pointer",
+                background:
+                  activeDimension === "cleanliness"
+                    ? "linear-gradient(135deg,#f97316,#ef4444)"
+                    : "rgba(255,255,255,0.85)",
+                color: activeDimension === "cleanliness" ? "#fff" : "#78350f",
+                boxShadow: activeDimension === "cleanliness" ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                transition: "all 0.2s ease",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⭐ Cleanliness
+            </button>
+
+            {/* Visual Divider between Dimension Options and Period Options */}
+            <div style={{ width: 1, height: 22, background: "#fed7aa", margin: "0 2px" }} />
+
+            {/* Period Pills + Date Picker (Disabled when dimension is active) */}
             {PERIOD_LABELS.map(({ value, label }) => {
-              const isActive = period === value && (value !== "date" || !customDate || period === "date");
+              const isPeriodActive =
+                !isDimensionActive &&
+                period === value &&
+                (value !== "date" || !customDate || period === "date");
+
+              const isDisabled = isDimensionActive;
+
               return value === "date" ? (
                 <div key="date" style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <button
                     type="button"
-                    onClick={() => setPeriod("date")}
+                    disabled={isDisabled}
+                    onClick={() => {
+                      if (!isDisabled) setPeriod("date");
+                    }}
                     style={{
                       padding: "7px 14px",
                       borderRadius: 10,
                       fontSize: "12px",
                       fontWeight: 700,
                       border: "1.5px solid",
-                      borderColor: period === "date" ? "#f97316" : "#fed7aa",
-                      cursor: "pointer",
-                      background: period === "date" ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(255,255,255,0.8)",
-                      color: period === "date" ? "#fff" : "#78350f",
-                      boxShadow: period === "date" ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                      borderColor: isPeriodActive ? "#f97316" : "#fed7aa",
+                      cursor: isDisabled ? "not-allowed" : "pointer",
+                      background: isPeriodActive
+                        ? "linear-gradient(135deg,#f97316,#ef4444)"
+                        : "rgba(255,255,255,0.8)",
+                      color: isPeriodActive ? "#fff" : "#78350f",
+                      boxShadow: isPeriodActive ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
                       transition: "all 0.2s ease",
                       whiteSpace: "nowrap",
+                      opacity: isDisabled ? 0.45 : 1,
                     }}
                   >
                     {label}
                   </button>
-                  {period === "date" && (
+                  {period === "date" && !isDisabled && (
                     <input
                       type="date"
                       value={customDate}
@@ -485,20 +888,29 @@ export default function CanteenAnalytics({
                 <button
                   key={value}
                   type="button"
-                  onClick={() => { setPeriod(value); setCustomDate(""); }}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (!isDisabled) {
+                      setPeriod(value);
+                      setCustomDate("");
+                    }
+                  }}
                   style={{
                     padding: "7px 14px",
                     borderRadius: 10,
                     fontSize: "12px",
                     fontWeight: 700,
                     border: "1.5px solid",
-                    borderColor: period === value ? "#f97316" : "#fed7aa",
-                    cursor: "pointer",
-                    background: period === value ? "linear-gradient(135deg,#f97316,#ef4444)" : "rgba(255,255,255,0.8)",
-                    color: period === value ? "#fff" : "#78350f",
-                    boxShadow: period === value ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
+                    borderColor: isPeriodActive ? "#f97316" : "#fed7aa",
+                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    background: isPeriodActive
+                      ? "linear-gradient(135deg,#f97316,#ef4444)"
+                      : "rgba(255,255,255,0.8)",
+                    color: isPeriodActive ? "#fff" : "#78350f",
+                    boxShadow: isPeriodActive ? "0 2px 8px rgba(249,115,22,0.3)" : "none",
                     transition: "all 0.2s ease",
                     whiteSpace: "nowrap",
+                    opacity: isDisabled ? 0.45 : 1,
                   }}
                 >
                   {label}
@@ -507,6 +919,22 @@ export default function CanteenAnalytics({
             })}
           </div>
         </div>
+
+        {/* ── Circular Score View for Dimension Filters (Staff / Cleanliness) ── */}
+        {isDimensionActive && (
+          <div style={{ marginBottom: 20 }}>
+            <CircularScore
+              score={dimensionScore}
+              total={100}
+              label={
+                activeDimension === "staff"
+                  ? "Staff Behaviour Average Score"
+                  : "Canteen Cleanliness Average Score"
+              }
+              count={dimensionCount}
+            />
+          </div>
+        )}
 
         {/* Ratings List */}
         {filteredRatings.length === 0 ? (
@@ -519,7 +947,9 @@ export default function CanteenAnalytics({
               fontWeight: 600,
             }}
           >
-            No ratings found for the selected period.
+            {isDimensionActive
+              ? `No ${activeDimension === "staff" ? "Staff Behaviour" : "Cleanliness"} ratings recorded yet.`
+              : "No ratings found for the selected period."}
           </div>
         ) : (
           <div
@@ -529,86 +959,148 @@ export default function CanteenAnalytics({
               gap: 12,
             }}
           >
-            {paginatedRatings.map((r) => (
-              <div
-                key={r.id}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 14,
-                  background: "#fffaf5",
-                  border: "1.5px solid #fed7aa",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
-                }}
-              >
+            {paginatedRatings.map((r) => {
+              // Rating badge value to show
+              const ratingDisplay = isDimensionActive
+                ? activeDimension === "staff"
+                  ? r.staffRating
+                  : r.cleanlinessRating
+                : r.rating;
+
+              const badgeRating = ratingDisplay || 0;
+
+              return (
                 <div
+                  key={r.id}
+                  onClick={() => {
+                    // Open modal on click (only in regular view or to inspect the dish details)
+                    setSelectedRating(r);
+                  }}
                   style={{
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    background: "#fffaf5",
+                    border: "1.5px solid #fed7aa",
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    flexDirection: "column",
                     gap: 8,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(249,115,22,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.02)";
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <FoodIcon name={r.item} size="28px" />
-                    <div>
-                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                        {r.item}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <FoodIcon name={r.item} size="28px" />
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
+                          {r.item}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
+                          {formatTime(r.createdAt)}
+                        </div>
                       </div>
-                      <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
-                        {formatTime(r.createdAt)}
-                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: 10,
+                        background:
+                          badgeRating >= 4
+                            ? "rgba(34,197,94,0.12)"
+                            : badgeRating === 3
+                            ? "rgba(245,158,11,0.12)"
+                            : "rgba(239,68,68,0.12)",
+                        color:
+                          badgeRating >= 4
+                            ? "#15803d"
+                            : badgeRating === 3
+                            ? "#b45309"
+                            : "#b91c1c",
+                        fontWeight: 800,
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {"⭐".repeat(badgeRating)} {badgeRating}/5
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: 10,
-                      background:
-                        r.rating >= 4
-                          ? "rgba(34,197,94,0.12)"
-                          : r.rating === 3
-                          ? "rgba(245,158,11,0.12)"
-                          : "rgba(239,68,68,0.12)",
-                      color:
-                        r.rating >= 4
-                          ? "#15803d"
-                          : r.rating === 3
-                          ? "#b45309"
-                          : "#b91c1c",
-                      fontWeight: 800,
-                      fontSize: "13px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {"⭐".repeat(r.rating)} {r.rating}/5
-                  </div>
-                </div>
+                  {/* Comment */}
+                  {r.comment && (
+                    <div
+                      style={{
+                        padding: "7px 10px",
+                        background: "rgba(255, 247, 237, 0.95)",
+                        border: "1px dashed #fed7aa",
+                        borderRadius: 8,
+                        fontSize: "12px",
+                        color: "#78350f",
+                        lineHeight: 1.4,
+                        wordBreak: "break-word",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 6,
+                      }}
+                    >
+                      <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
+                    </div>
+                  )}
 
-                {r.comment && (
-                  <div
-                    style={{
-                      padding: "7px 10px",
-                      background: "rgba(255, 247, 237, 0.95)",
-                      border: "1px dashed #fed7aa",
-                      borderRadius: 8,
-                      fontSize: "12px",
-                      color: "#78350f",
-                      lineHeight: 1.4,
-                      wordBreak: "break-word",
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 6,
-                    }}
-                  >
-                    <span style={{ fontStyle: "italic", flex: 1 }}>&ldquo;{r.comment}&rdquo;</span>
-                  </div>
-                )}
-              </div>
-            ))}
+                  {/* Badges for optional parameters present */}
+                  {!isDimensionActive && (r.quantityRating != null || r.hygieneRating != null) && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+                      {r.quantityRating != null && r.quantityRating > 0 && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            color: "#9a3412",
+                            background: "rgba(249,115,22,0.08)",
+                            padding: "2px 7px",
+                            borderRadius: 6,
+                            border: "1px solid rgba(249,115,22,0.15)",
+                          }}
+                        >
+                          🍽️ Qty: {r.quantityRating}/5
+                        </span>
+                      )}
+                      {r.hygieneRating != null && r.hygieneRating > 0 && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            color: "#9a3412",
+                            background: "rgba(249,115,22,0.08)",
+                            padding: "2px 7px",
+                            borderRadius: 6,
+                            border: "1px solid rgba(249,115,22,0.15)",
+                          }}
+                        >
+                          🧼 Hygiene: {r.hygieneRating}/5
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -704,6 +1196,14 @@ export default function CanteenAnalytics({
           </div>
         )}
       </div>
+
+      {/* ── Item Detail Modal (3 parameters: Overall, Quantity if rated, Hygiene if rated) ── */}
+      {selectedRating && (
+        <ItemDetailModal
+          rating={selectedRating}
+          onClose={() => setSelectedRating(null)}
+        />
+      )}
 
       {/* ── Fullscreen Display Modal (70% Left + 30% Right layout) ── */}
       {isEnlarged && (
@@ -875,13 +1375,10 @@ export default function CanteenAnalytics({
               {(() => {
                 const highRatings = filteredRatings.filter((r) => r.rating >= 3);
                 if (highRatings.length === 0) return null;
-                // Ensure base set always has enough cards to overflow the
-                // container so both halves are never simultaneously visible.
                 const MIN_VISIBLE = 6;
                 const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / highRatings.length));
                 const tickerBase: typeof highRatings = [];
                 for (let i = 0; i < repeatCount; i++) tickerBase.push(...highRatings);
-                // Duplicate for seamless infinite loop (translate -50% → reset)
                 const tickerItems = [...tickerBase, ...tickerBase];
                 const animDuration = Math.max(tickerBase.length * 5, 20);
                 return (
@@ -900,7 +1397,7 @@ export default function CanteenAnalytics({
                     >
                       Latest Reviews
                     </div>
-                    {/* Marquee container — mask-fade edges for clean look */}
+                    {/* Marquee container */}
                     <div
                       style={{
                         overflow: "hidden",
@@ -937,7 +1434,6 @@ export default function CanteenAnalytics({
                               boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
                             }}
                           >
-                            {/* Shine sweep */}
                             <div
                               style={{
                                 position: "absolute",
@@ -1098,7 +1594,6 @@ export default function CanteenAnalytics({
                   gap: 12,
                 }}
               >
-                {/* Real branded QR code from /public/mess-portal-qr.svg */}
                 <div
                   style={{
                     borderRadius: 16,

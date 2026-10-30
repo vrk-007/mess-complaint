@@ -36,6 +36,106 @@ const CANTEEN_ITEMS = [
   "Paneer Roll",
 ];
 
+interface OptionalStarPickerProps {
+  label: string;
+  emoji: string;
+  value: number;
+  onChange: (val: number) => void;
+}
+
+function OptionalStarPicker({ label, emoji, value, onChange }: OptionalStarPickerProps) {
+  const [hover, setHover] = useState(0);
+
+  const LABELS: Record<number, string> = {
+    5: "🤩 Excellent",
+    4: "😊 Good",
+    3: "🙂 Average",
+    2: "😐 Poor",
+    1: "😞 Terrible",
+  };
+
+  return (
+    <div
+      style={{
+        background: "#ffffff",
+        padding: "11px 14px",
+        borderRadius: "12px",
+        border: "1.5px solid #fed7aa",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "8px 10px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 16 }}>{emoji}</span>
+        <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#78350f" }}>{label}</span>
+        <span
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            color: "#9a3412",
+            background: "rgba(249,115,22,0.08)",
+            padding: "1px 7px",
+            borderRadius: 20,
+            border: "1px solid rgba(249,115,22,0.15)",
+          }}
+        >
+          Optional
+        </span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", gap: "clamp(2px, 1.5vw, 8px)" }}>
+          {[1, 2, 3, 4, 5].map((star) => {
+            const lit = (hover || value) >= star;
+            return (
+              <button
+                key={star}
+                type="button"
+                onClick={() => onChange(value === star ? 0 : star)}
+                onMouseEnter={() => setHover(star)}
+                onMouseLeave={() => setHover(0)}
+                title={`${star} Star${star > 1 ? "s" : ""}`}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "clamp(20px, 5vw, 24px)",
+                  lineHeight: 1,
+                  padding: "2px",
+                  touchAction: "manipulation",
+                  WebkitTapHighlightColor: "transparent",
+                  transition: "transform 0.15s ease",
+                  transform: lit ? "scale(1.18)" : "scale(1)",
+                  filter: lit
+                    ? "drop-shadow(0 2px 4px rgba(245,158,11,0.45))"
+                    : "grayscale(100%) opacity(0.28)",
+                }}
+              >
+                ⭐
+              </button>
+            );
+          })}
+        </div>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: value > 0 ? "#ea580c" : "#9ca3af",
+            whiteSpace: "nowrap",
+            minWidth: 75,
+          }}
+        >
+          {value > 0 ? LABELS[value] : "Tap to rate"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function ComplaintForm({ mess }: { mess: string }) {
   // Venue toggle: "My Mess" or "VNIT Canteen"
   const [selectedVenue, setSelectedVenue] = useState(mess);
@@ -66,6 +166,13 @@ export default function ComplaintForm({ mess }: { mess: string }) {
   const [selectedRating, setSelectedRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [ratingRemark, setRatingRemark] = useState("");
+
+  // Optional sub-ratings
+  const [quantityRating, setQuantityRating] = useState(0);
+  const [hygieneRating, setHygieneRating] = useState(0);
+  const [staffRating, setStaffRating] = useState(0);
+  const [cleanlinessRating, setCleanlinessRating] = useState(0);
+
   const [ratingStatus, setRatingStatus] = useState<"idle" | "success" | "error">("idle");
   const [ratingError, setRatingError] = useState("");
   const [isRatingPending, setIsRatingPending] = useState(false);
@@ -129,6 +236,10 @@ export default function ComplaintForm({ mess }: { mess: string }) {
         item: selectedItem,
         rating: selectedRating,
         comment: ratingRemark.trim() || undefined,
+        quantityRating: quantityRating > 0 ? quantityRating : undefined,
+        hygieneRating: hygieneRating > 0 ? hygieneRating : undefined,
+        staffRating: staffRating > 0 ? staffRating : undefined,
+        cleanlinessRating: cleanlinessRating > 0 ? cleanlinessRating : undefined,
       });
 
       if (!res.success) {
@@ -139,6 +250,10 @@ export default function ComplaintForm({ mess }: { mess: string }) {
       setSelectedItem("");
       setSelectedRating(0);
       setRatingRemark("");
+      setQuantityRating(0);
+      setHygieneRating(0);
+      setStaffRating(0);
+      setCleanlinessRating(0);
       setTimeout(() => setRatingStatus("idle"), 4000);
     } catch (err: any) {
       setRatingStatus("error");
@@ -368,6 +483,47 @@ export default function ComplaintForm({ mess }: { mess: string }) {
                 outline: "none",
                 boxSizing: "border-box",
               }}
+            />
+          </div>
+
+          {/* Optional Ratings Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0" }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(254,215,170,0.7)" }} />
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#9a3412", opacity: 0.8, whiteSpace: "nowrap" }}>
+              ✨ Optional: Rate more aspects
+            </span>
+            <div style={{ flex: 1, height: "1px", background: "rgba(254,215,170,0.7)" }} />
+          </div>
+
+          {/* Item-specific optional ratings */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <OptionalStarPicker
+              label="Quantity of Food Item"
+              emoji="🍽️"
+              value={quantityRating}
+              onChange={setQuantityRating}
+            />
+            <OptionalStarPicker
+              label="Hygiene of Food Item"
+              emoji="🧼"
+              value={hygieneRating}
+              onChange={setHygieneRating}
+            />
+          </div>
+
+          {/* Canteen-wide optional ratings */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <OptionalStarPicker
+              label="Behaviour of Staff"
+              emoji="🤝"
+              value={staffRating}
+              onChange={setStaffRating}
+            />
+            <OptionalStarPicker
+              label="Cleanliness of Canteen"
+              emoji="✨"
+              value={cleanlinessRating}
+              onChange={setCleanlinessRating}
             />
           </div>
 
