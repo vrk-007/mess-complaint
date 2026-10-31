@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import FoodIcon from "@/app/components/FoodIcon";
 
@@ -364,45 +364,83 @@ function ItemDetailModal({
 export default function CanteenAnalytics({
   topRated: initialTopRated = [],
   worstRated: initialWorstRated = [],
-  allRatings,
+  allRatings: serverAllRatings,
 }: CanteenAnalyticsProps) {
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
   const [period, setPeriod] = useState<Period>("all");
   const [customDate, setCustomDate] = useState("");
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ── Auto-refresh listener for real-time rating updates ──
+  // ── Live allRatings state — fetched directly from API, bypasses RSC prop staleness ──
+  const [allRatings, setAllRatings] = useState<CanteenAnalyticsProps["allRatings"]>(serverAllRatings);
+
+  const fetchLatestRatings = useRef(async () => {
+    try {
+      const res = await fetch("/api/canteen-ratings", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.allRatings)) {
+        setAllRatings(data.allRatings);
+      }
+    } catch {}
+  });
+
   useEffect(() => {
-    // 1. BroadcastChannel for instant cross-tab sync in the same browser
+    // Keep the ref up to date
+    fetchLatestRatings.current = async () => {
+      try {
+        const res = await fetch("/api/canteen-ratings", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data.allRatings)) {
+          setAllRatings(data.allRatings);
+        }
+      } catch {}
+    };
+  });
+
+  useEffect(() => {
+    // Sync when server re-renders with new props (RSC refresh)
+    setAllRatings(serverAllRatings);
+  }, [serverAllRatings]);
+
+  useEffect(() => {
+    // BroadcastChannel: instant same-browser cross-tab notification
     let bc: BroadcastChannel | null = null;
     try {
       bc = new BroadcastChannel("canteen_updates");
       bc.onmessage = (e) => {
         if (e.data?.type === "NEW_RATING") {
-          router.refresh();
+          fetchLatestRatings.current();        // direct API fetch for Top 3 update
+          routerRef.current.refresh();         // also refresh RSC for full page consistency
         }
       };
     } catch {}
 
-    // 2. Storage event for cross-tab sync fallback
+    // localStorage: cross-tab fallback (Safari / older browsers)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "canteen_last_updated") {
-        router.refresh();
+        fetchLatestRatings.current();
+        routerRef.current.refresh();
       }
     };
     window.addEventListener("storage", handleStorage);
 
-    // 3. Tab focus (re-fetch when user returns to this tab)
+    // Tab focus: refresh when admin switches back to this tab
     const handleFocus = () => {
-      router.refresh();
+      fetchLatestRatings.current();
+      routerRef.current.refresh();
     };
     window.addEventListener("focus", handleFocus);
 
-    // 4. Polling every 10 seconds for open kiosk / admin dashboards
+    // Polling every 15 s — guaranteed update for any scenario
     const interval = setInterval(() => {
-      router.refresh();
-    }, 10000);
+      fetchLatestRatings.current();
+    }, 15000);
 
     return () => {
       if (bc) bc.close();
@@ -410,76 +448,54 @@ export default function CanteenAnalytics({
       window.removeEventListener("focus", handleFocus);
       clearInterval(interval);
     };
-  }, [router]);
+  }, []);
 
-  // ── Dynamically compute Top 3 & Lowest Rated directly from allRatings ──
-  // This guarantees that whenever any rating is submitted (student, prof, admin, anywhere),
-  // Top 3 and Lowest Rated update IMMEDIATELY in real-time!
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const currentMonthRatings = allRatings.filter((r) => new Date(r.createdAt) >= monthStart);
-  // Use current month ratings if there are any; otherwise fallback to allRatings
-  const ratingsForHighlights = currentMonthRatings.length > 0 ? currentMonthRatings : allRatings;
+  // ── Dynamically compute Top 3 & Lowest Rated from live allRatings ──
+  const { topRated, worstRated } = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthRatings = allRatings.filter((r) => new Date(r.createdAt) >= monthStart);
+    // Use this month's ratings if any exist; otherwise fall back to all-time
+    const source = monthRatings.length > 0 ? monthRatings : allRatings;
 
-  const itemMap: Record<
-    string,
-    {
-      total: number;
-      count: number;
-      recentReviews: { id: string; rating: number; comment: string; createdAt: string }[];
-    }
-  > = {};
+    const itemMap: Record<string, { total: number; count: number; recentReview: { id: string; rating: number; comment: string; createdAt: string } | null }> = {};
 
-  for (const r of ratingsForHighlights) {
-    if (!itemMap[r.item]) {
-      itemMap[r.item] = { total: 0, count: 0, recentReviews: [] };
-    }
-    itemMap[r.item].total += r.rating;
-    itemMap[r.item].count += 1;
-    if (r.comment && r.comment.trim().length > 0 && itemMap[r.item].recentReviews.length === 0) {
-      itemMap[r.item].recentReviews.push({
-        id: r.id,
-        rating: r.rating,
-        comment: r.comment.trim(),
-        createdAt: r.createdAt,
-      });
-    }
-  }
-
-  // Fallback: If any item in itemMap has no comment in current month, pull its latest comment from allRatings
-  for (const [item, stat] of Object.entries(itemMap)) {
-    if (stat.recentReviews.length === 0) {
-      const older = allRatings.find((ar) => ar.item === item && ar.comment && ar.comment.trim().length > 0);
-      if (older && older.comment) {
-        stat.recentReviews.push({
-          id: older.id,
-          rating: older.rating,
-          comment: older.comment.trim(),
-          createdAt: older.createdAt,
-        });
+    for (const r of source) {
+      if (!itemMap[r.item]) itemMap[r.item] = { total: 0, count: 0, recentReview: null };
+      itemMap[r.item].total += r.rating;
+      itemMap[r.item].count += 1;
+      if (!itemMap[r.item].recentReview && r.comment && r.comment.trim().length > 0) {
+        itemMap[r.item].recentReview = { id: r.id, rating: r.rating, comment: r.comment.trim(), createdAt: r.createdAt };
       }
     }
-  }
 
-  const itemsArray = Object.entries(itemMap).map(([item, stat]) => ({
-    item,
-    avg: Number((stat.total / stat.count).toFixed(1)),
-    count: stat.count,
-    recentReviews: stat.recentReviews,
-  }));
+    // If a month-only item still has no comment, pull from allRatings
+    if (monthRatings.length > 0) {
+      for (const [item, stat] of Object.entries(itemMap)) {
+        if (!stat.recentReview) {
+          const older = allRatings.find((ar) => ar.item === item && ar.comment && ar.comment.trim().length > 0);
+          if (older?.comment) {
+            stat.recentReview = { id: older.id, rating: older.rating, comment: older.comment.trim(), createdAt: older.createdAt };
+          }
+        }
+      }
+    }
 
-  const dynamicTopRated = itemsArray
-    .filter((item) => item.avg >= 3.0)
-    .sort((a, b) => b.avg - a.avg || b.count - a.count)
-    .slice(0, 3);
+    const items = Object.entries(itemMap).map(([item, stat]) => ({
+      item,
+      avg: Number((stat.total / stat.count).toFixed(1)),
+      count: stat.count,
+      recentReviews: stat.recentReview ? [stat.recentReview] : [],
+    }));
 
-  const dynamicWorstRated = itemsArray
-    .filter((item) => item.avg < 3.0)
-    .sort((a, b) => a.avg - b.avg || b.count - a.count)
-    .slice(0, 3);
+    const top = items.filter((x) => x.avg >= 3.0).sort((a, b) => b.avg - a.avg || b.count - a.count).slice(0, 3);
+    const worst = items.filter((x) => x.avg < 3.0).sort((a, b) => a.avg - b.avg || b.count - a.count).slice(0, 3);
 
-  const topRated = allRatings.length > 0 ? dynamicTopRated : initialTopRated;
-  const worstRated = allRatings.length > 0 ? dynamicWorstRated : initialWorstRated;
+    return {
+      topRated: allRatings.length > 0 ? top : initialTopRated,
+      worstRated: allRatings.length > 0 ? worst : initialWorstRated,
+    };
+  }, [allRatings, initialTopRated, initialWorstRated]);
 
   // New Dimension Filter state ("staff" | "cleanliness" | null)
   const [activeDimension, setActiveDimension] = useState<Dimension>(null);
@@ -1058,11 +1074,11 @@ export default function CanteenAnalytics({
           </div>
         ) : (
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-              gap: 12,
-            }}
+            style={
+              isDimensionActive
+                ? { display: "flex", flexDirection: "column", gap: 8 }
+                : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }
+            }
           >
             {paginatedRatings.map((r) => {
               // Rating badge value to show
@@ -1074,15 +1090,50 @@ export default function CanteenAnalytics({
 
               const badgeRating = ratingDisplay || 0;
 
+              // ── DIMENSION VIEW: ultra-clean compact row ──
+              if (isDimensionActive) {
+                return (
+                  <div
+                    key={r.id}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 12,
+                      background: "#fffaf5",
+                      border: "1.5px solid #fed7aa",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
+                    }}
+                  >
+                    {/* Left: date & time only */}
+                    <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.75 }}>
+                      {formatTime(r.createdAt)}
+                    </div>
+
+                    {/* Right: dimension score only — no item name, no icon */}
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 800,
+                        color:
+                          badgeRating >= 4 ? "#15803d" : badgeRating === 3 ? "#b45309" : "#b91c1c",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {"⭐".repeat(badgeRating)} {badgeRating}/5
+                    </div>
+                  </div>
+                );
+              }
+
+              // ── NORMAL ITEM VIEW: full card with comment + optional badges ──
               return (
                 <div
                   key={r.id}
-                  onClick={() => {
-                    // Open item modal only in regular item view
-                    if (!isDimensionActive) {
-                      setSelectedRating(r);
-                    }
-                  }}
+                  onClick={() => setSelectedRating(r)}
                   style={{
                     padding: "12px 14px",
                     borderRadius: 14,
@@ -1092,60 +1143,25 @@ export default function CanteenAnalytics({
                     flexDirection: "column",
                     gap: 8,
                     boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
-                    cursor: isDimensionActive ? "default" : "pointer",
+                    cursor: "pointer",
                     transition: "all 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isDimensionActive) {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 6px 16px rgba(249,115,22,0.12)";
-                    }
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(249,115,22,0.12)";
                   }}
                   onMouseLeave={(e) => {
-                    if (!isDimensionActive) {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.02)";
-                    }
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.02)";
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 8,
-                    }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {isDimensionActive ? (
-                        <div
-                          style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: 8,
-                            background: activeDimension === "staff" ? "rgba(249,115,22,0.15)" : "rgba(34,197,94,0.15)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "16px",
-                          }}
-                        >
-                          {activeDimension === "staff" ? "🤝" : "✨"}
-                        </div>
-                      ) : (
-                        <FoodIcon name={r.item} size="28px" />
-                      )}
+                      <FoodIcon name={r.item} size="28px" />
                       <div>
-                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                          {isDimensionActive
-                            ? activeDimension === "staff"
-                              ? "Staff Behaviour"
-                              : "Cleanliness"
-                            : r.item}
-                        </div>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>{r.item}</div>
                         <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
                           {formatTime(r.createdAt)}
-                          {isDimensionActive && r.item ? ` • For ${r.item}` : ""}
                         </div>
                       </div>
                     </div>
@@ -1155,23 +1171,14 @@ export default function CanteenAnalytics({
                         padding: "4px 8px",
                         borderRadius: 10,
                         background:
-                          badgeRating >= 4
-                            ? "rgba(34,197,94,0.12)"
-                            : badgeRating === 3
-                            ? "rgba(245,158,11,0.12)"
-                            : "rgba(239,68,68,0.12)",
+                          badgeRating >= 4 ? "rgba(34,197,94,0.12)" : badgeRating === 3 ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)",
                         color:
-                          badgeRating >= 4
-                            ? "#15803d"
-                            : badgeRating === 3
-                            ? "#b45309"
-                            : "#b91c1c",
+                          badgeRating >= 4 ? "#15803d" : badgeRating === 3 ? "#b45309" : "#b91c1c",
                         fontWeight: 800,
                         fontSize: "13px",
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {isDimensionActive ? (activeDimension === "staff" ? "🤝 Staff: " : "✨ Cleanliness: ") : ""}
                       {"⭐".repeat(badgeRating)} {badgeRating}/5
                     </div>
                   </div>
@@ -1197,8 +1204,8 @@ export default function CanteenAnalytics({
                     </div>
                   )}
 
-                  {/* Badges for optional parameters present */}
-                  {!isDimensionActive && (r.quantityRating != null || r.hygieneRating != null) && (
+                  {/* Optional rating badges (Quantity / Hygiene) */}
+                  {(r.quantityRating != null || r.hygieneRating != null) && (
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
                       {r.quantityRating != null && r.quantityRating > 0 && (
                         <span
