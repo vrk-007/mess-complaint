@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import FoodIcon from "@/app/components/FoodIcon";
 
 function formatTime(isoString: string): string {
@@ -365,10 +366,51 @@ export default function CanteenAnalytics({
   worstRated: initialWorstRated = [],
   allRatings,
 }: CanteenAnalyticsProps) {
+  const router = useRouter();
   const [period, setPeriod] = useState<Period>("all");
   const [customDate, setCustomDate] = useState("");
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ── Auto-refresh listener for real-time rating updates ──
+  useEffect(() => {
+    // 1. BroadcastChannel for instant cross-tab sync in the same browser
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("canteen_updates");
+      bc.onmessage = (e) => {
+        if (e.data?.type === "NEW_RATING") {
+          router.refresh();
+        }
+      };
+    } catch {}
+
+    // 2. Storage event for cross-tab sync fallback
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "canteen_last_updated") {
+        router.refresh();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    // 3. Tab focus (re-fetch when user returns to this tab)
+    const handleFocus = () => {
+      router.refresh();
+    };
+    window.addEventListener("focus", handleFocus);
+
+    // 4. Polling every 10 seconds for open kiosk / admin dashboards
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 10000);
+
+    return () => {
+      if (bc) bc.close();
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      clearInterval(interval);
+    };
+  }, [router]);
 
   // ── Dynamically compute Top 3 & Lowest Rated directly from allRatings ──
   // This guarantees that whenever any rating is submitted (student, prof, admin, anywhere),
@@ -376,8 +418,8 @@ export default function CanteenAnalytics({
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const currentMonthRatings = allRatings.filter((r) => new Date(r.createdAt) >= monthStart);
-  // Use current month ratings if there are at least 2 items; otherwise use allRatings
-  const ratingsForHighlights = currentMonthRatings.length >= 2 ? currentMonthRatings : allRatings;
+  // Use current month ratings if there are any; otherwise fallback to allRatings
+  const ratingsForHighlights = currentMonthRatings.length > 0 ? currentMonthRatings : allRatings;
 
   const itemMap: Record<
     string,
@@ -404,6 +446,21 @@ export default function CanteenAnalytics({
     }
   }
 
+  // Fallback: If any item in itemMap has no comment in current month, pull its latest comment from allRatings
+  for (const [item, stat] of Object.entries(itemMap)) {
+    if (stat.recentReviews.length === 0) {
+      const older = allRatings.find((ar) => ar.item === item && ar.comment && ar.comment.trim().length > 0);
+      if (older && older.comment) {
+        stat.recentReviews.push({
+          id: older.id,
+          rating: older.rating,
+          comment: older.comment.trim(),
+          createdAt: older.createdAt,
+        });
+      }
+    }
+  }
+
   const itemsArray = Object.entries(itemMap).map(([item, stat]) => ({
     item,
     avg: Number((stat.total / stat.count).toFixed(1)),
@@ -421,8 +478,8 @@ export default function CanteenAnalytics({
     .sort((a, b) => a.avg - b.avg || b.count - a.count)
     .slice(0, 3);
 
-  const topRated = dynamicTopRated.length > 0 ? dynamicTopRated : initialTopRated;
-  const worstRated = dynamicWorstRated.length > 0 ? dynamicWorstRated : initialWorstRated;
+  const topRated = allRatings.length > 0 ? dynamicTopRated : initialTopRated;
+  const worstRated = allRatings.length > 0 ? dynamicWorstRated : initialWorstRated;
 
   // New Dimension Filter state ("staff" | "cleanliness" | null)
   const [activeDimension, setActiveDimension] = useState<Dimension>(null);
@@ -1021,8 +1078,10 @@ export default function CanteenAnalytics({
                 <div
                   key={r.id}
                   onClick={() => {
-                    // Open modal on click (only in regular view or to inspect the dish details)
-                    setSelectedRating(r);
+                    // Open item modal only in regular item view
+                    if (!isDimensionActive) {
+                      setSelectedRating(r);
+                    }
                   }}
                   style={{
                     padding: "12px 14px",
@@ -1033,16 +1092,20 @@ export default function CanteenAnalytics({
                     flexDirection: "column",
                     gap: 8,
                     boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
-                    cursor: "pointer",
+                    cursor: isDimensionActive ? "default" : "pointer",
                     transition: "all 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(249,115,22,0.12)";
+                    if (!isDimensionActive) {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 6px 16px rgba(249,115,22,0.12)";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.02)";
+                    if (!isDimensionActive) {
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.02)";
+                    }
                   }}
                 >
                   <div
@@ -1054,13 +1117,35 @@ export default function CanteenAnalytics({
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <FoodIcon name={r.item} size="28px" />
+                      {isDimensionActive ? (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            background: activeDimension === "staff" ? "rgba(249,115,22,0.15)" : "rgba(34,197,94,0.15)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "16px",
+                          }}
+                        >
+                          {activeDimension === "staff" ? "🤝" : "✨"}
+                        </div>
+                      ) : (
+                        <FoodIcon name={r.item} size="28px" />
+                      )}
                       <div>
                         <div style={{ fontSize: "13px", fontWeight: 700, color: "#431407" }}>
-                          {r.item}
+                          {isDimensionActive
+                            ? activeDimension === "staff"
+                              ? "Staff Behaviour"
+                              : "Cleanliness"
+                            : r.item}
                         </div>
                         <div style={{ fontSize: "11px", color: "#9a3412", opacity: 0.8, marginTop: 2 }}>
                           {formatTime(r.createdAt)}
+                          {isDimensionActive && r.item ? ` • For ${r.item}` : ""}
                         </div>
                       </div>
                     </div>
@@ -1086,6 +1171,7 @@ export default function CanteenAnalytics({
                         whiteSpace: "nowrap",
                       }}
                     >
+                      {isDimensionActive ? (activeDimension === "staff" ? "🤝 Staff: " : "✨ Cleanliness: ") : ""}
                       {"⭐".repeat(badgeRating)} {badgeRating}/5
                     </div>
                   </div>
@@ -1419,9 +1505,14 @@ export default function CanteenAnalytics({
                 )}
               </div>
 
-              {/* Latest Reviews Ticker (Only 3 stars and above) */}
+              {/* Latest Reviews Ticker (Only 3 stars and above for current view) */}
               {(() => {
-                const highRatings = filteredRatings.filter((r) => r.rating >= 3);
+                const highRatings = filteredRatings.filter((r) => {
+                  const val = isDimensionActive
+                    ? (activeDimension === "staff" ? r.staffRating : r.cleanlinessRating) || 0
+                    : r.rating;
+                  return val >= 3;
+                });
                 if (highRatings.length === 0) return null;
                 const MIN_VISIBLE = 6;
                 const repeatCount = Math.max(1, Math.ceil(MIN_VISIBLE / highRatings.length));
@@ -1464,72 +1555,85 @@ export default function CanteenAnalytics({
                           willChange: "transform",
                         }}
                       >
-                        {tickerItems.map((r, i) => (
-                          <div
-                            key={`ticker-${r.id}-${i}`}
-                            style={{
-                              flexShrink: 0,
-                              width: 196,
-                              position: "relative",
-                              overflow: "hidden",
-                              background: "rgba(255,255,255,0.9)",
-                              border: "1.5px solid #fed7aa",
-                              borderRadius: 14,
-                              padding: "10px 14px",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 5,
-                              boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
-                            }}
-                          >
+                        {tickerItems.map((r, i) => {
+                          const tickerRating = isDimensionActive
+                            ? (activeDimension === "staff" ? r.staffRating : r.cleanlinessRating) || 0
+                            : r.rating;
+
+                          return (
                             <div
+                              key={`ticker-${r.id}-${i}`}
                               style={{
-                                position: "absolute",
-                                top: 0, left: 0,
-                                width: "40%",
-                                height: "100%",
-                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
-                                animation: "nexalaya-shine-display 3s ease-in-out infinite",
-                                pointerEvents: "none",
+                                flexShrink: 0,
+                                width: 196,
+                                position: "relative",
+                                overflow: "hidden",
+                                background: "rgba(255,255,255,0.9)",
+                                border: "1.5px solid #fed7aa",
+                                borderRadius: 14,
+                                padding: "10px 14px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 5,
+                                boxShadow: "0 2px 10px rgba(249,115,22,0.06)",
                               }}
-                            />
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                              <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.item}</div>
+                            >
                               <div
                                 style={{
-                                  fontSize: "11px",
-                                  fontWeight: 800,
-                                  color: r.rating >= 4 ? "#15803d" : "#b45309",
-                                  background: r.rating >= 4 ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
-                                  padding: "2px 7px",
-                                  borderRadius: 10,
-                                  whiteSpace: "nowrap",
-                                  flexShrink: 0,
+                                  position: "absolute",
+                                  top: 0, left: 0,
+                                  width: "40%",
+                                  height: "100%",
+                                  background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)",
+                                  animation: "nexalaya-shine-display 3s ease-in-out infinite",
+                                  pointerEvents: "none",
                                 }}
-                              >
-                                ⭐ {r.rating}/5
+                              />
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                                <div style={{ fontSize: "12px", fontWeight: 700, color: "#431407", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                                  {isDimensionActive
+                                    ? activeDimension === "staff"
+                                      ? "🤝 Staff Behaviour"
+                                      : "✨ Cleanliness"
+                                    : r.item}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 800,
+                                    color: tickerRating >= 4 ? "#15803d" : "#b45309",
+                                    background: tickerRating >= 4 ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                                    padding: "2px 7px",
+                                    borderRadius: 10,
+                                    whiteSpace: "nowrap",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  ⭐ {tickerRating}/5
+                                </div>
+                              </div>
+                              {r.comment && (
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#78350f",
+                                    fontStyle: "italic",
+                                    lineHeight: 1.35,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  &ldquo;{r.comment}&rdquo;
+                                </div>
+                              )}
+                              <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
+                                {formatTime(r.createdAt)}
+                                {isDimensionActive && r.item ? ` • ${r.item}` : ""}
                               </div>
                             </div>
-                            {r.comment && (
-                              <div
-                                style={{
-                                  fontSize: "11px",
-                                  color: "#78350f",
-                                  fontStyle: "italic",
-                                  lineHeight: 1.35,
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                &ldquo;{r.comment}&rdquo;
-                              </div>
-                            )}
-                            <div style={{ fontSize: "10px", color: "#9a3412", opacity: 0.65 }}>
-                              {formatTime(r.createdAt)}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

@@ -174,6 +174,16 @@ export default function CanteenRatingForm() {
       }
 
       setRatingStatus("success");
+      if (typeof window !== "undefined") {
+        try {
+          const bc = new BroadcastChannel("canteen_updates");
+          bc.postMessage({ type: "NEW_RATING", timestamp: Date.now() });
+          bc.close();
+        } catch {}
+        try {
+          localStorage.setItem("canteen_last_updated", String(Date.now()));
+        } catch {}
+      }
       router.refresh();
       setSelectedItem("");
       setSelectedRating(0);

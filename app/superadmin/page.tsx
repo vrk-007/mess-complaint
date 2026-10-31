@@ -95,10 +95,15 @@ export default async function SuperAdminDashboard({
     const now = new Date();
     // 1. Monthly Ratings for Top 3 and Lowest Rated items
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthlyRatings = await prisma.canteenRating.findMany({
+    let monthlyRatings = await prisma.canteenRating.findMany({
       where: { createdAt: { gte: monthStart } },
       select: { item: true, rating: true },
     });
+    if (monthlyRatings.length === 0) {
+      monthlyRatings = await prisma.canteenRating.findMany({
+        select: { item: true, rating: true },
+      });
+    }
 
     const itemMonthlyMap: Record<string, { total: number; count: number }> = {};
     for (const r of monthlyRatings) {
