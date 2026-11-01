@@ -554,6 +554,31 @@ export default function CanteenAnalytics({
     return map;
   }, [allAvailableItems, allRatings]);
 
+  // Items sorted from Highest rated to Lowest rated
+  const sortedAvailableItems = useMemo(() => {
+    return [...allAvailableItems].sort((a, b) => {
+      const statA = itemStatsMap[a] || { count: 0, avg: 0 };
+      const statB = itemStatsMap[b] || { count: 0, avg: 0 };
+
+      // Items with reviews appear before items with 0 reviews
+      if (statA.count > 0 && statB.count === 0) return -1;
+      if (statA.count === 0 && statB.count > 0) return 1;
+
+      // Highest average rating first
+      if (statB.avg !== statA.avg) {
+        return statB.avg - statA.avg;
+      }
+
+      // If average rating is identical, item with more reviews comes first
+      if (statB.count !== statA.count) {
+        return statB.count - statA.count;
+      }
+
+      // Fallback alphabetical
+      return a.localeCompare(b);
+    });
+  }, [allAvailableItems, itemStatsMap]);
+
   const filteredRatings = isItemFilterActive
     ? allRatings.filter((r) => r.item.toLowerCase() === selectedItemFilter.toLowerCase())
     : isDimensionActive
@@ -1168,7 +1193,7 @@ export default function CanteenAnalytics({
                   <span>Select Item to View Ratings</span>
                 </div>
                 <div style={{ fontSize: "11px", color: "#9a3412", marginTop: 2 }}>
-                  Showing all canteen items in 3 columns. Click any item to inspect all student reviews.
+                  Showing all canteen items sorted from highest to lowest rated. Click any item to inspect all student reviews.
                 </div>
               </div>
 
@@ -1256,7 +1281,7 @@ export default function CanteenAnalytics({
                 paddingRight: 4,
               }}
             >
-              {allAvailableItems
+              {sortedAvailableItems
                 .filter((item) =>
                   itemPickerSearch.trim()
                     ? item.toLowerCase().includes(itemPickerSearch.toLowerCase().trim())
