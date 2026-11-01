@@ -35,15 +35,32 @@ export interface CanteenAnalyticsProps {
   }[];
 }
 
-type Period = "all" | "1w" | "2w" | "1m" | "date";
+type Period = "all" | "1w" | "1m" | "date";
 type Dimension = "staff" | "cleanliness" | null;
 
 const PERIOD_LABELS: { value: Period; label: string }[] = [
   { value: "all", label: "All" },
   { value: "1w",  label: "1 Wk" },
-  { value: "2w",  label: "2 Wks" },
   { value: "1m",  label: "1 Month" },
   { value: "date", label: "📅 By Date" },
+];
+
+const CANTEEN_ITEMS = [
+  "Samosa",
+  "Vada Pav",
+  "Poha",
+  "Misal Pav",
+  "Tea / Chai",
+  "Filter Coffee",
+  "Veg Sandwich",
+  "Grilled Cheese Sandwich",
+  "Veg Puff / Patties",
+  "Masala Dosa",
+  "Idli Sambhar",
+  "Maggi",
+  "Veg Fried Rice",
+  "Veg Thali",
+  "Paneer Roll",
 ];
 
 function getFilteredRatings(
@@ -54,10 +71,6 @@ function getFilteredRatings(
   const now = new Date();
   if (period === "1w") {
     const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return ratings.filter((r) => new Date(r.createdAt) >= from);
-  }
-  if (period === "2w") {
-    const from = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     return ratings.filter((r) => new Date(r.createdAt) >= from);
   }
   if (period === "1m") {
@@ -500,15 +513,50 @@ export default function CanteenAnalytics({
   // New Dimension Filter state ("staff" | "cleanliness" | null)
   const [activeDimension, setActiveDimension] = useState<Dimension>(null);
 
+  // Itemwise filter state
+  const [selectedItemFilter, setSelectedItemFilter] = useState<string | null>(null);
+  const [isItemPickerOpen, setIsItemPickerOpen] = useState(false);
+  const [itemPickerSearch, setItemPickerSearch] = useState("");
+
   // Selected rating for detailed modal
   const [selectedRating, setSelectedRating] = useState<CanteenAnalyticsProps["allRatings"][0] | null>(null);
 
   const ITEMS_PER_PAGE = 5;
 
+  const isItemFilterActive = selectedItemFilter !== null;
   // When a dimension is active, we filter by that dimension from all ratings
-  const isDimensionActive = activeDimension !== null;
+  const isDimensionActive = !isItemFilterActive && activeDimension !== null;
 
-  const filteredRatings = isDimensionActive
+  // List of all items known from CANTEEN_ITEMS and allRatings
+  const allAvailableItems = useMemo(() => {
+    const set = new Set<string>(CANTEEN_ITEMS);
+    allRatings.forEach((r) => {
+      if (r.item && r.item.trim()) set.add(r.item.trim());
+    });
+    return Array.from(set);
+  }, [allRatings]);
+
+  // Aggregate stats per item for badges in the item picker
+  const itemStatsMap = useMemo(() => {
+    const map: Record<string, { count: number; avg: number }> = {};
+    for (const item of allAvailableItems) {
+      const matching = allRatings.filter((r) => r.item.toLowerCase() === item.toLowerCase());
+      if (matching.length > 0) {
+        const total = matching.reduce((sum, r) => sum + r.rating, 0);
+        map[item] = {
+          count: matching.length,
+          avg: Number((total / matching.length).toFixed(1)),
+        };
+      } else {
+        map[item] = { count: 0, avg: 0 };
+      }
+    }
+    return map;
+  }, [allAvailableItems, allRatings]);
+
+  const filteredRatings = isItemFilterActive
+    ? allRatings.filter((r) => r.item.toLowerCase() === selectedItemFilter.toLowerCase())
+    : isDimensionActive
     ? allRatings.filter((r) =>
         activeDimension === "staff"
           ? r.staffRating != null && r.staffRating > 0
@@ -535,10 +583,10 @@ export default function CanteenAnalytics({
   // Convert 1-5 stars to 0-100 score: (avg / 5) * 100 = avg * 20
   const dimensionScore = Math.round(dimensionAvgStars * 20);
 
-  // Reset page when period, customDate, or activeDimension changes
+  // Reset page when period, customDate, activeDimension, or selectedItemFilter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [period, customDate, activeDimension]);
+  }, [period, customDate, activeDimension, selectedItemFilter]);
 
   const totalPages = Math.ceil(filteredRatings.length / ITEMS_PER_PAGE) || 1;
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
@@ -881,15 +929,19 @@ export default function CanteenAnalytics({
         >
           <div>
             <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#431407", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>⭐</span>{" "}
-              {activeDimension === "staff"
+              <span>{isItemFilterActive ? "🍲" : "⭐"}</span>{" "}
+              {isItemFilterActive
+                ? `${selectedItemFilter} Ratings`
+                : activeDimension === "staff"
                 ? "Staff Behaviour Ratings"
                 : activeDimension === "cleanliness"
                 ? "Canteen Cleanliness Ratings"
                 : "Ratings"}
             </h3>
             <span style={{ fontSize: "12px", color: "#9a3412", fontWeight: 600 }}>
-              {isDimensionActive
+              {isItemFilterActive
+                ? `${filteredRatings.length} rating${filteredRatings.length !== 1 ? "s" : ""} recorded all-time`
+                : isDimensionActive
                 ? `${filteredRatings.length} rating${filteredRatings.length !== 1 ? "s" : ""} recorded for this aspect`
                 : `${filteredRatings.length} rating${filteredRatings.length !== 1 ? "s" : ""} shown`}
             </span>
@@ -897,10 +949,47 @@ export default function CanteenAnalytics({
 
           {/* Filter Bar: Dimension Pills on Left + Period Pills on Right */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-            {/* 1. ⭐ Staff Behaviour (left of "All") */}
+            {/* 0. 🍲 Itemwise Rating (left of "Staff Behaviour") */}
             <button
               type="button"
               onClick={() => {
+                setIsItemPickerOpen((prev) => !prev);
+              }}
+              style={{
+                padding: "7px 14px",
+                borderRadius: 10,
+                fontSize: "12px",
+                fontWeight: 700,
+                border: "1.5px solid",
+                borderColor: isItemFilterActive || isItemPickerOpen ? "#f97316" : "#fed7aa",
+                cursor: "pointer",
+                background:
+                  isItemFilterActive || isItemPickerOpen
+                    ? "linear-gradient(135deg,#f97316,#ef4444)"
+                    : "rgba(255,255,255,0.85)",
+                color: isItemFilterActive || isItemPickerOpen ? "#fff" : "#78350f",
+                boxShadow:
+                  isItemFilterActive || isItemPickerOpen
+                    ? "0 2px 8px rgba(249,115,22,0.3)"
+                    : "none",
+                transition: "all 0.2s ease",
+                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>🍲</span>
+              <span>{selectedItemFilter ? `Item: ${selectedItemFilter}` : "Itemwise Rating"}</span>
+              <span style={{ fontSize: "10px", opacity: 0.85 }}>{isItemPickerOpen ? "▲" : "▼"}</span>
+            </button>
+
+            {/* 1. ⭐ Staff Behaviour */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedItemFilter(null);
+                setIsItemPickerOpen(false);
                 setActiveDimension((prev) => (prev === "staff" ? null : "staff"));
               }}
               style={{
@@ -924,10 +1013,12 @@ export default function CanteenAnalytics({
               ⭐ Staff Behaviour
             </button>
 
-            {/* 2. ⭐ Cleanliness (left of "All") */}
+            {/* 2. ⭐ Cleanliness */}
             <button
               type="button"
               onClick={() => {
+                setSelectedItemFilter(null);
+                setIsItemPickerOpen(false);
                 setActiveDimension((prev) => (prev === "cleanliness" ? null : "cleanliness"));
               }}
               style={{
@@ -958,6 +1049,7 @@ export default function CanteenAnalytics({
             {PERIOD_LABELS.map(({ value, label }) => {
               const isPeriodActive =
                 !isDimensionActive &&
+                !isItemFilterActive &&
                 period === value &&
                 (value !== "date" || !customDate || period === "date");
 
@@ -966,6 +1058,8 @@ export default function CanteenAnalytics({
                   <button
                     type="button"
                     onClick={() => {
+                      setSelectedItemFilter(null);
+                      setIsItemPickerOpen(false);
                       setActiveDimension(null);
                       setPeriod("date");
                     }}
@@ -1013,6 +1107,8 @@ export default function CanteenAnalytics({
                   key={value}
                   type="button"
                   onClick={() => {
+                    setSelectedItemFilter(null);
+                    setIsItemPickerOpen(false);
                     setActiveDimension(null);
                     setPeriod(value);
                     setCustomDate("");
@@ -1041,6 +1137,291 @@ export default function CanteenAnalytics({
           </div>
         </div>
 
+        {/* ── 3-Column Item Selection Grid Panel ── */}
+        {isItemPickerOpen && (
+          <div
+            style={{
+              marginBottom: 20,
+              padding: "16px",
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 237, 0.95))",
+              border: "1.5px solid #fed7aa",
+              borderRadius: "16px",
+              boxShadow: "0 4px 20px rgba(249, 115, 22, 0.08)",
+            }}
+          >
+            {/* Header of Item Picker */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: 12,
+                paddingBottom: 10,
+                borderBottom: "1px dashed #fed7aa",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "14px", fontWeight: 800, color: "#431407", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>🍲</span>
+                  <span>Select Item to View Ratings</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#9a3412", marginTop: 2 }}>
+                  Showing all canteen items in 3 columns. Click any item to inspect all student reviews.
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Search / Filter input inside picker */}
+                <div style={{ position: "relative" }}>
+                  <input
+                    type="text"
+                    value={itemPickerSearch}
+                    onChange={(e) => setItemPickerSearch(e.target.value)}
+                    placeholder="Search items..."
+                    style={{
+                      padding: "6px 10px 6px 28px",
+                      borderRadius: 8,
+                      border: "1.5px solid #fed7aa",
+                      background: "#ffffff",
+                      fontSize: "12px",
+                      color: "#431407",
+                      outline: "none",
+                      width: "140px",
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: "12px",
+                      color: "#9a3412",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    🔍
+                  </span>
+                  {itemPickerSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setItemPickerSearch("")}
+                      style={{
+                        position: "absolute",
+                        right: 6,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "none",
+                        border: "none",
+                        fontSize: "12px",
+                        color: "#9a3412",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Close Picker Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsItemPickerOpen(false)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    background: "rgba(255,255,255,0.9)",
+                    border: "1.5px solid #fed7aa",
+                    color: "#78350f",
+                    cursor: "pointer",
+                  }}
+                >
+                  Close ✕
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Horizontal Columns Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: 8,
+                maxHeight: "360px",
+                overflowY: "auto",
+                paddingRight: 4,
+              }}
+            >
+              {allAvailableItems
+                .filter((item) =>
+                  itemPickerSearch.trim()
+                    ? item.toLowerCase().includes(itemPickerSearch.toLowerCase().trim())
+                    : true
+                )
+                .map((item) => {
+                  const stat = itemStatsMap[item] || { count: 0, avg: 0 };
+                  const isSelected = selectedItemFilter?.toLowerCase() === item.toLowerCase();
+
+                  return (
+                    <div
+                      key={item}
+                      onClick={() => {
+                        setSelectedItemFilter(item);
+                        setActiveDimension(null);
+                        setIsItemPickerOpen(false);
+                      }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center",
+                        gap: 4,
+                        padding: "10px 6px 8px",
+                        minHeight: "72px",
+                        borderRadius: "12px",
+                        border: isSelected ? "2px solid #f97316" : "1.5px solid #fed7aa",
+                        background: isSelected
+                          ? "linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)"
+                          : "#ffffff",
+                        cursor: "pointer",
+                        boxShadow: isSelected
+                          ? "0 2px 8px rgba(249, 115, 22, 0.25)"
+                          : "0 1px 3px rgba(0,0,0,0.02)",
+                        transition: "all 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.borderColor = "#f97316";
+                          e.currentTarget.style.background = "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)";
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.borderColor = "#fed7aa";
+                          e.currentTarget.style.background = "#ffffff";
+                          e.currentTarget.style.transform = "none";
+                        }
+                      }}
+                    >
+                      <FoodIcon name={item} size="30px" />
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          color: isSelected ? "#c2410c" : "#431407",
+                          lineHeight: 1.25,
+                          wordBreak: "break-word",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item}
+                      </div>
+                      <div style={{ marginTop: 2 }}>
+                        {stat.count > 0 ? (
+                          <span
+                            style={{
+                              fontSize: "10px",
+                              fontWeight: 800,
+                              color: stat.avg >= 3.5 ? "#15803d" : "#b45309",
+                              background: stat.avg >= 3.5 ? "rgba(34,197,94,0.12)" : "rgba(245,158,11,0.12)",
+                              padding: "1px 6px",
+                              borderRadius: 6,
+                            }}
+                          >
+                            ⭐ {stat.avg} ({stat.count})
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "10px", color: "#9a3412", opacity: 0.6, fontStyle: "italic" }}>
+                            0 reviews
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Active Item Filter Info Banner ── */}
+        {isItemFilterActive && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
+              border: "1.5px solid #f97316",
+              borderRadius: "14px",
+              padding: "12px 16px",
+              marginBottom: 16,
+              gap: 12,
+              boxShadow: "0 2px 8px rgba(249, 115, 22, 0.08)",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <FoodIcon name={selectedItemFilter} size="36px" />
+              <div>
+                <div style={{ fontSize: "14px", fontWeight: 800, color: "#431407" }}>
+                  All Ratings for &ldquo;{selectedItemFilter}&rdquo;
+                </div>
+                <div style={{ fontSize: "12px", color: "#9a3412", fontWeight: 600 }}>
+                  {filteredRatings.length} rating{filteredRatings.length !== 1 ? "s" : ""} recorded all-time
+                  {itemStatsMap[selectedItemFilter]?.count ? ` • Overall Average: ⭐ ${itemStatsMap[selectedItemFilter].avg} / 5` : ""}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setIsItemPickerOpen(true)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  background: "#ffffff",
+                  color: "#c2410c",
+                  border: "1px solid #fed7aa",
+                  cursor: "pointer",
+                }}
+              >
+                Change Item ▾
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedItemFilter(null);
+                  setIsItemPickerOpen(false);
+                }}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  background: "#ea580c",
+                  color: "#ffffff",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(234, 88, 12, 0.3)",
+                }}
+              >
+                Clear Filter ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Circular Score View for Dimension Filters (Staff / Cleanliness) ── */}
         {isDimensionActive && (
           <div style={{ marginBottom: 20 }}>
@@ -1068,7 +1449,9 @@ export default function CanteenAnalytics({
               fontWeight: 600,
             }}
           >
-            {isDimensionActive
+            {isItemFilterActive
+              ? `No ratings recorded for "${selectedItemFilter}" yet.`
+              : isDimensionActive
               ? `No ${activeDimension === "staff" ? "Staff Behaviour" : "Cleanliness"} ratings recorded yet.`
               : "No ratings found for the selected period."}
           </div>

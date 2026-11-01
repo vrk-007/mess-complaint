@@ -172,8 +172,11 @@ function LoginContent() {
                 lineHeight: 1.6,
               }}
             >
-              Sign in with your College Google Account to submit and track mess
-              complaints.
+              Sign in with your{" "}
+              <strong style={{ fontWeight: 800, color: "#431407" }}>
+                College Google Account
+              </strong>{" "}
+              to submit and track mess complaints.
             </p>
 
             <button
