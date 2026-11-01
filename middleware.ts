@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
 
   const isLoggedIn = !!sessionCookie;
 
-  const isPublicPage = pathname === "/privacy" || pathname === "/terms";
+  const isPublicPage = pathname === "/privacy" || pathname === "/terms" || pathname === "/rate";
 
   // Redirect logged-in users away from the login page to home
   if (isLoginPage && isLoggedIn) {

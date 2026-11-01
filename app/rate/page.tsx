@@ -5,20 +5,18 @@ import CanteenRatingForm from "./CanteenRatingForm";
 
 export default async function RatePage() {
   const session = await auth();
+  const isGuest = !session;
 
-  // Must be logged in to rate
-  if (!session) redirect("/login");
-
-  const userEmail = (session.user.email ?? "").toLowerCase();
+  const userEmail = (session?.user?.email ?? "").toLowerCase();
 
   // SuperAdmin detection for back to portal option
   const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
-  const isSuperAdmin = session.user.role === "SUPER_ADMIN" || superAdminEmails.includes(userEmail);
-  const isAdmin = session.user.role === "ADMIN";
-  const isStudent = userEmail.endsWith("students.vnit.ac.in") || session.user.role === "STUDENT";
+  const isSuperAdmin = !isGuest && (session?.user?.role === "SUPER_ADMIN" || superAdminEmails.includes(userEmail));
+  const isAdmin = !isGuest && session?.user?.role === "ADMIN";
+  const isStudent = !isGuest && (userEmail.endsWith("students.vnit.ac.in") || session?.user?.role === "STUDENT");
 
   return (
     <div style={{ minHeight: "100vh", background: "#fffaf5" }}>
@@ -73,8 +71,33 @@ export default async function RatePage() {
             </span>
           </div>
 
-          {/* Profile Dropdown */}
-          <RateProfileDropdown user={session.user} />
+          {/* Profile Dropdown or Guest Exit */}
+          {!isGuest && session?.user ? (
+            <RateProfileDropdown user={session.user} />
+          ) : (
+            <a
+              href="/login"
+              title="Exit to Login"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "7px 14px",
+                borderRadius: 12,
+                fontSize: "13px",
+                fontWeight: 700,
+                border: "1.5px solid #fed7aa",
+                background: "#ffffff",
+                color: "#9a3412",
+                textDecoration: "none",
+                boxShadow: "0 2px 6px rgba(249, 115, 22, 0.08)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>🚪</span>
+              <span>Exit</span>
+            </a>
+          )}
         </div>
       </header>
 
@@ -110,7 +133,7 @@ export default async function RatePage() {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: "15px", color: "#431407" }}>
-              Welcome !
+              {isGuest ? "Welcome, Guest!" : "Welcome !"}
             </div>
             <div style={{ fontSize: "13px", color: "#9a3412", marginTop: 2 }}>
               Share your feedback on canteen food to help us improve quality.
@@ -123,8 +146,35 @@ export default async function RatePage() {
           <CanteenRatingForm />
         </div>
 
+        {/* Exit option for Guest */}
+        {isGuest && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+            <a
+              href="/login"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 24px",
+                borderRadius: 14,
+                fontSize: "14px",
+                fontWeight: 700,
+                border: "1.5px solid #fed7aa",
+                background: "rgba(255, 255, 255, 0.85)",
+                color: "#9a3412",
+                textDecoration: "none",
+                boxShadow: "0 2px 8px rgba(249, 115, 22, 0.08)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>←</span>
+              <span>Exit (Back to Login)</span>
+            </a>
+          </div>
+        )}
+
         {/* Back to Portal (SuperAdmin, Admin, or Student) */}
-        {(isSuperAdmin || isAdmin || isStudent) && (
+        {!isGuest && (isSuperAdmin || isAdmin || isStudent) && (
           <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
             <a
               href={isSuperAdmin ? "/superadmin" : isAdmin ? "/admin" : "/"}

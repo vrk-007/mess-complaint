@@ -210,6 +210,60 @@ function LoginContent() {
                 </>
               )}
             </button>
+
+            {/* Divider */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                margin: "18px 0 14px",
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, height: "1px", background: "rgba(254, 215, 170, 0.8)" }} />
+              <span style={{ fontSize: "12px", color: "#9a3412", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                or
+              </span>
+              <div style={{ flex: 1, height: "1px", background: "rgba(254, 215, 170, 0.8)" }} />
+            </div>
+
+            {/* Guest Rating Option */}
+            <a
+              href="/rate"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                width: "100%",
+                padding: "14px 20px",
+                fontSize: "14.5px",
+                fontWeight: 700,
+                color: "#78350f",
+                background: "rgba(255, 255, 255, 0.88)",
+                border: "1.5px solid #fed7aa",
+                borderRadius: "14px",
+                textDecoration: "none",
+                boxShadow: "0 2px 10px rgba(249, 115, 22, 0.08)",
+                transition: "all 0.2s ease",
+                boxSizing: "border-box",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#ffffff";
+                e.currentTarget.style.borderColor = "#f97316";
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = "0 6px 18px rgba(249, 115, 22, 0.14)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.88)";
+                e.currentTarget.style.borderColor = "#fed7aa";
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = "0 2px 10px rgba(249, 115, 22, 0.08)";
+              }}
+            >
+              <span style={{ fontSize: "18px" }}>🍽️</span>
+              <span>Login as guest to rate canteen</span>
+            </a>
           </>
         )}
 

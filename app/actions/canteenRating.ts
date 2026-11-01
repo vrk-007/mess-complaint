@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export async function submitCanteenRating(data: {
   item: string;
@@ -16,20 +17,51 @@ export async function submitCanteenRating(data: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: "Unauthorized: You must be logged in to rate items." };
-    }
+    let userId: string;
 
-    // Rate limit: max 15 ratings per 10 minutes per student
-    const allowed = rateLimit("canteenRating", session.user.id, {
-      max: 15,
-      windowMs: 10 * 60 * 1000,
-    });
-    if (!allowed) {
-      return {
-        success: false,
-        error: "You are submitting ratings too quickly. Please wait a moment.",
-      };
+    if (session?.user?.id) {
+      userId = session.user.id;
+      // Rate limit: max 15 ratings per 10 minutes per student
+      const allowed = rateLimit("canteenRating", userId, {
+        max: 15,
+        windowMs: 10 * 60 * 1000,
+      });
+      if (!allowed) {
+        return {
+          success: false,
+          error: "You are submitting ratings too quickly. Please wait a moment.",
+        };
+      }
+    } else {
+      // ── Guest Rate Limiting by IP Address ──
+      const headerStore = await headers();
+      const ip =
+        headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        headerStore.get("x-real-ip") ||
+        "guest-client";
+
+      const allowed = rateLimit("canteenRatingGuest", ip, {
+        max: 10,
+        windowMs: 10 * 60 * 1000,
+      });
+      if (!allowed) {
+        return {
+          success: false,
+          error: "You are submitting ratings too quickly. Please wait a moment.",
+        };
+      }
+
+      // Upsert dedicated system guest user to maintain relational integrity
+      const guestUser = await prisma.user.upsert({
+        where: { email: "guest@vnitcanteen.local" },
+        update: {},
+        create: {
+          email: "guest@vnitcanteen.local",
+          name: "Guest Visitor",
+          role: "STUDENT",
+        },
+      });
+      userId = guestUser.id;
     }
 
     const item = data.item?.trim();
@@ -63,7 +95,7 @@ export async function submitCanteenRating(data: {
 
     await prisma.canteenRating.create({
       data: {
-        userId: session.user.id,
+        userId,
         item,
         rating,
         comment,

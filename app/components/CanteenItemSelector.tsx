@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import FoodIcon from "./FoodIcon";
+
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 interface CanteenItemSelectorProps {
   items: string[];
@@ -20,8 +22,21 @@ export default function CanteenItemSelector({
 }: CanteenItemSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Set of letters that actually have items in the menu
+  const availableLetters = useMemo(() => {
+    const letters = new Set<string>();
+    items.forEach((item) => {
+      const firstChar = item.trim().charAt(0).toUpperCase();
+      if (firstChar >= "A" && firstChar <= "Z") {
+        letters.add(firstChar);
+      }
+    });
+    return letters;
+  }, [items]);
 
   // Close on outside click
   useEffect(() => {
@@ -32,6 +47,7 @@ export default function CanteenItemSelector({
       ) {
         setIsOpen(false);
         setSearchQuery("");
+        setSelectedLetter(null);
       }
     }
 
@@ -56,20 +72,28 @@ export default function CanteenItemSelector({
       if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
         setSearchQuery("");
+        setSelectedLetter(null);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase().trim())
-  );
+  const filteredItems = items.filter((item) => {
+    const matchesSearch = searchQuery.trim()
+      ? item.toLowerCase().includes(searchQuery.toLowerCase().trim())
+      : true;
+    const matchesLetter = selectedLetter
+      ? item.trim().toUpperCase().startsWith(selectedLetter)
+      : true;
+    return matchesSearch && matchesLetter;
+  });
 
   const handleSelect = (item: string) => {
     onChange(item);
     setIsOpen(false);
     setSearchQuery("");
+    setSelectedLetter(null);
   };
 
   return (
@@ -88,29 +112,37 @@ export default function CanteenItemSelector({
             transform: translateY(0) scale(1);
           }
         }
-        .canteen-item-row {
+        .canteen-grid-tile {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: 12px;
-          padding: 10px 12px;
-          min-height: 48px;
-          border-radius: 10px;
+          justifyContent: center;
+          text-align: center;
+          gap: 4px;
+          padding: 8px 4px 6px;
+          min-height: 66px;
+          border-radius: 12px;
+          border: 1.5px solid #fed7aa;
+          background: #ffffff;
           cursor: pointer;
           transition: all 0.15s ease;
-          background: transparent;
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
+          position: relative;
         }
-        .canteen-item-row:hover, .canteen-item-row:active {
+        .canteen-grid-tile:hover, .canteen-grid-tile:active {
           background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-          transform: translateX(2px);
+          border-color: #f97316;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.12);
         }
-        .canteen-item-row.selected {
+        .canteen-grid-tile.selected {
           background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
-          border: 1px solid #fdba74;
+          border-color: #f97316;
+          box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
         }
         .canteen-scroll::-webkit-scrollbar {
-          width: 6px;
+          width: 5px;
         }
         .canteen-scroll::-webkit-scrollbar-track {
           background: #fdfbf7;
@@ -122,6 +154,9 @@ export default function CanteenItemSelector({
         }
         .canteen-scroll::-webkit-scrollbar-thumb:hover {
           background: #f97316;
+        }
+        .canteen-az-bar::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
 
@@ -321,28 +356,131 @@ export default function CanteenItemSelector({
             )}
           </div>
 
-          {/* List of items */}
+          {/* Sliding A-Z Letter Filter */}
+          <div
+            className="canteen-az-bar"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              overflowX: "auto",
+              paddingBottom: "8px",
+              marginBottom: "8px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            {/* "All" button */}
+            <button
+              type="button"
+              onClick={() => setSelectedLetter(null)}
+              style={{
+                flexShrink: 0,
+                padding: "4px 10px",
+                fontSize: "11px",
+                fontWeight: 700,
+                borderRadius: "14px",
+                border: "1px solid",
+                borderColor: selectedLetter === null ? "#f97316" : "#fed7aa",
+                background:
+                  selectedLetter === null
+                    ? "linear-gradient(135deg, #f97316, #ef4444)"
+                    : "#fff7ed",
+                color: selectedLetter === null ? "#ffffff" : "#78350f",
+                cursor: "pointer",
+                boxShadow:
+                  selectedLetter === null
+                    ? "0 2px 6px rgba(249, 115, 22, 0.3)"
+                    : "none",
+                transition: "all 0.15s ease",
+              }}
+            >
+              All
+            </button>
+
+            {/* A-Z letter buttons */}
+            {ALPHABET.map((letter) => {
+              const hasItems = availableLetters.has(letter);
+              const isSelected = selectedLetter === letter;
+
+              return (
+                <button
+                  key={letter}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLetter(isSelected ? null : letter);
+                  }}
+                  style={{
+                    flexShrink: 0,
+                    width: "27px",
+                    height: "27px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                    fontWeight: isSelected ? 800 : hasItems ? 700 : 500,
+                    borderRadius: "50%",
+                    border: isSelected
+                      ? "1.5px solid #f97316"
+                      : hasItems
+                      ? "1px solid #fed7aa"
+                      : "1px solid transparent",
+                    background: isSelected
+                      ? "linear-gradient(135deg, #f97316, #ef4444)"
+                      : hasItems
+                      ? "#ffffff"
+                      : "rgba(255, 247, 237, 0.4)",
+                    color: isSelected
+                      ? "#ffffff"
+                      : hasItems
+                      ? "#431407"
+                      : "#d1d5db",
+                    cursor: hasItems ? "pointer" : "default",
+                    opacity: hasItems ? 1 : 0.45,
+                    boxShadow: isSelected
+                      ? "0 2px 6px rgba(249, 115, 22, 0.3)"
+                      : hasItems
+                      ? "0 1px 3px rgba(0,0,0,0.04)"
+                      : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                  title={
+                    hasItems
+                      ? `Show items starting with ${letter}`
+                      : `No items starting with ${letter}`
+                  }
+                >
+                  {letter}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 3-Column Grid of items */}
           <div
             className="canteen-scroll"
             style={{
-              maxHeight: "260px",
+              maxHeight: "380px",
               overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "6px",
+              padding: "2px",
             }}
           >
             {filteredItems.length === 0 ? (
               <div
                 style={{
-                  padding: "16px 12px",
+                  gridColumn: "1 / -1",
+                  padding: "24px 12px",
                   textAlign: "center",
                   fontSize: "13px",
                   color: "#9a3412",
                   fontStyle: "italic",
                 }}
               >
-                No items match &quot;{searchQuery}&quot;
+                No items match{searchQuery ? ` "${searchQuery}"` : ""}{selectedLetter ? ` starting with "${selectedLetter}"` : ""}
               </div>
             ) : (
               filteredItems.map((item) => {
@@ -353,13 +491,36 @@ export default function CanteenItemSelector({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(item)}
-                    className={`canteen-item-row ${isSelected ? "selected" : ""}`}
+                    className={`canteen-grid-tile ${isSelected ? "selected" : ""}`}
                   >
+                    {isSelected && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 4,
+                          right: 5,
+                          width: 14,
+                          height: 14,
+                          borderRadius: "50%",
+                          background: "#f97316",
+                          color: "#ffffff",
+                          fontSize: "9px",
+                          fontWeight: 900,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 1px 3px rgba(249, 115, 22, 0.4)",
+                        }}
+                      >
+                        ✓
+                      </div>
+                    )}
+
                     <div
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
                         background: isSelected
                           ? "linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)"
                           : "#fff7ed",
@@ -371,37 +532,25 @@ export default function CanteenItemSelector({
                         boxShadow: "0 1px 3px rgba(249, 115, 22, 0.08)",
                       }}
                     >
-                      <FoodIcon name={item} size="26px" />
+                      <FoodIcon name={item} size="22px" />
                     </div>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: isSelected ? 700 : 600,
-                          color: isSelected ? "#9a3412" : "#431407",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {item}
-                      </div>
-                    </div>
-
-                    {isSelected && (
-                      <div
-                        style={{
-                          color: "#f97316",
-                          fontWeight: 800,
-                          fontSize: "14px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        ✓
-                      </div>
-                    )}
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: isSelected ? 800 : 700,
+                        color: isSelected ? "#9a3412" : "#431407",
+                        lineHeight: 1.15,
+                        wordBreak: "break-word",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        padding: "0 2px",
+                      }}
+                    >
+                      {item}
+                    </span>
                   </div>
                 );
               })
